@@ -16,7 +16,7 @@ export const globalErrorHandler = (
     });
   }
 
-  // 2) log error supaya developer bisa lihat di terminal,
+  // 2) log error supaya  bisa lihat di terminal,
   // Jika sampai sini, berarti error bukan milik appError
   // Error tak terduga (bug, dll) — jangan expose detail ke user
   console.error("INTERNAL SERVER ERROR:", err);

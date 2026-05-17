@@ -12,3 +12,12 @@ export const CLOUDINARY_CREDENTIALS = {
 export const CORS_CREDENTIALS = {
   FRONTEND_URL: process.env.FRONTEND_URL,
 };
+
+export const NODEMAILER_CREDENTIALS = {
+  EMAIL_USER: process.env.EMAIL_USER,
+  GOOGLE_APP_PASSWORD: process.env.GOOGLE_APP_PASSWORD,
+};
+
+export const SERVER_CREDENTIALS = {
+  NODE_ENV: process.env.NODE_ENV,
+};

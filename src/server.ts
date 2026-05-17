@@ -3,14 +3,20 @@ import cors from "cors";
 import "dotenv/config";
 import express, { Express, Request, Response } from "express";
 import { CORS_CONFIG } from "./configs/cors.config";
-import { DATABASE_CREDENTIALS } from "./configs/dotenv.config";
-import { globalErrorHandler } from "./middlewares/error.middleware";
+import {
+  DATABASE_CREDENTIALS,
+  SERVER_CREDENTIALS,
+} from "./configs/dotenv.config";
 import { upload } from "./configs/multer.config";
-import { uploadMany, uploadSingle } from "./utils/cloudinaryUploader.util";
+import { globalErrorHandler } from "./middlewares/globalError.middleware";
 import { multerErrorMiddleware } from "./middlewares/multerError.middleware";
+import { uploadMany } from "./utils/cloudinaryUploader.util";
+import testingRoute from "./routers/testing.route";
 
-const port = DATABASE_CREDENTIALS.PORT;
 const app: Express = express();
+
+app.set("trust proxy", 1);
+
 app.use(express.json());
 
 // cookie-parser middleware
@@ -20,6 +26,7 @@ app.use(cookieParser());
 app.use(cors(CORS_CONFIG));
 
 // END-POINTS
+// upload-testing
 app.post(
   "/api/upload-testing",
   upload.array("upload-multiple-testing", 2),
@@ -36,9 +43,16 @@ app.post(
   },
 );
 
+app.use("/api", testingRoute);
+
 // globar error middleware
 app.use(globalErrorHandler);
 
-app.listen(port, () => {
-  console.log(`🦄 🌱 [server]: Server is running at http://localhost:${port}`);
-});
+if (SERVER_CREDENTIALS.NODE_ENV !== "production") {
+  const port = DATABASE_CREDENTIALS.PORT;
+  app.listen(port, () => {
+    console.log(
+      `🦄 🌱 [server]: Server is running at http://localhost:${port}`,
+    );
+  });
+}
