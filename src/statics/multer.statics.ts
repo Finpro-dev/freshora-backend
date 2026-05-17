@@ -1,0 +1,2 @@
+export const MAX_PRODUCT_UPLOAD_IMG = 2;
+export const MAX_FILE_SIZE_PRODUCT_IMG = 1024 * 1024;

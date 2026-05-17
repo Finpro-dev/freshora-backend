@@ -1,0 +1,23 @@
+export const DATABASE_CREDENTIALS = {
+  PORT: process.env.PORT,
+  DATABASE_URL: process.env.DATABASE_URL,
+};
+
+export const CLOUDINARY_CREDENTIALS = {
+  CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME,
+  CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY,
+  CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET,
+};
+
+export const CORS_CREDENTIALS = {
+  FRONTEND_URL: process.env.FRONTEND_URL,
+};
+
+export const NODEMAILER_CREDENTIALS = {
+  EMAIL_USER: process.env.EMAIL_USER,
+  GOOGLE_APP_PASSWORD: process.env.GOOGLE_APP_PASSWORD,
+};
+
+export const SERVER_CREDENTIALS = {
+  NODE_ENV: process.env.NODE_ENV,
+};
