@@ -2,7 +2,7 @@ import { upload } from "../configs/multer.config";
 import {
   MAX_FILE_SIZE_PRODUCT_IMG,
   MAX_PRODUCT_UPLOAD_IMG,
-} from "../statics/multer.statics";
+} from "../statics/multer.static";
 import { AppError } from "./appErrror.util";
 import { uploadCloudinary } from "./uploadCloudinary.util";
 
