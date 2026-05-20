@@ -7,7 +7,7 @@ export const authController = {
   signup: catchAsync(async (req: Request, res: Response) => {
     const newUser = await authServices.signup(req.body);
 
-    const fullName = newUser.fullName;
+    const fullName = `${newUser.firstName} ${newUser.lastName}`;
     const email = newUser.email;
     const token = newUser.token;
 
