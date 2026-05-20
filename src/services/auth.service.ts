@@ -7,9 +7,10 @@ import { referralCodeGenerator } from "../utils/generateRandom.util";
 import { handlePrismaError } from "../utils/prismaErrorHandler.util";
 import { formatUserResponse } from "../utils/formatUserResponse";
 import { generateRawToken } from "../utils/token.util";
+import { SignupInput } from "../schemas/signup.schema";
 
 export const authServices = {
-  signup: async (data: any) => {
+  signup: async (data: SignupInput) => {
     try {
       const {
         firstName,
@@ -18,7 +19,6 @@ export const authServices = {
         phone,
         gender,
         role,
-        password,
         usedReferralCode,
       } = data;
 
@@ -42,9 +42,6 @@ export const authServices = {
         if (!isCorrectUsedReferralCode)
           throw new AppError(400, "Incorrect referral code");
       }
-
-      // hash password
-      const hashedPassword = await bcrypt.hash(password, HASH_SALT);
 
       // create unique referral code
       let myReferralCode = "";
@@ -71,7 +68,6 @@ export const authServices = {
             phone,
             gender,
             role,
-            password: hashedPassword,
             myReferralCode,
           },
         });
