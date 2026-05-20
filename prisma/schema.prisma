@@ -65,7 +65,7 @@ enum DiscountType {
 }
 
 enum PaymentType {
-  CARD 
+  CARD
   TRANSFER
 }
 
@@ -85,33 +85,32 @@ enum ActivityType {
   MUTATION_OUT
 }
 
-
 model User {
-  userId            String    @id @default(uuid())
-  firstName         String    @db.VarChar(30)
-  lastName          String    @db.VarChar(30)
-  email             String    @unique @db.VarChar(30)
-  phone             String    @unique @db.VarChar(15)
-  gender            Gender
-  role              Role
-  password          String   @db.VarChar(255)
-  isVerified        Boolean   @default(false)
-  avatar            String?
-  myReferralCode    String    @unique
-  usedReferralCode  String?
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-  deletedAt         DateTime?
+  userId           String    @id @default(uuid())
+  firstName        String    @db.VarChar(30)
+  lastName         String    @db.VarChar(30)
+  email            String    @unique @db.VarChar(30)
+  phone            String    @unique @db.VarChar(15)
+  gender           Gender
+  role             Role
+  password         String    @db.VarChar(255)
+  isVerified       Boolean   @default(false)
+  avatar           String?
+  myReferralCode   String    @unique
+  usedReferralCode String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  deletedAt        DateTime?
 
-  transactions Transaction[]
+  transactions   Transaction[]
   addresses      Address[]
   refreshTokens  RefreshToken[]
   resetPasswords ResetPassword[]
-  cart          Cart?
-  store         Store?
-  verifications Verification[]
+  cart           Cart?
+  store          Store?
+  verifications  Verification[]
 
-  voucherOwners ReferralVoucher? @relation("voucherOwner")
+  voucherOwners ReferralVoucher?  @relation("voucherOwner")
   referralOwner ReferralVoucher[] @relation("referralOwner")
 
   @@map("users")
@@ -129,7 +128,7 @@ model Address {
   latitude      Float?
   longitude     Float?
 
-  user User @relation(fields: [userId], references: [userId])
+  user         User          @relation(fields: [userId], references: [userId])
   transactions Transaction[]
 
   createdAt DateTime  @default(now())
@@ -141,12 +140,12 @@ model Address {
 
 model Verification {
   verificationId String    @id @default(uuid())
-  userId          String
-  hashedToken     String    @unique @db.Text
-  expiresAt       DateTime
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  deletedAt       DateTime?
+  userId         String
+  hashedToken    String    @unique @db.Text
+  expiresAt      DateTime
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  deletedAt      DateTime?
 
   user User @relation(fields: [userId], references: [userId])
 
@@ -228,10 +227,10 @@ model Product {
   serialNumber        String       @unique @db.VarChar(15)
   name                String       @unique @db.VarChar(30)
   slug                String       @unique
-  productCategoryId   String       
+  productCategoryId   String
   price               Decimal      @db.Decimal(10, 2)
   description         String       @db.VarChar(500)
-  weightPerGram        Decimal      @db.Decimal(10, 2)
+  weightPerGram       Decimal      @db.Decimal(10, 2)
   unit                Unit
   storageInstructions String?      @db.VarChar(150)
   grade               ProductGrade
@@ -241,13 +240,13 @@ model Product {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  discounts Discount[]
+  discounts       Discount[]
   mutations       Mutation[]
   cartItems       CartItem[]
   stocks          Stock[]
   productPhotos   ProductPhoto[]
   productCategory ProductCategory @relation(fields: [productCategoryId], references: [productCategoryId])
-  orderItems OrderItem[]
+  orderItems      OrderItem[]
 
   @@map("products")
 }
@@ -284,28 +283,27 @@ model Store {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  user          User       @relation(fields: [userId], references: [userId])
-  mutationsFrom Mutation[] @relation("fromStore")
-  mutationsTo   Mutation[] @relation("toStore")
+  user          User         @relation(fields: [userId], references: [userId])
+  mutationsFrom Mutation[]   @relation("fromStore")
+  mutationsTo   Mutation[]   @relation("toStore")
   stocks        Stock[]
-  storeOrders StoreOrder[]
-  
+  storeOrders   StoreOrder[]
 
   @@map("stores")
 }
 
 model Stock {
-  stockId  String @id @default(uuid())
+  stockId   String @id @default(uuid())
   storeId   String
   productId String
-  quantity     Int
+  quantity  Int
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  store   Store   @relation(fields: [storeId], references: [storeId])
-  product Product @relation(fields: [productId], references: [productId])
+  store         Store          @relation(fields: [storeId], references: [storeId])
+  product       Product        @relation(fields: [productId], references: [productId])
   stockJournals StockJournal[]
 
   @@unique([storeId, productId])
@@ -313,20 +311,20 @@ model Stock {
 }
 
 model StockJournal {
-  stockJournalId String @id @default(uuid())
-  stockId String
+  stockJournalId String       @id @default(uuid())
+  stockId        String
   quantityChange Int
-  type ActivityType
-  transactionId String?
-  mutationId  String? 
+  type           ActivityType
+  transactionId  String?
+  mutationId     String?
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
-  deletedAt DateTime? 
+  deletedAt DateTime?
 
-  stock Stock @relation(fields: [stockId], references: [stockId])
+  stock       Stock        @relation(fields: [stockId], references: [stockId])
   transaction Transaction? @relation(fields: [transactionId], references: [transactionId])
-  mutation Mutation? @relation(fields: [mutationId], references: [mutationId])
+  mutation    Mutation?    @relation(fields: [mutationId], references: [mutationId])
 
   @@map("stockJournals")
 }
@@ -343,90 +341,89 @@ model Mutation {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  product   Product @relation(fields: [productId], references: [productId])
-  fromStore Store   @relation("fromStore", fields: [fromStoreId], references: [storeId])
-  toStore   Store   @relation("toStore", fields: [toStoreId], references: [storeId])
+  product       Product        @relation(fields: [productId], references: [productId])
+  fromStore     Store          @relation("fromStore", fields: [fromStoreId], references: [storeId])
+  toStore       Store          @relation("toStore", fields: [toStoreId], references: [storeId])
   stockJournals StockJournal[]
 
   @@map("mutations")
 }
 
-
 model Transaction {
-  transactionId   String @id @default(uuid())
-  transactionNumber String @db.VarChar(15) @unique
-  userId String
-  addressId String
-  totalAmount Decimal @db.Decimal(10, 2)
-  totalDiscount Decimal @db.Decimal(10, 2)
-  grandTotal Decimal @db.Decimal(10, 2)
-  shippedAt DateTime?
-  cancelledAt DateTime?
+  transactionId     String    @id @default(uuid())
+  transactionNumber String    @unique @db.VarChar(15)
+  userId            String
+  addressId         String
+  totalAmount       Decimal   @db.Decimal(10, 2)
+  totalDiscount     Decimal   @db.Decimal(10, 2)
+  grandTotal        Decimal   @db.Decimal(10, 2)
+  shippedAt         DateTime?
+  cancelledAt       DateTime?
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  payments Payment?
-  user User @relation(fields: [userId], references: [userId])
-  address Address @relation(fields: [addressId], references: [addressId])
-  storeOrders StoreOrder[]
+  payments         Payment?
+  user             User             @relation(fields: [userId], references: [userId])
+  address          Address          @relation(fields: [addressId], references: [addressId])
+  storeOrders      StoreOrder[]
   referralVouchers ReferralVoucher?
-  stockJournals StockJournal[]
+  stockJournals    StockJournal[]
 
   @@map("transactions")
 }
 
 model ReferralVoucher {
-  referralVoucherId String @id @default(uuid())
-  userId String @unique 
-  referralOwnerId String 
-  couponCode String @db.VarChar(8) @unique
-  discountAmount Decimal @db.Decimal(10, 2)
-  validFrom DateTime
-  validUntil DateTime
-  transactionId String? @unique
+  referralVoucherId String   @id @default(uuid())
+  userId            String   @unique
+  referralOwnerId   String
+  couponCode        String   @unique @db.VarChar(8)
+  discountAmount    Decimal  @db.Decimal(10, 2)
+  validFrom         DateTime
+  validUntil        DateTime
+  transactionId     String?  @unique
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
-  deletedAt DateTime? 
+  deletedAt DateTime?
 
-  voucherOwner User @relation("voucherOwner", fields: [userId], references: [userId])
-  referralOwner User @relation("referralOwner", fields: [referralOwnerId], references: [userId])
-  transaction Transaction? @relation(fields: [transactionId], references: [transactionId])
+  voucherOwner  User         @relation("voucherOwner", fields: [userId], references: [userId])
+  referralOwner User         @relation("referralOwner", fields: [referralOwnerId], references: [userId])
+  transaction   Transaction? @relation(fields: [transactionId], references: [transactionId])
 
   @@map("referralVouchers")
 }
 
-
 model Payment {
-  paymentId String @id @default(uuid())
-  transactionId String @unique
+  paymentId        String        @id @default(uuid())
+  transactionId    String        @unique
   paymentGatewayId String?
-  paymentType PaymentType
-  paymentProof String?
-  paymentStatus PaymentStatus
-  expiresAt DateTime?
+  paymentType      PaymentType
+  paymentProof     String?
+  paymentStatus    PaymentStatus
+  expiresAt        DateTime?
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
   transaction Transaction @relation(fields: [transactionId], references: [transactionId])
+
   @@map("payments")
 }
 
 model Discount {
-  discountId String @id @default(uuid())
-  productId String 
-  type DiscountType
-  minTransaction Decimal? @db.Decimal(10, 2)
-  validUntil DateTime
-  validFrom DateTime
-  discountAmount Decimal @db.Decimal(10, 2)
+  discountId     String       @id @default(uuid())
+  productId      String
+  type           DiscountType
+  minTransaction Decimal?     @db.Decimal(10, 2)
+  validUntil     DateTime
+  validFrom      DateTime
+  discountAmount Decimal      @db.Decimal(10, 2)
 
   storeOrders StoreOrder[]
-  product Product @relation(fields: [productId], references: [productId])
+  product     Product      @relation(fields: [productId], references: [productId])
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -436,43 +433,43 @@ model Discount {
 }
 
 model StoreOrder {
-  storeOrderId String @id @default(uuid())
-  transactionId String
-  storeId String
-  discountId String?
-  shippingCost Decimal @db.Decimal(10, 2)
-  totalAmount Decimal @db.Decimal(10, 2)
-  totalDiscountAmount Decimal @db.Decimal(10, 2)
-  grandTotal Decimal @db.Decimal(10, 2)
-  transactionStatus TransactionStatus
+  storeOrderId        String            @id @default(uuid())
+  transactionId       String
+  storeId             String
+  discountId          String?
+  shippingCost        Decimal           @db.Decimal(10, 2)
+  totalAmount         Decimal           @db.Decimal(10, 2)
+  totalDiscountAmount Decimal           @db.Decimal(10, 2)
+  grandTotal          Decimal           @db.Decimal(10, 2)
+  transactionStatus   TransactionStatus
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  store Store @relation(fields: [storeId], references: [storeId])
-  discount Discount? @relation(fields: [discountId], references: [discountId])
+  store       Store       @relation(fields: [storeId], references: [storeId])
+  discount    Discount?   @relation(fields: [discountId], references: [discountId])
   transaction Transaction @relation(fields: [transactionId], references: [transactionId])
-  orderItems OrderItem[]
+  orderItems  OrderItem[]
 
   @@map("storeOrders")
 }
 
 model OrderItem {
-  orderItemId String @id @default(uuid())
-  storeOrderId String
-  productId String
-  quantity Int
-  unitPrice Decimal @db.Decimal(10, 2)
+  orderItemId    String  @id @default(uuid())
+  storeOrderId   String
+  productId      String
+  quantity       Int
+  unitPrice      Decimal @db.Decimal(10, 2)
   discountAmount Decimal @db.Decimal(10, 2)
-  subTotalItem Decimal @db.Decimal(10, 2)
+  subTotalItem   Decimal @db.Decimal(10, 2)
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
   storeOrder StoreOrder @relation(fields: [storeOrderId], references: [storeOrderId])
-  product Product @relation(fields: [productId], references: [productId])
+  product    Product    @relation(fields: [productId], references: [productId])
 
   @@map("orderItems")
 }
