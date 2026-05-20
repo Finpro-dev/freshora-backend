@@ -1,13 +1,13 @@
-import { prisma } from "../configs/prisma.config";
-import { HASH_SALT } from "../statics/token.static";
-import { AppError } from "../utils/appErrror.util";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
+import { prisma } from "../configs/prisma.config";
+import { SignupInput } from "../schemas/signup.schema";
+import { HASH_SALT } from "../statics/token.static";
+import { AppError } from "../utils/appErrror.util";
+import { formatUserResponse } from "../utils/formatUserResponse";
 import { referralCodeGenerator } from "../utils/generateRandom.util";
 import { handlePrismaError } from "../utils/prismaErrorHandler.util";
-import { formatUserResponse } from "../utils/formatUserResponse";
 import { generateRawToken } from "../utils/token.util";
-import { SignupInput } from "../schemas/signup.schema";
 
 export const authServices = {
   signup: async (data: SignupInput) => {
@@ -83,7 +83,7 @@ export const authServices = {
           data: {
             userId: newUser.userId,
             hashedToken,
-            expiresAt: new Date(Date.now() + 60 * 60 * 1000),
+            expiresAt: new Date(Date.now() + 5 * 60 * 1000),
           },
         });
 
@@ -91,6 +91,56 @@ export const authServices = {
       });
 
       return newUserCredentials;
+    } catch (error) {
+      handlePrismaError(error);
+    }
+  },
+
+  createPassword: async (password: string, token: string) => {
+    try {
+      const hashedToken = crypto
+        .createHash("sha256")
+        .update(token)
+        .digest("hex");
+
+      // search token
+      const isValidToken = await prisma.verification.findFirst({
+        where: {
+          hashedToken,
+          expiresAt: {
+            gt: new Date(),
+          },
+        },
+      });
+
+      if (!isValidToken)
+        throw new AppError(
+          401,
+          "Link has expired, request new verification link",
+        );
+
+      const hashedPassword = await bcrypt.hash(password, HASH_SALT);
+
+      await prisma.$transaction(async (tx) => {
+        // input password to db
+        await tx.user.update({
+          where: {
+            userId: isValidToken.userId,
+          },
+
+          data: {
+            password: hashedPassword,
+            isVerified: true,
+          },
+        });
+
+        // delete after using
+        await tx.verification.deleteMany({
+          where: {
+            userId: isValidToken.userId,
+          },
+        });
+      });
     } catch (error) {
       handlePrismaError(error);
     }

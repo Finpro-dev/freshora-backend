@@ -4,6 +4,7 @@ import { authServices } from "../services/auth.service";
 import { emailService } from "../services/email.service";
 import { AppError } from "../utils/appErrror.util";
 import { SignupInput } from "../schemas/signup.schema";
+import { createPasswordInput } from "../schemas/createPassword.schema";
 
 export const authController = {
   signup: catchAsync(
@@ -27,5 +28,19 @@ export const authController = {
     },
   ),
 
-  createPassword: catchAsync(async (req: Request, res: Response) => {}),
+  createPassword: catchAsync(
+    async (
+      req: Request<{}, {}, createPasswordInput & { token: string }>,
+      res: Response,
+    ) => {
+      const { password, token } = req.body;
+
+      await authServices.createPassword(password, token);
+
+      res.status(201).json({
+        status: "success",
+        message: "Account is activated successfully",
+      });
+    },
+  ),
 };
