@@ -1,5 +1,6 @@
 import jwt, { TokenExpiredError } from "jsonwebtoken";
 import bcrypt from "bcrypt";
+import crypto from "crypto";
 import { TokenPayload } from "../types/token.type";
 import { AUTH_TOKEN } from "../configs/dotenv.config";
 import { HASH_SALT } from "../statics/token.static";
@@ -24,6 +25,7 @@ export const generateTokens = async (tokenPayload: TokenPayload) => {
       token: hashedRefreshToken,
       expiresAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
       userId: tokenPayload.userId,
+      revoked: false,
     },
   });
 
@@ -50,4 +52,8 @@ export const verifyRefreshToken = (refreshToken: string) => {
       throw new AppError(401, "Invalid refresh token");
     }
   }
+};
+
+export const generateRawToken = (length: number = 32): string => {
+  return crypto.randomBytes(length).toString("hex");
 };

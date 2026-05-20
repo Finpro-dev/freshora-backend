@@ -1,17 +1,15 @@
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import "dotenv/config";
-import express, { Express, Request, Response } from "express";
+import express, { Express } from "express";
 import { CORS_CONFIG } from "./configs/cors.config";
 import {
   DATABASE_CREDENTIALS,
   SERVER_CREDENTIALS,
 } from "./configs/dotenv.config";
-import { upload } from "./configs/multer.config";
 import { globalErrorHandler } from "./middlewares/globalError.middleware";
-import { multerErrorMiddleware } from "./middlewares/multerError.middleware";
-import { uploadMany } from "./utils/cloudinaryUploader.util";
 import testingRoute from "./routers/testing.route";
+import authRoute from "./routers/auth.route";
 
 const app: Express = express();
 
@@ -26,24 +24,12 @@ app.use(cookieParser());
 app.use(cors(CORS_CONFIG));
 
 // END-POINTS
+
 // upload-testing
-app.post(
-  "/api/upload-testing",
-  upload.array("upload-multiple-testing", 2),
-  multerErrorMiddleware,
-  async (req: Request, res: Response) => {
-    const uploadedFiles = req.files as Express.Multer.File[];
-
-    const urls = await uploadMany(uploadedFiles, "upload-multiple-testing");
-    res.status(200).json({
-      status: "success",
-      urls,
-      message: "testing successfull",
-    });
-  },
-);
-
 app.use("/api", testingRoute);
+
+// auth router
+app.use("/api/auth", authRoute);
 
 // globar error middleware
 app.use(globalErrorHandler);

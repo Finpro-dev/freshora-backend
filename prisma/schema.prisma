@@ -96,7 +96,7 @@ model User {
   password         String    @db.VarChar(255)
   isVerified       Boolean   @default(false)
   avatar           String?
-  myReferralCode   String    @unique
+  myReferralCode   String    @unique @db.VarChar(8)
   usedReferralCode String?
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
@@ -156,12 +156,13 @@ model RefreshToken {
   refreshTokenId String    @id @default(uuid())
   token          String    @unique @db.Text
   userId         String
-  user           User      @relation(fields: [userId], references: [userId])
+  revoked        Boolean
   expiresAt      DateTime
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
   deletedAt      DateTime?
 
+  user           User      @relation(fields: [userId], references: [userId])
   @@map("refreshTokens")
 }
 
