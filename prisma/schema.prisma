@@ -93,7 +93,7 @@ model User {
   phone            String    @unique @db.VarChar(15)
   gender           Gender
   role             Role
-  password         String    @db.VarChar(255)
+  password         String?    @db.VarChar(255)
   isVerified       Boolean   @default(false)
   avatar           String?
   myReferralCode   String    @unique @db.VarChar(8)
