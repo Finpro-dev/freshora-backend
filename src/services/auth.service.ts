@@ -7,6 +7,10 @@ import { AppError } from "../utils/appErrror.util";
 import { referralCodeGenerator } from "../utils/generateRandom.util";
 import { handlePrismaError } from "../utils/prismaErrorHandler.util";
 import { verifyTokenService } from "./verifyToken.service";
+import { LoginInput } from "../schemas/login.schema";
+import { generateTokens, setTokenCookies } from "../utils/token.util";
+import { TokenPayload } from "../types/token.type";
+import { formatUserResponse } from "../utils/formatUserResponse";
 
 export const authServices = {
   signup: async (data: SignupInput) => {
@@ -193,5 +197,33 @@ export const authServices = {
     await verifyTokenService.createVerifyToken(userId, fullName, email);
   },
 
-  login: () => {},
+  login: async ({ email, password }: LoginInput) => {
+    try {
+      const user = await prisma.user.findUnique({
+        where: {
+          email,
+          isVerified: true,
+        },
+      });
+
+      if (!user) throw new AppError(404, "Invalid credentials");
+
+      const hashedPassword = user?.password as string;
+      const isMatch = await bcrypt.compare(password, hashedPassword);
+      console.log("password compare", isMatch);
+      if (!isMatch) throw new AppError(401, "Invalid credentials");
+
+      const tokenPayload: TokenPayload = {
+        userId: user.userId,
+        fullName: `${user.firstName} ${user.lastName}`,
+        role: user.role,
+      };
+
+      const { accessToken, refreshToken } = await generateTokens(tokenPayload);
+
+      return { user: formatUserResponse(user), accessToken, refreshToken };
+    } catch (error) {
+      handlePrismaError(error);
+    }
+  },
 };

@@ -4,6 +4,8 @@ import { SignupInput } from "../schemas/signup.schema";
 import { VerificationRequestInput } from "../schemas/verificationRequest.schema";
 import { authServices } from "../services/auth.service";
 import { catchAsync } from "../utils/catchAsync.util";
+import { LoginInput } from "../schemas/login.schema";
+import { setTokenCookies } from "../utils/token.util";
 
 export const authController = {
   signup: catchAsync(
@@ -45,10 +47,22 @@ export const authController = {
     },
   ),
 
-  login: catchAsync((req: Request, res: Response) => {
+  login: catchAsync(async (req: Request<{}, {}, LoginInput>, res: Response) => {
+    const { email, password } = req.body;
+    const { user, accessToken, refreshToken } =
+      (await authServices.login({
+        email,
+        password,
+      })) || {};
+
+    setTokenCookies(res, accessToken!, refreshToken!);
+
     res.status(201).json({
       status: "success",
       message: "Login successfull",
+      data: {
+        user,
+      },
     });
   }),
 };
