@@ -4,10 +4,9 @@ import { prisma } from "../configs/prisma.config";
 import { SignupInput } from "../schemas/signup.schema";
 import { HASH_SALT } from "../statics/token.static";
 import { AppError } from "../utils/appErrror.util";
-import { formatUserResponse } from "../utils/formatUserResponse";
 import { referralCodeGenerator } from "../utils/generateRandom.util";
 import { handlePrismaError } from "../utils/prismaErrorHandler.util";
-import { generateRawToken } from "../utils/token.util";
+import { verifyTokenService } from "./verifyToken.service";
 
 export const authServices = {
   signup: async (data: SignupInput) => {
@@ -29,7 +28,31 @@ export const authServices = {
         where: { email: trimmedEmail },
       });
 
-      if (isExist) throw new AppError(409, "User already exist, please login");
+      const fullName = `${isExist?.firstName} ${isExist?.lastName}`;
+      const userId = isExist?.userId as string;
+
+      // not verified yet
+      if (isExist?.password === null && !isExist.isVerified) {
+        await verifyTokenService.createVerifyToken(userId, fullName, email);
+        throw new AppError(
+          409,
+          "User already registered, please check your email to verify",
+        );
+      }
+
+      // has been verified
+      if (isExist?.password && isExist.isVerified)
+        throw new AppError(409, "User already registered, please login");
+
+      //check if phone number in db
+      const isPhoneNumberUsed = await prisma.user.findUnique({
+        where: {
+          phone,
+        },
+      });
+
+      if (isPhoneNumberUsed)
+        throw new AppError(409, "Phone number is already used");
 
       // check if used referral code correct
       if (usedReferralCode) {
@@ -59,38 +82,26 @@ export const authServices = {
       }
 
       // create new user
-      const newUserCredentials = await prisma.$transaction(async (tx) => {
-        const newUser = await tx.user.create({
-          data: {
-            firstName,
-            lastName,
-            email: trimmedEmail,
-            phone,
-            gender,
-            role,
-            myReferralCode,
-          },
-        });
-
-        // create email verification token
-        const newToken = generateRawToken();
-        const hashedToken = crypto
-          .createHash("sha256")
-          .update(newToken)
-          .digest("hex");
-
-        await tx.verification.create({
-          data: {
-            userId: newUser.userId,
-            hashedToken,
-            expiresAt: new Date(Date.now() + 5 * 60 * 1000),
-          },
-        });
-
-        return formatUserResponse(newUser, { token: newToken });
+      const newUser = await prisma.user.create({
+        data: {
+          firstName,
+          lastName,
+          email: trimmedEmail,
+          phone,
+          gender,
+          role,
+          myReferralCode,
+        },
       });
 
-      return newUserCredentials;
+      // create and send email verification token
+      await verifyTokenService.createVerifyToken(
+        newUser.userId,
+        fullName,
+        email,
+      );
+
+      return newUser;
     } catch (error) {
       handlePrismaError(error);
     }
@@ -146,23 +157,23 @@ export const authServices = {
     }
   },
 
-  verifyRequest: async (userId: string) => {
+  verifyRequest: async (email: string) => {
     // find user
     const isValidUser = await prisma.user.findUnique({
       where: {
-        userId,
+        email,
       },
     });
 
     if (!isValidUser) throw new AppError(400, "User is not found");
 
-    if (isValidUser.isVerified)
-      throw new AppError(400, "Your account has been verified");
+    if (isValidUser.isVerified && isValidUser.password !== null)
+      throw new AppError(400, "Your account has been verified, please login");
 
     // find if there's an active link
     const isPrevLinkActive = await prisma.verification.findFirst({
       where: {
-        userId,
+        userId: isValidUser.userId,
         expiresAt: {
           gt: new Date(),
         },
@@ -176,25 +187,10 @@ export const authServices = {
       );
 
     // create email verification token
-    const newToken = generateRawToken();
-    const hashedToken = crypto
-      .createHash("sha256")
-      .update(newToken)
-      .digest("hex");
+    const userId = isValidUser.userId;
+    const fullName = `${isValidUser.firstName} ${isValidUser.lastName}`;
 
-    await prisma.verification.create({
-      data: {
-        userId: userId,
-        hashedToken,
-        expiresAt: new Date(Date.now() + 5 * 60 * 1000),
-      },
-    });
-
-    return {
-      fullName: `${isValidUser.firstName} ${isValidUser.lastName}`,
-      email: isValidUser.email,
-      token: newToken,
-    };
+    await verifyTokenService.createVerifyToken(userId, fullName, email);
   },
 
   login: () => {},
