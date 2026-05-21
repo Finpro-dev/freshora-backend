@@ -4,10 +4,13 @@ import { validate } from "../controllers/validation.middleware";
 import { signupSchema } from "../schemas/signup.schema";
 import { createPasswordSchema } from "../schemas/createPassword.schema";
 import { verificationRequestSchema } from "../schemas/verificationRequest.schema";
+import { loginSchema } from "../schemas/login.schema";
 
 const route = Router();
 
 route.post("/signup", validate(signupSchema), authController.signup);
+
+route.post("/login", validate(loginSchema), authController.login);
 
 route.post(
   "/create-password",

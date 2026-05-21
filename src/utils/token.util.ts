@@ -6,6 +6,7 @@ import { AUTH_TOKEN } from "../configs/dotenv.config";
 import { HASH_SALT } from "../statics/token.static";
 import { prisma } from "../configs/prisma.config";
 import { AppError } from "./appErrror.util";
+import { Response } from "express";
 
 export const generateTokens = async (tokenPayload: TokenPayload) => {
   const accessToken = jwt.sign(tokenPayload, AUTH_TOKEN.JWT_ACCESS_SECRET!, {
@@ -56,4 +57,26 @@ export const verifyRefreshToken = (refreshToken: string) => {
 
 export const generateRawToken = (length: number = 32): string => {
   return crypto.randomBytes(length).toString("hex");
+};
+
+export const setTokenCookies = (
+  res: Response,
+  accessToken: string,
+  refreshToken: string,
+) => {
+  res.cookie("accessToken", accessToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: 15 * 60 * 1000,
+    path: "/",
+  });
+
+  res.cookie("refreshToken", refreshToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: 14 * 24 * 60 * 60 * 1000,
+    path: "/api/refresh",
+  });
 };

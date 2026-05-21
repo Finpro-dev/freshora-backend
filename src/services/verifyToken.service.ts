@@ -4,7 +4,6 @@ import crypto from "crypto";
 import { emailService } from "./email.service";
 import { AppError } from "../utils/appErrror.util";
 import { handlePrismaError } from "../utils/prismaErrorHandler.util";
-import { error } from "console";
 
 export const verifyTokenService = {
   createVerifyToken: async (
