@@ -10,6 +10,7 @@ import {
 import { globalErrorHandler } from "./middlewares/globalError.middleware";
 import testingRoute from "./routers/testing.route";
 import authRoute from "./routers/auth.route";
+import adminRoute from "./routers/admin.route";
 
 const app: Express = express();
 
@@ -30,6 +31,9 @@ app.use("/api", testingRoute);
 
 // auth router
 app.use("/api/auth", authRoute);
+
+//admin router
+app.use("/api/admin", adminRoute);
 
 // globar error middleware
 app.use(globalErrorHandler);
