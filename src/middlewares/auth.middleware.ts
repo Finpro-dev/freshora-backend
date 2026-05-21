@@ -2,9 +2,11 @@ import { NextFunction, Request, Response } from "express";
 import { AppError } from "../utils/appErrror.util";
 import { verifyAccessToken } from "../utils/token.util";
 import { TokenExpiredError } from "jsonwebtoken";
+import { TokenPayload } from "../types/token.type";
+import { AuthenticatedRequest } from "../types/appRequest.type";
 
 export const authentication = (
-  req: Request,
+  req: AuthenticatedRequest,
   res: Response,
   next: NextFunction,
 ) => {
