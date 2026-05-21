@@ -145,4 +145,57 @@ export const authServices = {
       handlePrismaError(error);
     }
   },
+
+  verifyRequest: async (userId: string) => {
+    // find user
+    const isValidUser = await prisma.user.findUnique({
+      where: {
+        userId,
+      },
+    });
+
+    if (!isValidUser) throw new AppError(400, "User is not found");
+
+    if (isValidUser.isVerified)
+      throw new AppError(400, "Your account has been verified");
+
+    // find if there's an active link
+    const isPrevLinkActive = await prisma.verification.findFirst({
+      where: {
+        userId,
+        expiresAt: {
+          gt: new Date(),
+        },
+      },
+    });
+
+    if (isPrevLinkActive)
+      throw new AppError(
+        403,
+        "Your previous link is still active, check your email",
+      );
+
+    // create email verification token
+    const newToken = generateRawToken();
+    const hashedToken = crypto
+      .createHash("sha256")
+      .update(newToken)
+      .digest("hex");
+
+    await prisma.verification.create({
+      data: {
+        userId: userId,
+        hashedToken,
+        expiresAt: new Date(Date.now() + 5 * 60 * 1000),
+      },
+    });
+
+    return {
+      fullName: `${isValidUser.firstName} ${isValidUser.lastName}`,
+      email: isValidUser.email,
+      token: newToken,
+    };
+  },
+
+  login: () => {},
 };

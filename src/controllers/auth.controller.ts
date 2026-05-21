@@ -5,6 +5,8 @@ import { emailService } from "../services/email.service";
 import { AppError } from "../utils/appErrror.util";
 import { SignupInput } from "../schemas/signup.schema";
 import { createPasswordInput } from "../schemas/createPassword.schema";
+import { TokenPayload } from "../types/token.type";
+import { AuthenticatedRequest } from "../types/appRequest.type";
 
 export const authController = {
   signup: catchAsync(
@@ -43,4 +45,30 @@ export const authController = {
       });
     },
   ),
+
+  verifyRequest: catchAsync(
+    async (req: AuthenticatedRequest, res: Response) => {
+      const userId = req.user?.userId as string;
+      const { fullName, email, token } =
+        await authServices.verifyRequest(userId);
+
+      try {
+        await emailService.sendVerificationEmail(fullName, email, token);
+      } catch {
+        throw new AppError(408, "Unable to send email verification");
+      }
+
+      res.status(201).json({
+        status: "success",
+        message: "Account is activated successfully",
+      });
+    },
+  ),
+
+  login: catchAsync((req: Request, res: Response) => {
+    res.status(201).json({
+      status: "success",
+      message: "Login successfull",
+    });
+  }),
 };
