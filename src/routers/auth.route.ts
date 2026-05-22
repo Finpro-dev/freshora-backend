@@ -5,12 +5,20 @@ import { signupSchema } from "../schemas/signup.schema";
 import { createPasswordSchema } from "../schemas/createPassword.schema";
 import { verificationRequestSchema } from "../schemas/verificationRequest.schema";
 import { loginSchema } from "../schemas/login.schema";
+import { authentication, authorization } from "../middlewares/auth.middleware";
 
 const route = Router();
 
 route.post("/signup", validate(signupSchema), authController.signup);
 
 route.post("/login", validate(loginSchema), authController.login);
+
+route.post(
+  "/logout",
+  authentication,
+  authorization("SUPER_ADMIN"),
+  authController.logout,
+);
 
 route.post(
   "/create-password",

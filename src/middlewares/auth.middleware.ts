@@ -35,3 +35,12 @@ export const authentication = (
     return res.status(403).json({ error: "Invalid token" });
   }
 };
+
+export const authorization =
+  (...allowedRoles: string[]) =>
+  (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    if (!allowedRoles.includes(String(req.user?.role)))
+      throw new AppError(403, "Unauthorized action, you are not allowed");
+
+    next();
+  };
