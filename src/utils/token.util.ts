@@ -1,5 +1,4 @@
 import jwt, { TokenExpiredError } from "jsonwebtoken";
-import bcrypt from "bcrypt";
 import crypto from "crypto";
 import { TokenPayload } from "../types/token.type";
 import { AUTH_TOKEN } from "../configs/dotenv.config";
@@ -11,10 +10,14 @@ import {
   ACCESS_COOKIE_OPTIONS,
   REFRESH_COOKIE_OPTIONS,
 } from "../configs/cookie.config";
+import { Prisma } from "../../generated/prisma/client";
 
-export const generateTokens = async (tokenPayload: TokenPayload) => {
+export const generateTokens = async (
+  tokenPayload: TokenPayload,
+  tx?: Prisma.TransactionClient,
+) => {
   const accessToken = jwt.sign(tokenPayload, AUTH_TOKEN.JWT_ACCESS_SECRET!, {
-    expiresIn: "15m",
+    expiresIn: "15s",
   });
 
   const refreshToken = jwt.sign(tokenPayload, AUTH_TOKEN.JWT_REFRESH_SECRET!, {
@@ -22,17 +25,31 @@ export const generateTokens = async (tokenPayload: TokenPayload) => {
   });
 
   // hash refresh token
-  const hashedRefreshToken = await bcrypt.hash(refreshToken, HASH_SALT);
+  const hashedRefreshToken = crypto
+    .createHash("sha256")
+    .update(refreshToken)
+    .digest("hex");
 
   // store to db
-  await prisma.refreshToken.create({
-    data: {
-      token: hashedRefreshToken,
-      expiresAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
-      userId: tokenPayload.userId,
-      revoked: false,
-    },
-  });
+  if (tx) {
+    await tx.refreshToken.create({
+      data: {
+        token: hashedRefreshToken,
+        expiresAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
+        userId: tokenPayload.userId,
+        revoked: false,
+      },
+    });
+  } else {
+    await prisma.refreshToken.create({
+      data: {
+        token: hashedRefreshToken,
+        expiresAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
+        userId: tokenPayload.userId,
+        revoked: false,
+      },
+    });
+  }
 
   return { accessToken, refreshToken };
 };
@@ -45,16 +62,16 @@ export const verifyRefreshToken = (refreshToken: string) => {
   try {
     return jwt.verify(
       refreshToken,
-      AUTH_TOKEN.JWT_ACCESS_SECRET!,
+      AUTH_TOKEN.JWT_REFRESH_SECRET!,
     ) as TokenPayload;
   } catch (error) {
     if (
       error instanceof TokenExpiredError &&
       error.name === "TokenExpiredError"
     ) {
-      throw new AppError(401, "Session finished");
+      throw new AppError(401, "Refresh token expired");
     } else {
-      throw new AppError(401, "Invalid refresh token");
+      throw new AppError(400, "Invalid refresh token");
     }
   }
 };

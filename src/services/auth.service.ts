@@ -8,7 +8,11 @@ import { referralCodeGenerator } from "../utils/generateRandom.util";
 import { handlePrismaError } from "../utils/prismaErrorHandler.util";
 import { verifyTokenService } from "./verifyToken.service";
 import { LoginInput } from "../schemas/login.schema";
-import { generateTokens, setTokenCookies } from "../utils/token.util";
+import {
+  generateTokens,
+  setTokenCookies,
+  verifyRefreshToken,
+} from "../utils/token.util";
 import { TokenPayload } from "../types/token.type";
 import { formatUserResponse } from "../utils/formatUserResponse";
 
@@ -234,6 +238,60 @@ export const authServices = {
           userId,
         },
       });
+    } catch (error) {
+      handlePrismaError(error);
+    }
+  },
+
+  refresh: async (storedRefreshToken: string) => {
+    try {
+      // check refresh token including expiresIn
+      const decoded = verifyRefreshToken(storedRefreshToken);
+
+      const tokenPayload = {
+        userId: decoded.userId,
+        fullName: decoded.fullName,
+        role: decoded.role,
+      };
+
+      const hashedStoredToken = crypto
+        .createHash("sha256")
+        .update(storedRefreshToken)
+        .digest("hex");
+
+      // double check expiresAt in DB to syncronize
+      const targetRefreshToken = await prisma.refreshToken.findFirst({
+        where: {
+          token: hashedStoredToken,
+          expiresAt: {
+            gt: new Date(),
+          },
+        },
+      });
+
+      if (!targetRefreshToken)
+        throw new AppError(
+          401,
+          "Refresh token has been expired, please re-login",
+        );
+
+      const { accessToken, refreshToken } = await prisma.$transaction(
+        async (tx) => {
+          await tx.refreshToken.updateMany({
+            where: {
+              userId: decoded.userId,
+            },
+
+            data: {
+              revoked: true,
+            },
+          });
+
+          return await generateTokens(tokenPayload, tx);
+        },
+      );
+
+      return { accessToken, refreshToken };
     } catch (error) {
       handlePrismaError(error);
     }

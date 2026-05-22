@@ -7,6 +7,7 @@ import { catchAsync } from "../utils/catchAsync.util";
 import { LoginInput } from "../schemas/login.schema";
 import { clearTokenCookies, setTokenCookies } from "../utils/token.util";
 import { AuthenticatedRequest } from "../types/appRequest.type";
+import { AppError } from "../utils/appErrror.util";
 
 export const authController = {
   signup: catchAsync(
@@ -76,6 +77,25 @@ export const authController = {
     res.status(201).json({
       status: "success",
       message: "Logout successfull",
+    });
+  }),
+
+  refresh: catchAsync(async (req: AuthenticatedRequest, res: Response) => {
+    const storedRefreshToken = req.cookies.refreshToken; //FIXME
+    console.log("refreshToken ==> ", storedRefreshToken);
+
+    if (!storedRefreshToken)
+      throw new AppError(401, "Your session has finsihed, please re-login");
+
+    const { accessToken, refreshToken } =
+      (await authServices.refresh(storedRefreshToken)) || {};
+
+    if (accessToken && refreshToken)
+      setTokenCookies(res, accessToken, refreshToken);
+
+    res.status(200).json({
+      status: "success",
+      message: "Token refreshed",
     });
   }),
 };

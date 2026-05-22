@@ -13,7 +13,7 @@ export const authentication = (
 
   try {
     if (!accessToken) {
-      throw new AppError(401, "Unauthorized action");
+      throw new AppError(401, "Unauthenticated action");
     }
 
     const decoded = verifyAccessToken(accessToken);
@@ -30,9 +30,10 @@ export const authentication = (
       error instanceof TokenExpiredError &&
       error.name === "TokenExpiredError"
     ) {
-      return res.status(401).json({ error: "Access token expired" });
+      throw new AppError(401, "Access token expired");
+    } else {
+      throw new AppError(400, "Invalid access Token");
     }
-    return res.status(403).json({ error: "Invalid token" });
   }
 };
 
