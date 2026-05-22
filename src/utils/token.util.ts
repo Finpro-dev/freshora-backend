@@ -7,6 +7,10 @@ import { HASH_SALT } from "../statics/token.static";
 import { prisma } from "../configs/prisma.config";
 import { AppError } from "./appErrror.util";
 import { Response } from "express";
+import {
+  ACCESS_COOKIE_OPTIONS,
+  REFRESH_COOKIE_OPTIONS,
+} from "../configs/cookie.config";
 
 export const generateTokens = async (tokenPayload: TokenPayload) => {
   const accessToken = jwt.sign(tokenPayload, AUTH_TOKEN.JWT_ACCESS_SECRET!, {
@@ -64,19 +68,11 @@ export const setTokenCookies = (
   accessToken: string,
   refreshToken: string,
 ) => {
-  res.cookie("accessToken", accessToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    maxAge: 15 * 60 * 1000,
-    path: "/",
-  });
+  res.cookie("accessToken", accessToken, ACCESS_COOKIE_OPTIONS);
+  res.cookie("refreshToken", refreshToken, REFRESH_COOKIE_OPTIONS);
+};
 
-  res.cookie("refreshToken", refreshToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    maxAge: 14 * 24 * 60 * 60 * 1000,
-    path: "/api/refresh",
-  });
+export const clearTokenCookies = (res: Response) => {
+  res.clearCookie("accessToken", ACCESS_COOKIE_OPTIONS);
+  res.clearCookie("refreshToken", REFRESH_COOKIE_OPTIONS);
 };

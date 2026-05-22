@@ -226,4 +226,16 @@ export const authServices = {
       handlePrismaError(error);
     }
   },
+
+  logout: async (userId: string) => {
+    try {
+      await prisma.refreshToken.deleteMany({
+        where: {
+          userId,
+        },
+      });
+    } catch (error) {
+      handlePrismaError(error);
+    }
+  },
 };

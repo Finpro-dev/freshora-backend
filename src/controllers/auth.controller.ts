@@ -5,7 +5,8 @@ import { VerificationRequestInput } from "../schemas/verificationRequest.schema"
 import { authServices } from "../services/auth.service";
 import { catchAsync } from "../utils/catchAsync.util";
 import { LoginInput } from "../schemas/login.schema";
-import { setTokenCookies } from "../utils/token.util";
+import { clearTokenCookies, setTokenCookies } from "../utils/token.util";
+import { AuthenticatedRequest } from "../types/appRequest.type";
 
 export const authController = {
   signup: catchAsync(
@@ -63,6 +64,18 @@ export const authController = {
       data: {
         user,
       },
+    });
+  }),
+
+  logout: catchAsync(async (req: AuthenticatedRequest, res: Response) => {
+    const userId = req.user?.userId as string;
+    await authServices.logout(userId);
+
+    clearTokenCookies(res);
+
+    res.status(201).json({
+      status: "success",
+      message: "Logout successfull",
     });
   }),
 };
