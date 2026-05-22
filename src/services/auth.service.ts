@@ -99,6 +99,7 @@ export const authServices = {
           gender,
           role,
           myReferralCode,
+          authProvider: "CREDENTIALS",
         },
       });
 

@@ -30,6 +30,11 @@ enum Unit {
   PACK
 }
 
+enum AuthProvider {
+  CREDENTIALS
+  GOOGLE
+}
+
 enum DietType {
   VEGAN
   VEGETARIAN
@@ -95,6 +100,8 @@ model User {
   role             Role
   password         String?    @db.VarChar(255)
   isVerified       Boolean   @default(false)
+  authProvider     AuthProvider 
+  authProviderId   String?
   avatar           String?
   myReferralCode   String    @unique @db.VarChar(8)
   usedReferralCode String?
