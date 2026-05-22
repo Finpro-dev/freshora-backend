@@ -1,19 +1,18 @@
 import { User } from "../../generated/prisma/browser";
 
-export const formatUserResponse = (data: User, add?: any) => {
+export const formatUserResponse = (user: User) => {
   return {
-    userId: data.userId,
-    firstName: data.firstName,
-    lastName: data.lastName,
-    email: data.email,
-    phone: data.phone,
-    gender: data.gender,
-    role: data.role,
-    isVerified: data.isVerified,
-    avatar: data.avatar,
-    myReferralCode: data.myReferralCode,
-    usedReferralCpde: data.usedReferralCode,
-    createdAt: data.createdAt,
-    ...add,
+    userId: user.userId,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    email: user.email,
+    phone: user.phone,
+    gender: user.gender,
+    role: user.role,
+    isVerified: user.isVerified,
+    avatar: user.avatar,
+    myReferralCode: user.myReferralCode,
+    usedReferralCpde: user.usedReferralCode,
+    createdAt: user.createdAt,
   };
 };

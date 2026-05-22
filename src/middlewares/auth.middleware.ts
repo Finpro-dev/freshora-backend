@@ -1,9 +1,8 @@
-import { NextFunction, Request, Response } from "express";
+import { NextFunction, Response } from "express";
+import { TokenExpiredError } from "jsonwebtoken";
+import { AuthenticatedRequest } from "../types/appRequest.type";
 import { AppError } from "../utils/appErrror.util";
 import { verifyAccessToken } from "../utils/token.util";
-import { TokenExpiredError } from "jsonwebtoken";
-import { TokenPayload } from "../types/token.type";
-import { AuthenticatedRequest } from "../types/appRequest.type";
 
 export const authentication = (
   req: AuthenticatedRequest,
@@ -14,7 +13,7 @@ export const authentication = (
 
   try {
     if (!accessToken) {
-      throw new AppError(401, "Unauthorized action");
+      throw new AppError(401, "Unauthenticated action");
     }
 
     const decoded = verifyAccessToken(accessToken);
@@ -31,8 +30,18 @@ export const authentication = (
       error instanceof TokenExpiredError &&
       error.name === "TokenExpiredError"
     ) {
-      return res.status(401).json({ error: "Access token expired" });
+      throw new AppError(401, "Access token expired");
+    } else {
+      throw new AppError(400, "Invalid access Token");
     }
-    return res.status(403).json({ error: "Invalid token" });
   }
 };
+
+export const authorization =
+  (...allowedRoles: string[]) =>
+  (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    if (!allowedRoles.includes(String(req.user?.role)))
+      throw new AppError(403, "Unauthorized action, you are not allowed");
+
+    next();
+  };
