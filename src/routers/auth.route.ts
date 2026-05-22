@@ -20,6 +20,8 @@ route.post(
   authController.logout,
 );
 
+route.post("/refresh", authController.refresh);
+
 route.post(
   "/create-password",
   validate(createPasswordSchema),
