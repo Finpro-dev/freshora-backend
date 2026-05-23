@@ -11,6 +11,7 @@ import { handlePrismaError } from "../utils/prismaErrorHandler.util";
 import { generateTokens, verifyRefreshToken } from "../utils/token.util";
 import { verifyTokenService } from "./verifyToken.service";
 import { emailVerificationTemplate } from "../templates/emailVerification.template";
+import { generateFullName } from "../utils/userDataTransform.util";
 
 export const authServices = {
   signup: async (data: SignupInput) => {
@@ -32,7 +33,7 @@ export const authServices = {
         where: { email: trimmedEmail },
       });
 
-      const fullName = `${isExist?.firstName} ${isExist?.lastName}`;
+      const fullName = generateFullName(isExist?.firstName, isExist?.lastName);
       const userId = isExist?.userId as string;
 
       // not verified yet
@@ -143,7 +144,10 @@ export const authServices = {
 
     // create email verification token
     const userId = isValidUser.userId;
-    const fullName = `${isValidUser.firstName} ${isValidUser.lastName}`;
+    const fullName = generateFullName(
+      isValidUser.firstName,
+      isValidUser.lastName,
+    );
 
     await verifyTokenService.createVerifyToken(userId, fullName, email);
   },
@@ -153,7 +157,6 @@ export const authServices = {
       const user = await prisma.user.findUnique({
         where: {
           email,
-          isVerified: true,
         },
       });
 
@@ -166,7 +169,7 @@ export const authServices = {
 
       const tokenPayload: TokenPayload = {
         userId: user.userId,
-        fullName: `${user.firstName} ${user.lastName}`,
+        fullName: generateFullName(user.firstName, user.lastName),
         role: user.role,
       };
 

@@ -1,14 +1,22 @@
 import { upload } from "../configs/multer.config";
 import {
-  MAX_FILE_SIZE_PRODUCT_IMG,
+  MAX_FILE_SIZE_IMG,
   MAX_PRODUCT_UPLOAD_IMG,
 } from "../statics/multer.static";
 import { AppError } from "./appErrror.util";
 import { uploadCloudinary } from "./uploadCloudinary.util";
 
-export const uploadSingle = async (file: any, folder: string) => {
+export const uploadSingle = async (
+  file: Express.Multer.File,
+  folder: string,
+) => {
+  console.log(file);
   if (!file) {
     throw new AppError(400, "No file uploaded");
+  }
+
+  if (file.size > MAX_FILE_SIZE_IMG) {
+    throw new AppError(400, `${file.originalname} is more than 1MB`);
   }
 
   const url = await uploadCloudinary(file.buffer, folder);
@@ -25,7 +33,7 @@ export const uploadMany = async (
   }
 
   files.forEach((file) => {
-    if (file.size > MAX_FILE_SIZE_PRODUCT_IMG) {
+    if (file.size > MAX_FILE_SIZE_IMG) {
       throw new AppError(400, `${file.originalname} is more than 1MB`);
     }
   });

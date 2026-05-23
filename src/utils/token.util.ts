@@ -17,7 +17,7 @@ export const generateTokens = async (
   tx?: Prisma.TransactionClient,
 ) => {
   const accessToken = jwt.sign(tokenPayload, AUTH_TOKEN.JWT_ACCESS_SECRET!, {
-    expiresIn: "15s",
+    expiresIn: "15m",
   });
 
   const refreshToken = jwt.sign(tokenPayload, AUTH_TOKEN.JWT_REFRESH_SECRET!, {
