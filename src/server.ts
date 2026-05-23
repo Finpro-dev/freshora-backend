@@ -10,6 +10,7 @@ import {
 import { globalErrorHandler } from "./middlewares/globalError.middleware";
 import testingRoute from "./routers/testing.route";
 import authRoute from "./routers/auth.route";
+import userRoute from "./routers/user.route";
 
 const app: Express = express();
 
@@ -28,8 +29,11 @@ app.use(cors(CORS_CONFIG));
 // upload-testing
 app.use("/api", testingRoute);
 
-// auth router
+// auth end-point
 app.use("/api/auth", authRoute);
+
+//user end-point
+app.use("/api/users", userRoute);
 
 // globar error middleware
 app.use(globalErrorHandler);
