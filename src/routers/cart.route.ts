@@ -30,4 +30,9 @@ route.delete(
   cartController.removeCartItem,
 );
 
+route.get(
+  "/count",
+  cartController.getCartCount,
+);
+
 export default route;

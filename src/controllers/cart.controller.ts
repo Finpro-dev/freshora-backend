@@ -61,4 +61,15 @@ export const cartController = {
       });
     },
   ),
+
+  getCartCount: catchAsync(async (req: AuthenticatedRequest, res: Response) => {
+    const userId = req.user?.userId as string;
+    const result = await cartServices.getCartCount(userId);
+
+    res.status(200).json({
+      status: "success",
+      message: "Cart count retrieved successfully",
+      data: result,
+    });
+  }),
 };
