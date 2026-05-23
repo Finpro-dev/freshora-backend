@@ -8,8 +8,10 @@ import { ResetPasswordInput } from "../schemas/resetPassword.schema";
 import { generateRawToken } from "../utils/token.util";
 import { emailService } from "./email.service";
 import { resetPasswordTemplate } from "../templates/emailResetPassword.template";
+import { generateFullName } from "../utils/userDataTransform.util";
 
 export const passwordService = {
+  // verify email & create 1st time password
   createPassword: async (password: string, token: string) => {
     try {
       const hashedToken = crypto
@@ -105,7 +107,7 @@ export const passwordService = {
 
       // send email verification
       try {
-        const fullName = `${user.firstName} ${user.lastName}`;
+        const fullName = generateFullName(user.firstName, user.lastName);
         await emailService.sendEmailWithToken(
           email,
           resetPasswordTemplate(fullName, newToken),

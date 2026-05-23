@@ -33,7 +33,7 @@ export const authServices = {
         where: { email: trimmedEmail },
       });
 
-      const fullName = `${isExist?.firstName} ${isExist?.lastName}`;
+      const fullName = generateFullName(isExist?.firstName, isExist?.lastName);
       const userId = isExist?.userId as string;
 
       // not verified yet
@@ -157,7 +157,6 @@ export const authServices = {
       const user = await prisma.user.findUnique({
         where: {
           email,
-          isVerified: true,
         },
       });
 
@@ -170,7 +169,7 @@ export const authServices = {
 
       const tokenPayload: TokenPayload = {
         userId: user.userId,
-        fullName: `${user.firstName} ${user.lastName}`,
+        fullName: generateFullName(user.firstName, user.lastName),
         role: user.role,
       };
 

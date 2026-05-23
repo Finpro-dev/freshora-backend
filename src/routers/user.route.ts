@@ -3,6 +3,8 @@ import { userController } from "../controllers/user.controller";
 import { authentication } from "../middlewares/auth.middleware";
 import { upload } from "../configs/multer.config";
 import { multerErrorMiddleware } from "../middlewares/multerError.middleware";
+import { validate } from "../middlewares/validation.middleware";
+import { updateUserProfileSchema } from "../schemas/updateUserProfile.schema";
 
 const route = Router();
 
@@ -11,9 +13,12 @@ route.get("/me", authentication, userController.getProfile);
 route.patch(
   "/me",
   authentication,
+  validate(updateUserProfileSchema),
   upload.single("avatar"),
   multerErrorMiddleware,
   userController.updateProfile,
 );
+
+route.patch("/verify-email/:token", userController.verifyEmail);
 
 export default route;

@@ -6,12 +6,14 @@ import { AppError } from "../utils/appErrror.util";
 import { handlePrismaError } from "../utils/prismaErrorHandler.util";
 import { emailVerificationTemplate } from "../templates/emailVerification.template";
 import { Prisma } from "../../generated/prisma/client";
+import { VerifyType } from "../types/verify.type";
 
 export const verifyTokenService = {
   createVerifyToken: async (
     userId: string,
     fullName: string,
     email: string,
+    verifyType?: VerifyType,
     tx?: Prisma.TransactionClient,
   ) => {
     try {
@@ -28,7 +30,7 @@ export const verifyTokenService = {
       if (isTokenActive)
         throw new AppError(
           409,
-          "Your previous email verification link is still active, please check your email",
+          "Please wait for another 1 hour to send a new request",
         );
 
       // create email verification token
@@ -42,7 +44,7 @@ export const verifyTokenService = {
       try {
         await emailService.sendEmailWithToken(
           email,
-          emailVerificationTemplate(fullName, newToken),
+          emailVerificationTemplate(fullName, newToken, verifyType),
         );
       } catch {
         throw new AppError(408, "Unable to send email verification");
@@ -53,7 +55,7 @@ export const verifyTokenService = {
           data: {
             userId: userId,
             hashedToken,
-            expiresAt: new Date(Date.now() + 5 * 60 * 1000),
+            expiresAt: new Date(Date.now() + 60 * 60 * 1000),
           },
         });
       } else {
@@ -61,7 +63,7 @@ export const verifyTokenService = {
           data: {
             userId: userId,
             hashedToken,
-            expiresAt: new Date(Date.now() + 5 * 60 * 1000),
+            expiresAt: new Date(Date.now() + 60 * 60 * 1000),
           },
         });
       }

@@ -6,6 +6,7 @@ import { formatUserResponse } from "../utils/formatUserResponse";
 import { handlePrismaError } from "../utils/prismaErrorHandler.util";
 import { generateFullName } from "../utils/userDataTransform.util";
 import { verifyTokenService } from "./verifyToken.service";
+import crypto from "crypto";
 
 export const userService = {
   getProfile: async (userId: string) => {
@@ -41,28 +42,85 @@ export const userService = {
         url = await uploadSingle(avatar, "user-avatar");
       }
 
-      const updatedUserProfile = await prisma.$transaction(async (tx) => {
-        if (email) {
-          await verifyTokenService.createVerifyToken(
-            userId,
-            fullName,
-            email,
-            tx,
-          );
-        }
+      const updatedUserProfile = await prisma.$transaction(
+        async (tx) => {
+          if (email) {
+            await verifyTokenService.createVerifyToken(
+              userId,
+              fullName,
+              email,
+              "VERIFY_ONLY",
+              tx,
+            );
+          }
 
+          const updatedUser = await tx.user.update({
+            where: {
+              userId,
+            },
+
+            data: {
+              ...(firstName && { firstName }),
+              ...(lastName && { lastName }),
+              ...(email && { email, isVerified: false }),
+              ...(phone && { phone }),
+              ...(gender && { gender }),
+              ...(avatar && { avatar: url }),
+            },
+          });
+
+          return updatedUser;
+        },
+        {
+          maxWait: 5000,
+          timeout: 20000,
+        },
+      );
+
+      return formatUserResponse(updatedUserProfile);
+    } catch (error) {
+      handlePrismaError(error);
+    }
+  },
+
+  verifyEmail: async (token: string) => {
+    try {
+      const hashedToken = crypto
+        .createHash("sha256")
+        .update(token)
+        .digest("hex");
+
+      // search token
+      const isValidToken = await prisma.verification.findFirst({
+        where: {
+          hashedToken,
+          expiresAt: {
+            gt: new Date(),
+          },
+        },
+      });
+
+      if (!isValidToken)
+        throw new AppError(
+          401,
+          "Link has expired, request new verification link",
+        );
+
+      await prisma.$transaction(async (tx) => {
         await tx.user.update({
           where: {
-            userId,
+            userId: isValidToken.userId,
           },
 
           data: {
-            ...(firstName && { firstName }),
-            ...(lastName && { lastName }),
-            ...(email && { email, isVerified: false }),
-            ...(phone && { phone }),
-            ...(gender && { gender }),
-            ...(avatar && { avatar: url }),
+            isVerified: true,
+          },
+        });
+
+        // delete after using
+        await tx.verification.deleteMany({
+          where: {
+            userId: isValidToken.userId,
           },
         });
       });

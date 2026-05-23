@@ -11,6 +11,7 @@ import { globalErrorHandler } from "./middlewares/globalError.middleware";
 import testingRoute from "./routers/testing.route";
 import authRoute from "./routers/auth.route";
 import cartRoute from "./routers/cart.route";
+import userRoute from "./routers/user.route";
 
 const app: Express = express();
 
@@ -32,8 +33,11 @@ app.use("/api", testingRoute);
 // auth end-point
 app.use("/api/auth", authRoute);
 
-// cart router
+// cart end-point
 app.use("/api/cart", cartRoute);
+
+// user end-point
+app.use("/api/users", userRoute);
 
 // globar error middleware
 app.use(globalErrorHandler);

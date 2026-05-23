@@ -8,23 +8,26 @@ export const updateUserProfileSchema = z.object({
   body: z.object({
     firstName: z
       .string()
-      .min(1, "First name is required")
       .trim()
+      .min(1, "First name is required")
+      .max(30, "First name must be at most 30 characters")
       .toLowerCase()
-      .max(30, "First name must be at most 30 characters"),
+      .optional(),
 
     lastName: z
       .string()
-      .min(1, "Last name is required")
       .trim()
+      .min(1, "Last name is required")
+      .max(30, "Last name must be at most 30 characters")
       .toLowerCase()
-      .max(30, "Last name must be at most 30 characters"),
+      .optional(),
 
     email: z
       .email("Invalid email format")
       .trim()
       .toLowerCase()
-      .max(30, "Email must be at most 30 characters"),
+      .max(30, "Email must be at most 30 characters")
+      .optional(),
 
     phone: z
       .string()
@@ -33,11 +36,12 @@ export const updateUserProfileSchema = z.object({
       .max(15, { message: "Phone number cannot exceed 15 characters" })
       .regex(phoneRegex, {
         message: "Invaid phone number format. Use 08... or +62...",
-      }),
+      })
+      .optional(),
 
     avatar: z.string().optional(),
 
-    gender: GenderEnum,
+    gender: GenderEnum.optional(),
   }),
 });
 
