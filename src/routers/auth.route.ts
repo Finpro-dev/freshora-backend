@@ -1,11 +1,16 @@
 import { Router } from "express";
 import { authController } from "../controllers/auth.controller";
-import { validate } from "../controllers/validation.middleware";
+import { validate } from "../middlewares/validation.middleware";
 import { signupSchema } from "../schemas/signup.schema";
 import { createPasswordSchema } from "../schemas/createPassword.schema";
 import { verificationRequestSchema } from "../schemas/verificationRequest.schema";
 import { loginSchema } from "../schemas/login.schema";
 import { authentication, authorization } from "../middlewares/auth.middleware";
+import { passwordController } from "../controllers/password.controller";
+import {
+  resetPasswordSchema,
+  setNewPasswordSchema,
+} from "../schemas/resetPassword.schema";
 
 const route = Router();
 
@@ -23,15 +28,28 @@ route.post(
 route.post("/refresh", authController.refresh);
 
 route.post(
-  "/create-password",
-  validate(createPasswordSchema),
-  authController.createPassword,
-);
-
-route.get(
   "/verify-request",
   validate(verificationRequestSchema),
   authController.verifyRequest,
+);
+
+route.patch(
+  "/create-password/:token",
+  validate(createPasswordSchema),
+  passwordController.createPassword,
+);
+
+route.post(
+  "/reset-password-request",
+  validate(resetPasswordSchema),
+  passwordController.resetPassword,
+);
+
+route.patch(
+  "/reset-password/:token",
+  validate(setNewPasswordSchema),
+  validate(createPasswordSchema),
+  passwordController.setNewPassword,
 );
 
 export default route;
