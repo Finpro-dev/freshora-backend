@@ -6,6 +6,7 @@ import {
   ResetPasswordInput,
   SetNewPasswordParams,
 } from "../schemas/resetPassword.schema";
+import { clearTokenCookies } from "../utils/token.util";
 
 export const passwordController = {
   createPassword: catchAsync(
@@ -49,6 +50,9 @@ export const passwordController = {
       const { password } = req.body;
 
       await passwordService.setNewPassword(password, token);
+
+      // to make sure user logout after setting up new password
+      clearTokenCookies(res);
 
       res.status(200).json({
         status: "success",

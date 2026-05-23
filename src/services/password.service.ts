@@ -72,6 +72,10 @@ export const passwordService = {
       // if there's no user found
       if (!user) throw new AppError(400, "Invalid user credential");
 
+      // editable for credetials user only
+      if (user?.authProvider !== "CREDENTIALS")
+        throw new AppError(403, "You are not allowed to modify password");
+
       // if the user has not been authenticated
       if (!user.password && !user.isVerified)
         throw new AppError(401, "Please verify your email to create password");

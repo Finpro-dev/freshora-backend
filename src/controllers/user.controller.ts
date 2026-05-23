@@ -15,4 +15,20 @@ export const userController = {
       user,
     });
   }),
+
+  updateProfile: async (req: AuthenticatedRequest, res: Response) => {
+    const userId = req.user?.userId as string;
+    const avatar = req.file as Express.Multer.File;
+
+    const updatedUser = await userService.updateProfile(
+      userId,
+      avatar,
+      req.body,
+    );
+
+    res.status(200).json({
+      status: "success",
+      message: "Profile updated successfully",
+    });
+  },
 };

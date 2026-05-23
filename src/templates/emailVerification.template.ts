@@ -11,7 +11,7 @@ export const emailVerificationTemplate = (name: string, token: string) => {
     <!-- Body Text -->
     <p style="color: #374151; font-size: 14px; line-height: 24px; margin-bottom: 24px;">
       Hi <strong>${name}</strong>,<br>
-      Thank you for registering with <span style="color: #10b981; font-weight: 600;">Freshora</span>. Please verify your email address by clicking the button below to complete your account setup.
+      Thank you for trusting <span style="color: #10b981; font-weight: 600;">Freshora</span>. Please verify your email address by clicking the button below to complete your account setup.
     </p>
 
     <!-- Call to Action Button -->
