@@ -4,6 +4,7 @@ import crypto from "crypto";
 import { emailService } from "./email.service";
 import { AppError } from "../utils/appErrror.util";
 import { handlePrismaError } from "../utils/prismaErrorHandler.util";
+import { emailVerificationTemplate } from "../templates/emailVerification.template";
 
 export const verifyTokenService = {
   createVerifyToken: async (
@@ -37,7 +38,10 @@ export const verifyTokenService = {
 
       // send email verification
       try {
-        await emailService.sendVerificationEmail(fullName, email, newToken);
+        await emailService.sendEmailWithToken(
+          email,
+          emailVerificationTemplate(fullName, newToken),
+        );
       } catch {
         throw new AppError(408, "Unable to send email verification");
       }

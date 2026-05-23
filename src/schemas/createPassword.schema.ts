@@ -32,4 +32,4 @@ export const createPasswordSchema = z
     path: ["confirmPassword"],
   });
 
-export type createPasswordInput = z.infer<typeof createPasswordSchema>["body"];
+export type CreatePasswordInput = z.infer<typeof createPasswordSchema>["body"];
