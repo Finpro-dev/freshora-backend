@@ -17,8 +17,6 @@ export const passwordController = {
       const { token } = req.params;
       const { password } = req.body;
 
-      console.log("TOKEN ==>", token);
-
       await passwordService.createPassword(password, token);
 
       res.status(201).json({

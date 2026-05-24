@@ -6,12 +6,18 @@ import { SignupInput } from "../schemas/signup.schema";
 import { TokenPayload } from "../types/token.type";
 import { AppError } from "../utils/appErrror.util";
 import { formatUserResponse } from "../utils/formatUserResponse";
-import { referralCodeGenerator } from "../utils/generateRandom.util";
+import {
+  generateCouponCode,
+  referralCodeGenerator,
+} from "../utils/generateRandom.util";
 import { handlePrismaError } from "../utils/prismaErrorHandler.util";
 import { generateTokens, verifyRefreshToken } from "../utils/token.util";
-import { verifyTokenService } from "./verifyToken.service";
-import { emailVerificationTemplate } from "../templates/emailVerification.template";
 import { generateFullName } from "../utils/userDataTransform.util";
+import { verifyTokenService } from "./verifyToken.service";
+import { REFERRAL_VOUCHER_PERCENTAGE } from "../statics/referralVoucher.static";
+import { addMonths } from "date-fns";
+import { createUniqueReferralCode } from "../utils/createUniqueReferralCode";
+import { createUniqueCouponCode } from "../utils/createUniqueCouponCode";
 
 export const authServices = {
   signup: async (data: SignupInput) => {
@@ -33,20 +39,23 @@ export const authServices = {
         where: { email: trimmedEmail },
       });
 
-      const fullName = generateFullName(isExist?.firstName, isExist?.lastName);
-      const userId = isExist?.userId as string;
+      let fullName = "";
 
-      // not verified yet
-      if (isExist?.password === null && !isExist.isVerified) {
+      // exist & not verified yet
+      if (isExist && !isExist.password && !isExist.isVerified) {
+        fullName = generateFullName(isExist?.firstName, isExist?.lastName);
+        const userId = isExist?.userId as string;
+
         await verifyTokenService.createVerifyToken(userId, fullName, email);
+
         throw new AppError(
           409,
           "User already registered, please check your email to verify",
         );
       }
 
-      // has been verified
-      if (isExist?.password && isExist.isVerified)
+      // exist & has been verified
+      if (isExist && isExist.password && isExist.isVerified)
         throw new AppError(409, "User already registered, please login");
 
       //check if phone number in db
@@ -59,55 +68,77 @@ export const authServices = {
       if (isPhoneNumberUsed)
         throw new AppError(409, "Phone number is already used");
 
-      // check if used referral code correct
-      if (usedReferralCode) {
-        const isCorrectUsedReferralCode = await prisma.user.findUnique({
-          where: {
-            myReferralCode: usedReferralCode,
-          },
-        });
+      // prisma transactions
+      const newUser = await prisma.$transaction(
+        async (tx) => {
+          // check if used referral code correct
+          let referralOwnerId = "";
+          if (usedReferralCode) {
+            const isCorrectUsedReferralCode = await tx.user.findUnique({
+              where: {
+                myReferralCode: usedReferralCode,
+                role: "CUSTOMER",
+              },
+            });
 
-        if (!isCorrectUsedReferralCode)
-          throw new AppError(400, "Incorrect referral code");
-      }
+            if (!isCorrectUsedReferralCode)
+              throw new AppError(400, "Incorrect referral code");
 
-      // create unique referral code
-      let myReferralCode = "";
-      let isUnique = false;
+            referralOwnerId = isCorrectUsedReferralCode.userId;
+          }
 
-      while (!isUnique) {
-        myReferralCode = referralCodeGenerator();
-        const referralCodeUsed = await prisma.user.findFirst({
-          where: { myReferralCode },
-        });
+          // create unique referral code
+          const myReferralCode = await createUniqueReferralCode(tx);
 
-        if (!referralCodeUsed) {
-          isUnique = true;
-        }
-      }
+          // create new user
+          const newUser = await tx.user.create({
+            data: {
+              firstName,
+              lastName,
+              email: trimmedEmail,
+              phone,
+              gender,
+              role,
+              myReferralCode,
+              ...(usedReferralCode && { usedReferralCode }),
+              authProvider: "CREDENTIALS",
+            },
+          });
 
-      // create new user
-      const newUser = await prisma.user.create({
-        data: {
-          firstName,
-          lastName,
-          email: trimmedEmail,
-          phone,
-          gender,
-          role,
-          myReferralCode,
-          authProvider: "CREDENTIALS",
+          if (usedReferralCode) {
+            // create unique coupon code
+            const couponCode = await createUniqueCouponCode(tx);
+
+            // create new referral voucher
+            await tx.referralVoucher.create({
+              data: {
+                couponCode,
+                discountAmount: REFERRAL_VOUCHER_PERCENTAGE,
+                validFrom: new Date(),
+                validUntil: addMonths(new Date(), 3),
+                userId: newUser.userId,
+                referralOwnerId,
+              },
+            });
+          }
+
+          // create and send email verification token
+          await verifyTokenService.createVerifyToken(
+            newUser.userId,
+            fullName,
+            email,
+            "VERIFY_PASSWORD",
+            tx,
+          );
+
+          return newUser;
         },
-      });
-
-      // create and send email verification token
-      await verifyTokenService.createVerifyToken(
-        newUser.userId,
-        fullName,
-        email,
+        {
+          timeout: 15000,
+        },
       );
 
-      return newUser;
+      return formatUserResponse(newUser);
     } catch (error) {
       handlePrismaError(error);
     }
