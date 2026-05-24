@@ -12,7 +12,8 @@ import testingRoute from "./routers/testing.route";
 import authRoute from "./routers/auth.route";
 import cartRoute from "./routers/cart.route";
 import userRoute from "./routers/user.route";
-import referralCoupon from "./routers/referralVoucher.route";
+import referralCouponRoute from "./routers/referralVoucher.route";
+import addressRoute from "./routers/address.route";
 
 const app: Express = express();
 
@@ -41,7 +42,10 @@ app.use("/api/cart", cartRoute);
 app.use("/api/users", userRoute);
 
 // referral-voucher end-point
-app.use("/api/profile/referral-vouchers", referralCoupon);
+app.use("/api/profile/referral-vouchers", referralCouponRoute);
+
+// referral-voucher end-point
+app.use("/api/addresses", addressRoute);
 
 // globar error middleware
 app.use(globalErrorHandler);
