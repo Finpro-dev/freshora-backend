@@ -1,3 +1,5 @@
+import { randomBytes } from "crypto";
+
 export const referralCodeGenerator = (length: number = 8): string => {
   const charset = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   let result = "";
@@ -10,4 +12,8 @@ export const referralCodeGenerator = (length: number = 8): string => {
   }
 
   return result;
+};
+
+export const generateCouponCode = (): string => {
+  return randomBytes(4).toString("hex").toUpperCase();
 };

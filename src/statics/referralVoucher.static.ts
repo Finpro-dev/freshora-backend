@@ -1,0 +1,1 @@
+export const REFERRAL_VOUCHER_PERCENTAGE = 5;

@@ -19,8 +19,10 @@ export const passwordService = {
         .update(token)
         .digest("hex");
 
+      console.log("Hashed token", hashedToken);
+
       // search token
-      const isValidToken = await prisma.verification.findFirst({
+      const isValidToken = await prisma.verification.findUnique({
         where: {
           hashedToken,
           expiresAt: {
