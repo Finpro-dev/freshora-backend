@@ -29,22 +29,19 @@ app.use(cors(CORS_CONFIG));
 
 // END-POINTS
 
-// upload-testing
-app.use("/api", testingRoute);
-
 // auth end-point
 app.use("/api/auth", authRoute);
 
-// cart end-point
+// carts end-point
 app.use("/api/cart", cartRoute);
 
-// user end-point
+// users end-point
 app.use("/api/users", userRoute);
 
-// referral-voucher end-point
+// referral-vouchers end-point
 app.use("/api/profile/referral-vouchers", referralCouponRoute);
 
-// referral-voucher end-point
+// addresses end-point
 app.use("/api/addresses", addressRoute);
 
 // globar error middleware
