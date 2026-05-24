@@ -13,6 +13,15 @@ route.post(
   addressController.createAddress,
 );
 
-route.get("/", addressController.getAllUserAddresses);
+route.get("/", authentication, addressController.getAllUserAddresses);
+
+route.get("/:addressId", authentication, addressController.getAddressDetails);
+
+route.patch(
+  "/:addressId",
+  authentication,
+  authorization("CUSTOMER"),
+  addressController.editAddressDetails,
+);
 
 export default route;

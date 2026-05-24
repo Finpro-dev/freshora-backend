@@ -1,5 +1,6 @@
 import { prisma } from "../configs/prisma.config";
 import { CreateAddressInput } from "../schemas/createAddress.schema";
+import { EditAddressInput } from "../schemas/editAddressSchema";
 import { MAX_ADDRESS_PER_USER } from "../statics/address.static";
 import { AppError } from "../utils/appErrror.util";
 import { handlePrismaError } from "../utils/prismaErrorHandler.util";
@@ -41,5 +42,79 @@ export const addressService = {
         userId,
       },
     });
+  },
+
+  getAddressDetails: async (userId: string, addressId: string) => {
+    return await prisma.address.findUnique({
+      where: {
+        userId,
+        addressId,
+      },
+    });
+  },
+
+  editAddressDetails: async (
+    userId: string,
+    addressId: string,
+    data: EditAddressInput,
+  ) => {
+    const {
+      address,
+      addressStatus,
+      city,
+      district,
+      postalCode,
+      province,
+      latitude,
+      longitude,
+    } = data;
+    try {
+      const editedAddress = await prisma.$transaction(async (tx) => {
+        // update status only
+        if (addressStatus === "PRIMARY") {
+          await tx.address.updateMany({
+            where: {
+              userId,
+            },
+
+            data: {
+              addressStatus: "SECONDARY",
+            },
+          });
+
+          return await tx.address.update({
+            where: {
+              userId,
+              addressId,
+            },
+
+            data: {
+              addressStatus: "PRIMARY",
+            },
+          });
+        }
+
+        return await tx.address.update({
+          where: {
+            userId,
+            addressId,
+          },
+
+          data: {
+            ...(address && { address }),
+            ...(city && { address }),
+            ...(district && { district }),
+            ...(postalCode && { postalCode }),
+            ...(province && { province }),
+            ...(latitude && { latitude }),
+            ...(longitude && { longitude }),
+          },
+        });
+      });
+
+      return editedAddress;
+    } catch (error) {
+      handlePrismaError(error);
+    }
   },
 };
