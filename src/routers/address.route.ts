@@ -24,4 +24,11 @@ route.patch(
   addressController.editAddressDetails,
 );
 
+route.delete(
+  "/:addressId",
+  authentication,
+  authorization("CUSTOMER"),
+  addressController.deleteUserAddress,
+);
+
 export default route;

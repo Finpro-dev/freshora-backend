@@ -68,4 +68,18 @@ export const addressController = {
       });
     },
   ),
+
+  deleteUserAddress: catchAsync(
+    async (req: AuthenticatedRequest, res: Response) => {
+      const userId = req.user?.userId as string;
+      const addressId = req.params.addressId as string;
+
+      await addressService.deleteUserAddress(userId, addressId);
+
+      res.status(200).json({
+        status: "success",
+        message: "Address deleted successfully",
+      });
+    },
+  ),
 };

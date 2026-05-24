@@ -40,6 +40,7 @@ export const addressService = {
     return await prisma.address.findMany({
       where: {
         userId,
+        deletedAt: null,
       },
     });
   },
@@ -113,6 +114,38 @@ export const addressService = {
       });
 
       return editedAddress;
+    } catch (error) {
+      handlePrismaError(error);
+    }
+  },
+
+  deleteUserAddress: async (userId: string, addressId: string) => {
+    try {
+      await prisma.$transaction(async (tx) => {
+        const selectedAddress = await tx.address.findUnique({
+          where: {
+            userId,
+            addressId,
+          },
+        });
+
+        if (selectedAddress?.addressStatus === "PRIMARY")
+          throw new AppError(
+            403,
+            "You are not allowed to delete primary address",
+          );
+
+        await tx.address.update({
+          where: {
+            userId,
+            addressId,
+          },
+
+          data: {
+            deletedAt: new Date(),
+          },
+        });
+      });
     } catch (error) {
       handlePrismaError(error);
     }
