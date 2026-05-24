@@ -13,4 +13,6 @@ route.post(
   addressController.createAddress,
 );
 
+route.get("/", addressController.getAllUserAddresses);
+
 export default route;

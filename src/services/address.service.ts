@@ -34,4 +34,12 @@ export const addressService = {
       handlePrismaError(error);
     }
   },
+
+  getAllUserAddresses: async (userId: string) => {
+    return await prisma.address.findMany({
+      where: {
+        userId,
+      },
+    });
+  },
 };

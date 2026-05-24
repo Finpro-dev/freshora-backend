@@ -20,4 +20,17 @@ export const addressController = {
       });
     },
   ),
+
+  getAllUserAddresses: catchAsync(
+    async (req: AuthenticatedRequest, res: Response) => {
+      const userId = req.user?.userId as string;
+      const userAddresses = await addressService.getAllUserAddresses(userId);
+
+      res.status(201).json({
+        status: "success",
+        message: "User Addresses retrieved successfully",
+        data: userAddresses,
+      });
+    },
+  ),
 };
