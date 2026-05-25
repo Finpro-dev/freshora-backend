@@ -6,7 +6,7 @@ const storage = multer.memoryStorage();
 const fileFilter = (req: any, file: any, callback: any) => {
   const allowed = ["image/jpeg", "image/png", "image/jpg", "image/gif"];
   if (!allowed.includes(file.mimetype)) {
-    return callback(new Error("Only jpg, png, webp allowed"));
+    return callback(new Error("Only .jpg, .jpeg, .png & .gif are allowed"));
   }
 
   callback(null, true);

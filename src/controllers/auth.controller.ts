@@ -1,13 +1,12 @@
 import { Request, Response } from "express";
-import { createPasswordInput } from "../schemas/createPassword.schema";
+import { LoginInput } from "../schemas/login.schema";
 import { SignupInput } from "../schemas/signup.schema";
 import { VerificationRequestInput } from "../schemas/verificationRequest.schema";
 import { authServices } from "../services/auth.service";
-import { catchAsync } from "../utils/catchAsync.util";
-import { LoginInput } from "../schemas/login.schema";
-import { clearTokenCookies, setTokenCookies } from "../utils/token.util";
 import { AuthenticatedRequest } from "../types/appRequest.type";
 import { AppError } from "../utils/appErrror.util";
+import { catchAsync } from "../utils/catchAsync.util";
+import { clearTokenCookies, setTokenCookies } from "../utils/token.util";
 
 export const authController = {
   signup: catchAsync(
@@ -17,22 +16,6 @@ export const authController = {
       res.status(201).json({
         status: "success",
         message: "User successfully created, check your email to verify",
-      });
-    },
-  ),
-
-  createPassword: catchAsync(
-    async (
-      req: Request<{}, {}, createPasswordInput & { token: string }>,
-      res: Response,
-    ) => {
-      const { password, token } = req.body;
-
-      await authServices.createPassword(password, token);
-
-      res.status(201).json({
-        status: "success",
-        message: "Account is activated successfully",
       });
     },
   ),
@@ -81,8 +64,7 @@ export const authController = {
   }),
 
   refresh: catchAsync(async (req: AuthenticatedRequest, res: Response) => {
-    const storedRefreshToken = req.cookies.refreshToken; //FIXME
-    console.log("refreshToken ==> ", storedRefreshToken);
+    const storedRefreshToken = req.cookies.refreshToken;
 
     if (!storedRefreshToken)
       throw new AppError(401, "Your session has finsihed, please re-login");

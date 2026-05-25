@@ -30,6 +30,11 @@ enum Unit {
   PACK
 }
 
+enum AuthProvider {
+  CREDENTIALS
+  GOOGLE
+}
+
 enum DietType {
   VEGAN
   VEGETARIAN
@@ -65,15 +70,27 @@ enum DiscountType {
 }
 
 enum PaymentType {
-  CARD
-  TRANSFER
+  GOPAY
+  BANK_TRANSFER
+  CREDIT_CARD
+  SHOPEEPAY
+  OVO
+  DANA
+  QRIS
+  ALFAMART
+  INDOMARET
+  AKULAKU
+  KREDIVO
+  GOOGLE_PAY
 }
 
 enum PaymentStatus {
-  WAITING_PAYMENT
-  WAITING_CONFIRMATION
-  PAID
-  CANCELED
+  PENDING
+  SETTLEMENT
+  DENIED
+  EXPIRED
+  CANCELLED
+  REFUNDED
 }
 
 enum ActivityType {
@@ -86,29 +103,32 @@ enum ActivityType {
 }
 
 model User {
-  userId           String    @id @default(uuid())
-  firstName        String    @db.VarChar(30)
-  lastName         String    @db.VarChar(30)
-  email            String    @unique @db.VarChar(30)
-  phone            String    @unique @db.VarChar(15)
+  userId           String       @id @default(uuid())
+  firstName        String       @db.VarChar(30)
+  lastName         String       @db.VarChar(30)
+  email            String       @unique @db.VarChar(30)
+  phone            String       @unique @db.VarChar(15)
   gender           Gender
   role             Role
-  password         String?    @db.VarChar(255)
-  isVerified       Boolean   @default(false)
+  password         String?      @db.VarChar(255)
+  isVerified       Boolean      @default(false)
+  authProvider     AuthProvider
+  authProviderId   String?
   avatar           String?
-  myReferralCode   String    @unique @db.VarChar(8)
+  myReferralCode   String       @unique @db.VarChar(8)
   usedReferralCode String?
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
   deletedAt        DateTime?
 
-  transactions   Transaction[]
-  addresses      Address[]
-  refreshTokens  RefreshToken[]
-  resetPasswords ResetPassword[]
-  cart           Cart?
-  store          Store?
-  verifications  Verification[]
+  transactions        Transaction[]
+  addresses           Address[]
+  refreshTokens       RefreshToken[]
+  resetPasswords      ResetPassword[]
+  cart                Cart?
+  store               Store?
+  verifications       Verification[]
+  freeShippingVoucher FreeShippingVoucher[]
 
   voucherOwners ReferralVoucher?  @relation("voucherOwner")
   referralOwner ReferralVoucher[] @relation("referralOwner")
@@ -162,7 +182,8 @@ model RefreshToken {
   updatedAt      DateTime  @updatedAt
   deletedAt      DateTime?
 
-  user           User      @relation(fields: [userId], references: [userId])
+  user User @relation(fields: [userId], references: [userId])
+
   @@map("refreshTokens")
 }
 
@@ -350,6 +371,22 @@ model Mutation {
   @@map("mutations")
 }
 
+model FreeShippingVoucher {
+  freeShippingVoucherId    String  @id @default(uuid())
+  userId                   String
+  transactionId            String? @unique
+  currentTotalTransactions Int
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  user        User         @relation(fields: [userId], references: [userId])
+  transaction Transaction? @relation(fields: [transactionId], references: [transactionId])
+
+  @@map("freeShippingVouchers")
+}
+
 model Transaction {
   transactionId     String    @id @default(uuid())
   transactionNumber String    @unique @db.VarChar(15)
@@ -365,12 +402,13 @@ model Transaction {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  payments         Payment?
-  user             User             @relation(fields: [userId], references: [userId])
-  address          Address          @relation(fields: [addressId], references: [addressId])
-  storeOrders      StoreOrder[]
-  referralVouchers ReferralVoucher?
-  stockJournals    StockJournal[]
+  payments            Payment?
+  user                User                 @relation(fields: [userId], references: [userId])
+  address             Address              @relation(fields: [addressId], references: [addressId])
+  storeOrders         StoreOrder[]
+  referralVouchers    ReferralVoucher?
+  stockJournals       StockJournal[]
+  freeShippingVoucher FreeShippingVoucher?
 
   @@map("transactions")
 }
@@ -397,13 +435,12 @@ model ReferralVoucher {
 }
 
 model Payment {
-  paymentId        String        @id @default(uuid())
-  transactionId    String        @unique
-  paymentGatewayId String?
-  paymentType      PaymentType
-  paymentProof     String?
-  paymentStatus    PaymentStatus
-  expiresAt        DateTime?
+  paymentId     String        @id @default(uuid())
+  transactionId String        @unique
+  snapToken     String
+  paymentType   PaymentType
+  paymentStatus PaymentStatus
+  expiresAt     DateTime?
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt

@@ -1,0 +1,49 @@
+import { Request, Response } from "express";
+import { userService } from "../services/user.service";
+import { AuthenticatedRequest } from "../types/appRequest.type";
+import { catchAsync } from "../utils/catchAsync.util";
+import { clearTokenCookies } from "../utils/token.util";
+
+export const userController = {
+  getProfile: catchAsync(async (req: AuthenticatedRequest, res: Response) => {
+    const userId = req.user?.userId as string;
+
+    const user = await userService.getProfile(userId);
+
+    res.status(200).json({
+      status: "success",
+      message: "User profile retrieved successfully",
+      user,
+    });
+  }),
+
+  updateProfile: catchAsync(
+    async (req: AuthenticatedRequest, res: Response) => {
+      const userId = req.user?.userId as string;
+      const avatar = req.file as Express.Multer.File;
+
+      const updatedUser = await userService.updateProfile(
+        userId,
+        avatar,
+        req.body,
+      );
+
+      res.status(200).json({
+        status: "success",
+        message: "Profile updated successfully",
+        user: updatedUser,
+      });
+    },
+  ),
+
+  verifyEmail: catchAsync(async (req: Request, res: Response) => {
+    const token = req.params.token as string;
+
+    clearTokenCookies(res);
+    await userService.verifyEmail(token);
+    res.status(200).json({
+      status: "success",
+      message: "Email is verified successfully",
+    });
+  }),
+};

@@ -3,6 +3,7 @@ import { TokenExpiredError } from "jsonwebtoken";
 import { AuthenticatedRequest } from "../types/appRequest.type";
 import { AppError } from "../utils/appErrror.util";
 import { verifyAccessToken } from "../utils/token.util";
+import { Role } from "../../generated/prisma/enums";
 
 export const authentication = (
   req: AuthenticatedRequest,
@@ -38,9 +39,9 @@ export const authentication = (
 };
 
 export const authorization =
-  (...allowedRoles: string[]) =>
+  (...allowedRoles: Role[]) =>
   (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-    if (!allowedRoles.includes(String(req.user?.role)))
+    if (!allowedRoles.includes(req.user?.role as Role))
       throw new AppError(403, "Unauthorized action, you are not allowed");
 
     next();
