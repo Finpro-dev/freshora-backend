@@ -25,27 +25,27 @@ export const paymentController = {
 
       const status = mapMidtransToPaymentStatus(paymentStatus);
 
-      await prisma.payment.update({
-        where: {
-          transactionId,
-        },
+      // await prisma.payment.update({
+      //   where: {
+      //     transactionId,
+      //   },
 
-        data: {
-          paymentStatus: status,
-        },
-      });
+      //   data: {
+      //     paymentStatus: status,
+      //   },
+      // });
 
-      if (status === "SETTLEMENT") {
-        await prisma.storeOrder.updateMany({
-          where: {
-            transactionId,
-          },
+      // if (status === "SETTLEMENT") {
+      //   await prisma.storeOrder.updateMany({
+      //     where: {
+      //       transactionId,
+      //     },
 
-          data: {
-            transactionStatus: "PROCESSING",
-          },
-        });
-      }
+      //     data: {
+      //       transactionStatus: "PROCESSING",
+      //     },
+      //   });
+      // }
       res.status(200).json({
         status: "success",
         message: "Payment updated successfully",
