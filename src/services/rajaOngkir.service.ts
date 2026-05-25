@@ -9,7 +9,6 @@ export const rajaOngkirService = {
     destination,
     weight,
     courier,
-    price,
   }: any) => {
     try {
       const params = new URLSearchParams();

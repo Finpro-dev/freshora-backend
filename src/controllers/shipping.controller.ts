@@ -13,7 +13,6 @@ export const shippingController = {
         destination,
         weight,
         courier,
-        price,
       });
       res.status(200).json({
         status: "success",
