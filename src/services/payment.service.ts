@@ -4,7 +4,7 @@ export const paymentService = {
   createPayment: async () => {
     let parameter = {
       transaction_details: {
-        order_id: "TEST-T123456781", // unique
+        order_id: "TEST-T12345678112", // unique
         gross_amount: 10000,
       },
       credit_card: {
