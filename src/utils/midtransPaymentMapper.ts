@@ -8,7 +8,7 @@ export const mapMidtransToPaymentStatus = (
       return PaymentStatus.PENDING;
 
     case "settlement":
-    case "capture": // Sukses khusus Kartu Kredit di Midtrans disebut 'capture'
+    case "capture": // success for credit card
       return PaymentStatus.SETTLEMENT;
 
     case "deny":
@@ -25,7 +25,7 @@ export const mapMidtransToPaymentStatus = (
       return PaymentStatus.REFUNDED;
 
     default:
-      // Fallback aman jika ada status tidak terduga dari API Midtrans
+      // safe fallback incase midtrans throw unexpected status
       return PaymentStatus.PENDING;
   }
 };
