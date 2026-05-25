@@ -26,3 +26,9 @@ export const AUTH_TOKEN = {
   JWT_ACCESS_SECRET: process.env.JWT_ACCESS_SECRET,
   JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET,
 };
+
+export const PAYMENT_GATEWAY = {
+  MERCHANT_ID: process.env.MIDTRANS_MERCHANT_ID,
+  CLIENT_KEY: process.env.MIDTRANS_CLIENT_KEY,
+  SERVER_KEY: process.env.MIDTRANS_SERVER_KEY,
+};
