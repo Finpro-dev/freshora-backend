@@ -15,6 +15,7 @@ import userRoute from "./routers/user.route";
 import referralCouponRoute from "./routers/referralVoucher.route";
 import addressRoute from "./routers/address.route";
 import paymentRoute from "./routers/payment.route";
+import shippingRoute from "./routers/shipping.route";
 
 const app: Express = express();
 
@@ -24,6 +25,9 @@ app.use(express.json());
 
 // cookie-parser middleware
 app.use(cookieParser());
+
+// Parse URL-encoded bodies (as sent by HTML forms)
+app.use(express.urlencoded({ extended: true }));
 
 // cors
 app.use(cors(CORS_CONFIG));
@@ -47,6 +51,9 @@ app.use("/api/addresses", addressRoute);
 
 // payments
 app.use("/api/payments", paymentRoute);
+
+// shippings
+app.use("/api/shipping/cost", shippingRoute);
 
 // globar error middleware
 app.use(globalErrorHandler);
