@@ -10,15 +10,13 @@ import {
 import { globalErrorHandler } from "./middlewares/globalError.middleware";
 import testingRoute from "./routers/testing.route";
 import authRoute from "./routers/auth.route";
-<<<<<<< HEAD
 import adminRoute from "./routers/admin.route";
-=======
+import productRoute from "./routers/product.route";
 import cartRoute from "./routers/cart.route";
 import userRoute from "./routers/user.route";
 import referralCouponRoute from "./routers/referralVoucher.route";
 import addressRoute from "./routers/address.route";
 import paymentRoute from "./routers/payment.route";
->>>>>>> 3855a48eb6e5f82a3a1ad0d80165cdee88115bdf
 
 const app: Express = express();
 
@@ -37,10 +35,12 @@ app.use(cors(CORS_CONFIG));
 // auth end-point
 app.use("/api/auth", authRoute);
 
-<<<<<<< HEAD
 //admin router
 app.use("/api/admin", adminRoute);
-=======
+
+//product router
+app.use("/api/products", productRoute);
+
 // carts end-point
 app.use("/api/cart", cartRoute);
 
@@ -55,7 +55,6 @@ app.use("/api/addresses", addressRoute);
 
 // payments
 app.use("/api/payments", paymentRoute);
->>>>>>> 3855a48eb6e5f82a3a1ad0d80165cdee88115bdf
 
 // globar error middleware
 app.use(globalErrorHandler);

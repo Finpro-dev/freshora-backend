@@ -5,8 +5,9 @@ import { handlePrismaError } from "../utils/prismaErrorHandler.util";
 import slugify from "slugify";
 import { generateSerialNumber } from "../utils/generateSerialNumber";
 import { Prisma } from "../../generated/prisma/client";
+import { uploadMany } from "../utils/cloudinaryUploader.util";
 
-export const productService = {
+export const productServices = {
   createProduct: async (data: CreateProductInput) => {
     try {
       const {
@@ -19,6 +20,7 @@ export const productService = {
         grade,
         dietType,
         productCategoryId,
+        images,
       } = data;
       const category = await prisma.productCategory.findUnique({
         where: {
@@ -72,6 +74,10 @@ export const productService = {
           .replace(/[^A-Z0-9]/g, "")
           .slice(0, 15);
       }
+      const imageUrls = await uploadMany(
+        images as Express.Multer.File[],
+        "freshora/products",
+      );
       const newProduct = await prisma.product.create({
         data: {
           name: name.trim(),
@@ -85,6 +91,11 @@ export const productService = {
           productCategoryId,
           slug,
           serialNumber,
+          productPhotos: {
+            create: imageUrls.map((url) => ({
+              photoUrl: url,
+            })),
+          },
         },
       });
 
@@ -93,4 +104,7 @@ export const productService = {
       throw handlePrismaError(error);
     }
   },
+
+  deleteProduct: async (productId: number) => {},
+  updateProduct: async (productId: number) => {},
 };

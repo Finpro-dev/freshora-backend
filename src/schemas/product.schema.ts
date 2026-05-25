@@ -31,6 +31,11 @@ export const createProductSchema = z.object({
     grade: GradeEnum,
 
     dietType: DietTypeEnum,
+
+    images: z
+      .array(z.object({ filename: z.string(), path: z.string() }))
+      .min(1, "At least one product image is required")
+      .max(5, "At most 5 product images are allowed"),
   }),
 });
 
