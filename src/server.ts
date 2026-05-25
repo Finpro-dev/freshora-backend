@@ -14,6 +14,7 @@ import cartRoute from "./routers/cart.route";
 import userRoute from "./routers/user.route";
 import referralCouponRoute from "./routers/referralVoucher.route";
 import addressRoute from "./routers/address.route";
+import paymentRoute from "./routers/payment.route";
 
 const app: Express = express();
 
@@ -43,6 +44,9 @@ app.use("/api/profile/referral-vouchers", referralCouponRoute);
 
 // addresses end-point
 app.use("/api/addresses", addressRoute);
+
+// payments
+app.use("/api/payments", paymentRoute);
 
 // globar error middleware
 app.use(globalErrorHandler);

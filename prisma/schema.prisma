@@ -70,15 +70,27 @@ enum DiscountType {
 }
 
 enum PaymentType {
-  CARD
-  TRANSFER
+  GOPAY
+  BANK_TRANSFER
+  CREDIT_CARD
+  SHOPEEPAY
+  OVO
+  DANA
+  QRIS
+  ALFAMART
+  INDOMARET
+  AKULAKU
+  KREDIVO
+  GOOGLE_PAY
 }
 
 enum PaymentStatus {
-  WAITING_PAYMENT
-  WAITING_CONFIRMATION
-  PAID
-  CANCELED
+  PENDING
+  SETTLEMENT
+  DENIED
+  EXPIRED
+  CANCELLED
+  REFUNDED
 }
 
 enum ActivityType {
@@ -406,9 +418,8 @@ model ReferralVoucher {
 model Payment {
   paymentId        String        @id @default(uuid())
   transactionId    String        @unique
-  paymentGatewayId String?
+  snapToken        String
   paymentType      PaymentType
-  paymentProof     String?
   paymentStatus    PaymentStatus
   expiresAt        DateTime?
 
