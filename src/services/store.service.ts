@@ -87,4 +87,12 @@ export const storeService = {
       stores,
     };
   },
+
+  getStoreDetails: async (storeId: string) => {
+    return await prisma.store.findUnique({
+      where: {
+        storeId,
+      },
+    });
+  },
 };

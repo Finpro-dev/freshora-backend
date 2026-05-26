@@ -16,7 +16,14 @@ route.post(
 route.get(
   "/",
   authentication,
-  //   authorization("SUPER_ADMIN", "STORE_ADMIN"),
+  authorization("SUPER_ADMIN", "STORE_ADMIN"),
+  storeController.getAllStore,
+);
+
+route.get(
+  "/:storeId",
+  authentication,
+  authorization("SUPER_ADMIN"),
   storeController.getAllStore,
 );
 

@@ -31,4 +31,17 @@ export const storeController = {
       data,
     });
   }),
+
+  getStoreDetails: catchAsync(
+    async (req: AuthenticatedRequest, res: Response) => {
+      const storeId = req.params.storeId as string;
+      const data = await storeService.getStoreDetails(storeId);
+
+      res.status(200).json({
+        status: "success",
+        message: "Store details successfully retrieved",
+        data,
+      });
+    },
+  ),
 };
