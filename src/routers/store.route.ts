@@ -47,4 +47,11 @@ route.patch(
   storeController.editStore,
 );
 
+route.patch(
+  "/:storeId/users",
+  authentication,
+  authorization("SUPER_ADMIN"),
+  storeController.assignStoreAdmin,
+);
+
 export default route;

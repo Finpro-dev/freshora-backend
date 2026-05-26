@@ -167,4 +167,41 @@ export const storeService = {
       handlePrismaError(error);
     }
   },
+
+  assignAdminStore: async (userId: string, storeId: string) => {
+    try {
+      const isHasAssigned = await prisma.store.findUnique({
+        where: {
+          userId,
+        },
+      });
+
+      if (isHasAssigned)
+        throw new AppError(409, "This user has been assigned to other store");
+
+      const findUser = await prisma.user.findUnique({
+        where: {
+          userId,
+        },
+      });
+
+      if (findUser?.role !== "STORE_ADMIN")
+        throw new AppError(
+          400,
+          "Invalid user ID, user has to be a store admin",
+        );
+
+      await prisma.store.update({
+        where: {
+          storeId,
+        },
+
+        data: {
+          userId,
+        },
+      });
+    } catch (error) {
+      handlePrismaError(error);
+    }
+  },
 };
