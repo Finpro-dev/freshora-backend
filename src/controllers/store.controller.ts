@@ -44,4 +44,14 @@ export const storeController = {
       });
     },
   ),
+
+  deleteStore: catchAsync(async (req: AuthenticatedRequest, res: Response) => {
+    const storeId = req.params.storeId as string;
+    await storeService.deleteStore(storeId);
+
+    res.status(200).json({
+      status: "success",
+      message: "Store deleted successfully retrieved",
+    });
+  }),
 };

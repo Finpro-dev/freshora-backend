@@ -95,4 +95,17 @@ export const storeService = {
       },
     });
   },
+
+  deleteStore: async (storeId: string) => {
+    try {
+      await prisma.store.update({
+        where: { storeId },
+        data: {
+          deletedAt: new Date(),
+        },
+      });
+    } catch (error) {
+      handlePrismaError(error);
+    }
+  },
 };

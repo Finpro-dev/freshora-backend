@@ -24,7 +24,14 @@ route.get(
   "/:storeId",
   authentication,
   authorization("SUPER_ADMIN"),
-  storeController.getAllStore,
+  storeController.getStoreDetails,
+);
+
+route.delete(
+  "/:storeId",
+  authentication,
+  authorization("SUPER_ADMIN"),
+  storeController.deleteStore,
 );
 
 export default route;
