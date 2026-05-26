@@ -67,4 +67,18 @@ export const storeController = {
       data: updatedStore,
     });
   }),
+
+  assignStoreAdmin: catchAsync(
+    async (req: AuthenticatedRequest, res: Response) => {
+      const storeId = req.params.storeId as string;
+      const userId = req.body.userId as string;
+
+      await storeService.assignAdminStore(userId, storeId);
+
+      res.status(200).json({
+        status: "success",
+        message: "Admin store is assigned successfully",
+      });
+    },
+  ),
 };
