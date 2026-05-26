@@ -105,6 +105,16 @@ export const productServices = {
     }
   },
 
-  deleteProduct: async (productId: number) => {},
-  updateProduct: async (productId: number) => {},
+  deleteProduct: async (productId: string) => {},
+  updateProduct: async (
+    productId: string,
+    data: Partial<CreateProductInput>,
+  ) => {
+    const product = await prisma.product.findUnique({ where: { productId } }); // Validate product existence first
+    const productPhotos = await prisma.productPhoto.findMany({
+      where: { productId },
+    });
+    if (!product) throw new AppError(404, "Product not found");
+    let imageUrls = productPhotos.map((photo) => photo.photoUrl);
+  },
 };

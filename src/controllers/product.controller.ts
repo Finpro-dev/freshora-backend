@@ -30,6 +30,14 @@ export const productController = {
 
   updateProduct: catchAsync(
     async (req: AuthenticatedRequest, res: Response) => {
+      const images = req.files as Express.Multer.File[];
+      const productId = Array.isArray(req.params.productId)
+        ? req.params.productId[0]
+        : req.params.productId;
+      await productServices.updateProduct(productId, {
+        ...req.body,
+        images,
+      });
       res.status(200).json({
         status: "success",
         message: "Product updated successfully",
