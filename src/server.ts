@@ -10,6 +10,8 @@ import {
 import { globalErrorHandler } from "./middlewares/globalError.middleware";
 import addressRoute from "./routers/address.route";
 import authRoute from "./routers/auth.route";
+import adminRoute from "./routers/admin.route";
+import productRoute from "./routers/product.route";
 import cartRoute from "./routers/cart.route";
 import freeShippingRoute from "./routers/freeShipping.route";
 import locationRoute from "./routers/location.route";
@@ -38,6 +40,12 @@ app.use(cors(CORS_CONFIG));
 
 // auth end-point
 app.use("/api/auth", authRoute);
+
+//admin router
+app.use("/api/admin", adminRoute);
+
+//product router
+app.use("/api/products", productRoute);
 
 // carts end-point
 app.use("/api/cart", cartRoute);
