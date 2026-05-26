@@ -4,14 +4,9 @@ import { authorization, authentication } from "../middlewares/auth.middleware";
 
 const adminRoute = Router();
 
-// Apply authentication middleware first
-adminRoute.use(authentication);
+adminRoute.use(authentication); // Apply authentication middleware first
+adminRoute.use(authorization("SUPER_ADMIN"));
 
-// GET /api/admin/users - Get all users (SUPER_ADMIN only)
-adminRoute.get(
-  "/users",
-  authorization("SUPER_ADMIN"),
-  adminController.getUsers,
-);
+adminRoute.get("/users", adminController.getUsers);
 
 export default adminRoute;
