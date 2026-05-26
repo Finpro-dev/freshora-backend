@@ -1,7 +1,9 @@
 import { StoreWhereInput } from "../../generated/prisma/models";
 import { prisma } from "../configs/prisma.config";
 import { CreateStoreInput } from "../schemas/createStore.schema";
+import { EditStoreInput } from "../schemas/editStore.schema";
 import { GetAllStore } from "../types/store.type";
+import { AppError } from "../utils/appErrror.util";
 import { uploadSingle } from "../utils/cloudinaryUploader.util";
 import { handlePrismaError } from "../utils/prismaErrorHandler.util";
 
@@ -89,11 +91,16 @@ export const storeService = {
   },
 
   getStoreDetails: async (storeId: string) => {
-    return await prisma.store.findUnique({
+    const storeDetails = await prisma.store.findUnique({
       where: {
         storeId,
       },
     });
+
+    if (!storeDetails)
+      throw new AppError(404, "Invalid storeId, store is not found");
+
+    return storeDetails;
   },
 
   deleteStore: async (storeId: string) => {
@@ -104,6 +111,58 @@ export const storeService = {
           deletedAt: new Date(),
         },
       });
+    } catch (error) {
+      handlePrismaError(error);
+    }
+  },
+
+  editStore: async (
+    storeId: string,
+    file: Express.Multer.File,
+    data: EditStoreInput,
+  ) => {
+    try {
+      const {
+        address,
+        city,
+        cityId,
+        district,
+        districtId,
+        latitude,
+        longitude,
+        name,
+        phone,
+        postalCode,
+        province,
+        provinceId,
+      } = data;
+
+      let url = "";
+
+      if (file) {
+        url = await uploadSingle(file, "freshora/user-avatars");
+      }
+
+      const updatedStore = await prisma.store.update({
+        where: { storeId },
+        data: {
+          ...(address && { address }),
+          ...(city && { city }),
+          ...(cityId && { cityId: Number(cityId) }),
+          ...(district && { district }),
+          ...(districtId && { districtId: Number(districtId) }),
+          ...(province && { province }),
+          ...(provinceId && { provinceId: Number(provinceId) }),
+          ...(latitude && { latitude: Number(latitude) }),
+          ...(longitude && { longitude: Number(longitude) }),
+          ...(name && { name }),
+          ...(phone && { phone }),
+          ...(postalCode && { postalCode }),
+          ...(file && { avatar: url }),
+        },
+      });
+
+      return updatedStore;
     } catch (error) {
       handlePrismaError(error);
     }

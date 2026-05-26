@@ -2,54 +2,63 @@ import { z } from "zod";
 
 const phoneRegex = /^(?:\+62|62|08)[2-9]\d{7,11}$/;
 
-export const createStoreSchema = z
+export const editStoreSchma = z
   .object({
     body: z.object({
       name: z
         .string()
         .min(3, "Store name must be at least 3 characters long")
-        .max(30, "Store name cannot exceed 30 characters"),
+        .max(30, "Store name cannot exceed 30 characters")
+        .optional(),
 
       address: z
         .string()
         .min(5, "Address must be at least 5 characters long")
-        .max(100, "Address cannot exceed 100 characters"),
+        .max(100, "Address cannot exceed 100 characters")
+        .optional(),
 
-      districtId: z.coerce.number({
-        message: "District ID must be a valid number",
-      }),
+      districtId: z.coerce
+        .number({ message: "District ID must be a valid number" })
+        .optional(),
 
       district: z
         .string()
         .min(2, "District name is too short")
-        .max(50, "District cannot exceed 50 characters"),
+        .max(50, "District cannot exceed 50 characters")
+        .optional(),
 
-      cityId: z.coerce.number({ message: "City ID must be a valid number" }),
+      cityId: z.coerce
+        .number({ message: "City ID must be a valid number" })
+        .optional(),
 
       city: z
         .string()
         .min(2, "City name is too short")
-        .max(50, "City cannot exceed 50 characters"),
+        .max(50, "City cannot exceed 50 characters")
+        .optional(),
 
-      provinceId: z.coerce.number({
-        message: "Province ID must be a valid number",
-      }),
+      provinceId: z.coerce
+        .number({ message: "Province ID must be a valid number" })
+        .optional(),
 
       province: z
         .string()
         .min(2, "Province name is too short")
-        .max(50, "Province cannot exceed 50 characters"),
+        .max(50, "Province cannot exceed 50 characters")
+        .optional(),
 
       postalCode: z
         .string()
         .length(5, "Postal code must be exactly 5 digits")
-        .regex(/^\d+$/, "Postal code must contain numbers only"),
+        .regex(/^\d+$/, "Postal code must contain numbers only")
+        .optional(),
 
       phone: z
         .string()
         .min(9, "Phone number is too short")
         .max(15, "Phone number cannot exceed 15 characters")
-        .regex(phoneRegex, "Phone number must contain numbers only"),
+        .regex(phoneRegex, "Phone number must contain numbers only")
+        .optional(),
 
       latitude: z.coerce
         .number({ message: "Latitude must be a valid number" })
@@ -116,4 +125,4 @@ export const createStoreSchema = z
     }
   });
 
-export type CreateStoreInput = z.infer<typeof createStoreSchema>["body"];
+export type EditStoreInput = z.infer<typeof editStoreSchma>["body"];

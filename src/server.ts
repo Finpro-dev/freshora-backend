@@ -8,17 +8,16 @@ import {
   SERVER_CREDENTIALS,
 } from "./configs/dotenv.config";
 import { globalErrorHandler } from "./middlewares/globalError.middleware";
-import testingRoute from "./routers/testing.route";
+import addressRoute from "./routers/address.route";
 import authRoute from "./routers/auth.route";
 import cartRoute from "./routers/cart.route";
-import userRoute from "./routers/user.route";
-import referralCouponRoute from "./routers/referralVoucher.route";
-import addressRoute from "./routers/address.route";
-import paymentRoute from "./routers/payment.route";
-import shippingRoute from "./routers/shipping.route";
-import locationRoute from "./routers/location.route";
 import freeShippingRoute from "./routers/freeShipping.route";
+import locationRoute from "./routers/location.route";
+import paymentRoute from "./routers/payment.route";
+import referralCouponRoute from "./routers/referralVoucher.route";
+import shippingRoute from "./routers/shipping.route";
 import storeRoute from "./routers/store.route";
+import userRoute from "./routers/user.route";
 
 const app: Express = express();
 
