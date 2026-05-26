@@ -145,7 +145,7 @@ model Address {
   district      String        @db.VarChar(50)
   cityId        Int
   city          String        @db.VarChar(50)
-  proviceId     Int
+  provinceId    Int
   province      String        @db.VarChar(50)
   postalCode    String        @db.VarChar(5)
   addressStatus AddressStatus @default(SECONDARY)
@@ -293,11 +293,14 @@ model ProductPhoto {
 
 model Store {
   storeId    String  @id @default(uuid())
-  userId     String  @unique
+  userId     String? @unique
   name       String  @db.VarChar(30)
   address    String  @db.VarChar(100)
+  districtId Int
   district   String  @db.VarChar(50)
+  cityId     Int
   city       String  @db.VarChar(50)
+  provinceId Int
   province   String  @db.VarChar(50)
   postalCode String  @db.VarChar(5)
   latitude   Float?
@@ -309,7 +312,7 @@ model Store {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  user          User          @relation(fields: [userId], references: [userId])
+  user          User?         @relation(fields: [userId], references: [userId])
   mutationsFrom Mutation[]    @relation("fromStore")
   mutationsTo   Mutation[]    @relation("toStore")
   stocks        Stock[]
