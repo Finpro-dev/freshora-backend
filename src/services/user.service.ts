@@ -39,7 +39,7 @@ export const userService = {
 
       let url = "";
       if (avatar) {
-        url = await uploadSingle(avatar, "user-avatar");
+        url = await uploadSingle(avatar, "freshora/user-avatars");
       }
 
       const updatedUserProfile = await prisma.$transaction(
