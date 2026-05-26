@@ -18,4 +18,17 @@ export const storeController = {
       data: createdStore,
     });
   }),
+
+  getAllStore: catchAsync(async (req: AuthenticatedRequest, res: Response) => {
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 1;
+    const search = req.query.search as string;
+
+    const data = await storeService.getAllStore({ page, limit, search });
+    res.status(200).json({
+      status: "success",
+      message: "Store data successfully retrieved",
+      data,
+    });
+  }),
 };

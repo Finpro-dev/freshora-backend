@@ -13,4 +13,11 @@ route.post(
   storeController.createStore,
 );
 
+route.get(
+  "/",
+  authentication,
+  //   authorization("SUPER_ADMIN", "STORE_ADMIN"),
+  storeController.getAllStore,
+);
+
 export default route;
