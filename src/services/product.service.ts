@@ -110,11 +110,48 @@ export const productServices = {
     productId: string,
     data: Partial<CreateProductInput>,
   ) => {
-    const product = await prisma.product.findUnique({ where: { productId } }); // Validate product existence first
-    const productPhotos = await prisma.productPhoto.findMany({
-      where: { productId },
-    });
-    if (!product) throw new AppError(404, "Product not found");
-    let imageUrls = productPhotos.map((photo) => photo.photoUrl);
+    try {
+      const { images, ...updateData } = data;
+      const product = await prisma.product.findUnique({
+        where: { productId },
+        include: { productPhotos: true },
+      }); // Validate product existence first
+      if (!product) throw new AppError(404, "Product not found");
+      if (images && (images as Express.Multer.File[]).length > 0) {
+        await prisma.productPhoto.deleteMany({
+          where: { productId },
+        });
+        const newImageUrls = await uploadMany(
+          images as Express.Multer.File[],
+          "freshora/products",
+        );
+        (updateData as any).productPhotos = {
+          create: newImageUrls.map((url) => ({
+            photoUrl: url,
+          })),
+        };
+      }
+      // new slug for updated name
+      if (updateData.name && updateData.name !== product.name) {
+        const baseSlug = slugify(updateData.name.trim(), {
+          lower: true,
+          strict: true,
+        });
+        (updateData as any).slug = `${baseSlug}-${Date.now()}`;
+      }
+      const finalData: any = { ...updateData };
+      if (updateData.price)
+        finalData.price = new Prisma.Decimal(updateData.price);
+      if (updateData.weightPerGram)
+        finalData.weightPerGram = new Prisma.Decimal(updateData.weightPerGram);
+      const updatedProduct = await prisma.product.update({
+        where: { productId },
+        data: finalData,
+        include: { productPhotos: true },
+      });
+      return updatedProduct;
+    } catch (error) {
+      throw handlePrismaError(error);
+    }
   },
 };
