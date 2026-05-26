@@ -6,10 +6,9 @@ import { multerErrorMiddleware } from "../middlewares/multerError.middleware";
 
 const productRoute = Router();
 
-productRoute.use(authentication);
-
 productRoute.post(
   "/create-product",
+  authentication,
   authorization("SUPER_ADMIN"),
   upload.array("product-photos", 5),
   multerErrorMiddleware,
@@ -18,12 +17,14 @@ productRoute.post(
 
 productRoute.delete(
   "/delete/:productId",
+  authentication,
   authorization("SUPER_ADMIN"),
   productController.deleteProduct,
 );
 
 productRoute.put(
   "/update/:productId",
+  authentication,
   authorization("SUPER_ADMIN"),
   upload.array("product-photos", 5),
   multerErrorMiddleware,
