@@ -17,6 +17,7 @@ import addressRoute from "./routers/address.route";
 import paymentRoute from "./routers/payment.route";
 import shippingRoute from "./routers/shipping.route";
 import locationRoute from "./routers/location.route";
+import freeShippingRoute from "./routers/freeShipping.route";
 
 const app: Express = express();
 
@@ -58,6 +59,9 @@ app.use("/api/shipping/cost", shippingRoute);
 
 // shippings
 app.use("/api/location", locationRoute);
+
+// shippings
+app.use("/api/free-shipping-vouchers/user", freeShippingRoute);
 
 // globar error middleware
 app.use(globalErrorHandler);

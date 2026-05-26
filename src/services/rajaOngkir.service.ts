@@ -72,7 +72,6 @@ export const rajaOngkirService = {
 
   getDistrictByCity: async (rawCityId: string) => {
     const cityId = Number(rawCityId);
-    console.log("CITY ID", cityId);
 
     if (isNaN(cityId))
       throw new AppError(400, "Invalid city id, should be a number");
