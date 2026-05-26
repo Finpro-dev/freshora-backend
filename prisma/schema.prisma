@@ -57,6 +57,7 @@ enum MutationStatus {
 }
 
 enum TransactionStatus {
+  WAITING_FOR_PAYMENT
   PROCESSING
   SHIPPING
   CANCELED
@@ -140,8 +141,11 @@ model Address {
   addressId     String        @id @default(uuid())
   userId        String
   address       String        @db.VarChar(100)
+  districtId    Int
   district      String        @db.VarChar(50)
+  cityId        Int
   city          String        @db.VarChar(50)
+  proviceId     Int
   province      String        @db.VarChar(50)
   postalCode    String        @db.VarChar(5)
   addressStatus AddressStatus @default(SECONDARY)
@@ -305,11 +309,11 @@ model Store {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  user          User         @relation(fields: [userId], references: [userId])
-  mutationsFrom Mutation[]   @relation("fromStore")
-  mutationsTo   Mutation[]   @relation("toStore")
+  user          User          @relation(fields: [userId], references: [userId])
+  mutationsFrom Mutation[]    @relation("fromStore")
+  mutationsTo   Mutation[]    @relation("toStore")
   stocks        Stock[]
-  transactions Transaction[]
+  transactions  Transaction[]
 
   @@map("stores")
 }
@@ -388,17 +392,17 @@ model FreeShippingVoucher {
 }
 
 model Transaction {
-  transactionId     String    @id @default(uuid())
-  transactionNumber String    @unique @db.VarChar(15)
+  transactionId     String            @id @default(uuid())
+  transactionNumber String            @unique @db.VarChar(15)
   userId            String
   addressId         String
-  storeId             String
-  discountId             String
-  totalAmount       Decimal   @db.Decimal(10, 2)
-  shippingCost        Decimal           @db.Decimal(10, 2)
-  totalDiscount     Decimal   @db.Decimal(10, 2)
-  grandTotal        Decimal   @db.Decimal(10, 2)
-  transactionStatus   TransactionStatus
+  storeId           String
+  discountId        String?
+  totalAmount       Decimal           @db.Decimal(10, 2)
+  shippingCost      Decimal           @db.Decimal(10, 2)
+  totalDiscount     Decimal           @db.Decimal(10, 2)
+  grandTotal        Decimal           @db.Decimal(10, 2)
+  transactionStatus TransactionStatus
   shippedAt         DateTime?
   cancelledAt       DateTime?
   completedAt       DateTime?
@@ -407,10 +411,9 @@ model Transaction {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-
-  store       Store       @relation(fields: [storeId], references: [storeId])
-  discount    Discount?   @relation(fields: [discountId], references: [discountId])
-  orderItems  OrderItem[]
+  store      Store       @relation(fields: [storeId], references: [storeId])
+  discount   Discount?   @relation(fields: [discountId], references: [discountId])
+  orderItems OrderItem[]
 
   payments            Payment?
   user                User                 @relation(fields: [userId], references: [userId])
@@ -470,7 +473,7 @@ model Discount {
   discountAmount Decimal      @db.Decimal(10, 2)
 
   transactions Transaction[]
-  product     Product      @relation(fields: [productId], references: [productId])
+  product      Product       @relation(fields: [productId], references: [productId])
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -479,10 +482,9 @@ model Discount {
   @@map("discounts")
 }
 
-
 model OrderItem {
   orderItemId    String  @id @default(uuid())
-  transactionId   String
+  transactionId  String
   productId      String
   quantity       Int
   unitPrice      Decimal @db.Decimal(10, 2)
@@ -494,7 +496,7 @@ model OrderItem {
   deletedAt DateTime?
 
   transaction Transaction @relation(fields: [transactionId], references: [transactionId])
-  product    Product    @relation(fields: [productId], references: [productId])
+  product     Product     @relation(fields: [productId], references: [productId])
 
   @@map("orderItems")
 }
