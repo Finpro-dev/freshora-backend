@@ -20,6 +20,7 @@ import referralCouponRoute from "./routers/referralVoucher.route";
 import shippingRoute from "./routers/shipping.route";
 import storeRoute from "./routers/store.route";
 import userRoute from "./routers/user.route";
+import transactionRoute from "./routers/transaction.route";
 
 const app: Express = express();
 
@@ -73,6 +74,9 @@ app.use("/api/free-shipping-vouchers/user", freeShippingRoute);
 
 // stores
 app.use("/api/stores", storeRoute);
+
+// transactions
+app.use("/api/transactions", transactionRoute);
 
 // globar error middleware
 app.use(globalErrorHandler);

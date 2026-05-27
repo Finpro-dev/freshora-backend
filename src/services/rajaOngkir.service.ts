@@ -24,10 +24,12 @@ export const rajaOngkirService = {
         },
       });
 
-      return res.data.data.at(0).cost;
+      // Return array of shipping options with service and cost
+      return res.data.data[0]?.costs || [];
     } catch (error: any) {
       if (error.isAxiosError && error.response) {
         console.dir(error.response.data, { depth: null });
+        throw new AppError(500, "Failed to calculate shipping cost: " + error.response.data?.rajaongkir?.status?.description);
       } else {
         throw new AppError(500, "Failed to calculate shipping cost");
       }
