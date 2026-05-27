@@ -1,3 +1,4 @@
+import { UserWhereInput } from "../../generated/prisma/models";
 import { prisma } from "../configs/prisma.config";
 import { UpdateUserProfileInput } from "../schemas/updateUserProfile.schema";
 import { AppError } from "../utils/appErrror.util";
@@ -127,5 +128,38 @@ export const userService = {
     } catch (error) {
       handlePrismaError(error);
     }
+  },
+
+  getAllUnassignedAdmin: async (
+    page: number,
+    limit: number,
+    search: string,
+  ) => {
+    const offset = (page - 1) * limit;
+    const where: UserWhereInput = {
+      role: "STORE_ADMIN",
+      store: null,
+      deletedAt: null,
+    };
+
+    if (search) {
+      where.OR = [
+        { firstName: { contains: search, mode: "insensitive" } },
+        { lastName: { contains: search, mode: "insensitive" } },
+      ];
+    }
+    const storeAdmins = await prisma.user.findMany({
+      where,
+      take: limit,
+      skip: offset,
+    });
+
+    const totalData = await prisma.user.count({
+      where,
+    });
+
+    const totalPage = Math.ceil(totalData / limit);
+
+    return { totalData, totalPage, storeAdmin: storeAdmins };
   },
 };
