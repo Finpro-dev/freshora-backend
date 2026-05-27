@@ -129,6 +129,30 @@ export const validateStockAtStore = async (
   }
 };
 
+const checkTotalStockItem = async (
+  item: any,
+  tx: any,
+): Promise<void> => {
+  const stocks = await tx.stock.findMany({
+    where: { productId: item.productId },
+  });
+  const totalStock = stocks.reduce((sum: number, stock: any) => sum + stock.quantity, 0);
+  if (totalStock < item.quantity) {
+    throw new AppError(400, `Insufficient total stock for product: ${item.product.name}`);
+  }
+};
+
+// Validate total stock from all stores
+export const validateTotalStock = async (
+  cartItems: any[],
+  tx?: any,
+): Promise<void> => {
+  const client = tx || prisma;
+  for (const item of cartItems) {
+    await checkTotalStockItem(item, client);
+  }
+};
+
 // Get store location info
 export const getStoreLocationInfo = async (
   storeId: string,

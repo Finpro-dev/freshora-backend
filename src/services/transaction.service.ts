@@ -9,7 +9,7 @@ import {
   calculateTotalWeight,
   generateInvoiceNumber,
   validateVoucher,
-  validateStockAtStore,
+  validateTotalStock,
   getStoreLocationInfo,
   getAddressLocationInfo,
 } from "../utils/transactionHelper.util";
@@ -27,7 +27,7 @@ const createOrderItems = (cartItems: any[]) =>
 export const transactionService = {
   createOrder: async (userId: string, data: CreateTransactionInput) => {
     try {
-      // Step 1: Fetch data & validate BEFORE transaction
+      // Fetch data & validate BEFORE transaction
       const cart = await prisma.cart.findUnique({
         where: { userId },
         include: { cartItems: { include: { product: true } } },
@@ -48,8 +48,8 @@ export const transactionService = {
         address.longitude!,
       );
 
-      // Validate stock
-      await validateStockAtStore(storeId, cart.cartItems);
+      // Validate total stock across all stores
+      await validateTotalStock(cart.cartItems);
 
       // Get user data
       const user = await prisma.user.findUnique({
@@ -67,26 +67,21 @@ export const transactionService = {
       const destInfo = await getAddressLocationInfo(data.addressId);
 
       // Call external API BEFORE transaction
-      const shippingList = await rajaOngkirService.calculateShippingCost({
+      const shippingResult = await rajaOngkirService.calculateShippingCost({
         origin: originInfo.cityId,
         destination: destInfo.cityId,
         weight,
-        courier: data.courier,
+        courier: "jnt",
       });
 
-      if (!shippingList || shippingList.length === 0) {
-        throw new AppError(400, "No shipping options available for this courier");
+      if (!shippingResult || !shippingResult.shippingCost) {
+        throw new AppError(400, "Failed to calculate shipping cost");
       }
-
-      const selected = shippingList.find(
-        (s: any) => s.service === data.courierService,
-      );
-      if (!selected) throw new AppError(400, "Courier service unavailable");
 
       // Validate voucher before transaction
       const discount = await validateVoucher(data.voucherCode || "", userId);
       const invoice = generateInvoiceNumber();
-      const shippingCost = Number(selected.cost[0]?.value || selected.cost || 0);
+      const shippingCost = Number(shippingResult.shippingCost || 0);
       const grandTotal = subtotal + shippingCost - discount;
 
       // Step 2: Execute transaction with validated data
@@ -147,7 +142,6 @@ export const transactionService = {
         return {
           transactionId: transaction.transactionId,
           snapToken: snapResponse.token,
-          redirectUrl: snapResponse.redirect_url,
         };
       });
     } catch (error) {

@@ -24,11 +24,19 @@ export const rajaOngkirService = {
         },
       });
 
-      // Return array of shipping options with service and cost
-      return res.data.data[0]?.costs || [];
+      // Return shipping cost object
+      const courierData = res.data.data.at(0);
+      if (!courierData?.cost || courierData.cost.length === 0) {
+        throw new AppError(400, "No shipping cost available");
+      }
+      
+      return {
+        status: "success",
+        message: "Shipping cost calculated successfully",
+        shippingCost: courierData.cost[0].value,
+      };
     } catch (error: any) {
       if (error.isAxiosError && error.response) {
-        console.dir(error.response.data, { depth: null });
         throw new AppError(500, "Failed to calculate shipping cost: " + error.response.data?.rajaongkir?.status?.description);
       } else {
         throw new AppError(500, "Failed to calculate shipping cost");
