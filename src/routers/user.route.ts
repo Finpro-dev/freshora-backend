@@ -24,7 +24,7 @@ route.patch("/verify-email/:token", userController.verifyEmail);
 route.get(
   "/store-admin/unassigned",
   authentication,
-  // authorization("SUPER_ADMIN"),
+  authorization("SUPER_ADMIN"),
   userController.getAllUnassignUsers,
 );
 export default route;
