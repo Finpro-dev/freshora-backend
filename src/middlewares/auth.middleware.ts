@@ -1,12 +1,21 @@
-import { NextFunction, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { TokenExpiredError } from "jsonwebtoken";
-import { AuthenticatedRequest } from "../types/appRequest.type";
+// import { AuthenticatedRequest } from "../types/appRequest.type";
 import { AppError } from "../utils/appErrror.util";
 import { verifyAccessToken } from "../utils/token.util";
 import { Role } from "../../generated/prisma/enums";
+import { TokenPayload } from "../types/token.type";
+
+declare global {
+  namespace Express {
+    interface Request {
+      user?: TokenPayload;
+    }
+  }
+}
 
 export const authentication = (
-  req: AuthenticatedRequest,
+  req: Request,
   res: Response,
   next: NextFunction,
 ) => {
@@ -40,7 +49,7 @@ export const authentication = (
 
 export const authorization =
   (...allowedRoles: Role[]) =>
-  (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  (req: Request, res: Response, next: NextFunction) => {
     if (!allowedRoles.includes(req.user?.role as Role))
       throw new AppError(403, "Unauthorized action, you are not allowed");
 

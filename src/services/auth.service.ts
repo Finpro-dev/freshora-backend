@@ -1,23 +1,19 @@
 import bcrypt from "bcrypt";
 import crypto from "crypto";
+import { addMonths } from "date-fns";
 import { prisma } from "../configs/prisma.config";
 import { LoginInput } from "../schemas/login.schema";
 import { SignupInput } from "../schemas/signup.schema";
+import { REFERRAL_VOUCHER_PERCENTAGE } from "../statics/referralVoucher.static";
 import { TokenPayload } from "../types/token.type";
 import { AppError } from "../utils/appErrror.util";
+import { createUniqueCouponCode } from "../utils/createUniqueCouponCode";
+import { createUniqueReferralCode } from "../utils/createUniqueReferralCode";
 import { formatUserResponse } from "../utils/formatUserResponse";
-import {
-  generateCouponCode,
-  referralCodeGenerator,
-} from "../utils/generateRandom.util";
 import { handlePrismaError } from "../utils/prismaErrorHandler.util";
 import { generateTokens, verifyRefreshToken } from "../utils/token.util";
 import { generateFullName } from "../utils/userDataTransform.util";
 import { verifyTokenService } from "./verifyToken.service";
-import { REFERRAL_VOUCHER_PERCENTAGE } from "../statics/referralVoucher.static";
-import { addMonths } from "date-fns";
-import { createUniqueReferralCode } from "../utils/createUniqueReferralCode";
-import { createUniqueCouponCode } from "../utils/createUniqueCouponCode";
 
 export const authServices = {
   signup: async (data: SignupInput) => {

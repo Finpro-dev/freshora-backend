@@ -20,6 +20,8 @@ import referralCouponRoute from "./routers/referralVoucher.route";
 import shippingRoute from "./routers/shipping.route";
 import storeRoute from "./routers/store.route";
 import userRoute from "./routers/user.route";
+import passport from "passport";
+import { configureGooglePassport } from "./configs/passport.config";
 
 const app: Express = express();
 
@@ -35,6 +37,10 @@ app.use(express.urlencoded({ extended: true }));
 
 // cors
 app.use(cors(CORS_CONFIG));
+
+// google o-auth
+app.use(passport.initialize());
+configureGooglePassport();
 
 // END-POINTS
 

@@ -3,7 +3,7 @@ import { LoginInput } from "../schemas/login.schema";
 import { SignupInput } from "../schemas/signup.schema";
 import { VerificationRequestInput } from "../schemas/verificationRequest.schema";
 import { authServices } from "../services/auth.service";
-import { AuthenticatedRequest } from "../types/appRequest.type";
+// import { AuthenticatedRequest } from "../types/appRequest.type";
 import { AppError } from "../utils/appErrror.util";
 import { catchAsync } from "../utils/catchAsync.util";
 import { clearTokenCookies, setTokenCookies } from "../utils/token.util";
@@ -51,7 +51,7 @@ export const authController = {
     });
   }),
 
-  logout: catchAsync(async (req: AuthenticatedRequest, res: Response) => {
+  logout: catchAsync(async (req: Request, res: Response) => {
     const userId = req.user?.userId as string;
     await authServices.logout(userId);
 
@@ -63,7 +63,7 @@ export const authController = {
     });
   }),
 
-  refresh: catchAsync(async (req: AuthenticatedRequest, res: Response) => {
+  refresh: catchAsync(async (req: Request, res: Response) => {
     const storedRefreshToken = req.cookies.refreshToken;
 
     if (!storedRefreshToken)
