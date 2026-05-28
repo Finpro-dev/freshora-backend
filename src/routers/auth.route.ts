@@ -11,6 +11,8 @@ import {
   resetPasswordSchema,
   setNewPasswordSchema,
 } from "../schemas/resetPassword.schema";
+import passport from "passport";
+import { handleGoogleAuthSuccess } from "../controllers/authGoogle.controller";
 
 const route = Router();
 
@@ -50,6 +52,27 @@ route.patch(
   validate(setNewPasswordSchema),
   validate(createPasswordSchema),
   passwordController.setNewPassword,
+);
+
+// google o auth
+
+// handle login
+route.get(
+  "/google",
+  passport.authenticate("google", {
+    scope: ["profile", "email"],
+    session: false,
+  }),
+);
+
+// catch the returned value
+route.get(
+  "/google/callback",
+  passport.authenticate("google", {
+    failureRedirect: "http://localhost:3000/login",
+    session: false,
+  }),
+  handleGoogleAuthSuccess,
 );
 
 export default route;

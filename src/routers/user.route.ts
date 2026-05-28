@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { userController } from "../controllers/user.controller";
-import { authentication } from "../middlewares/auth.middleware";
+import { authentication, authorization } from "../middlewares/auth.middleware";
 import { upload } from "../configs/multer.config";
 import { multerErrorMiddleware } from "../middlewares/multerError.middleware";
 import { validate } from "../middlewares/validation.middleware";
@@ -21,4 +21,10 @@ route.patch(
 
 route.patch("/verify-email/:token", userController.verifyEmail);
 
+route.get(
+  "/store-admin/unassigned",
+  authentication,
+  authorization("SUPER_ADMIN"),
+  userController.getAllUnassignUsers,
+);
 export default route;

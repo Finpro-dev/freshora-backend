@@ -108,9 +108,9 @@ model User {
   firstName        String       @db.VarChar(30)
   lastName         String       @db.VarChar(30)
   email            String       @unique @db.VarChar(30)
-  phone            String       @unique @db.VarChar(15)
-  gender           Gender
-  role             Role
+  phone            String?      @unique @db.VarChar(15)
+  gender           Gender       @default(MALE)    
+  role             Role         @default(CUSTOMER)
   password         String?      @db.VarChar(255)
   isVerified       Boolean      @default(false)
   authProvider     AuthProvider
