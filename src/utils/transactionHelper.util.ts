@@ -1,3 +1,4 @@
+import { Prisma } from "../../generated/prisma/client";
 import { prisma } from "../configs/prisma.config";
 import { AppError } from "./appErrror.util";
 
@@ -24,13 +25,14 @@ const getStoresWithCoordinates = (tx: any) =>
     where: { latitude: { not: null }, longitude: { not: null } },
   });
 
-const findClosestStore = (
-  stores: any[],
-  lat: number,
-  lon: number,
-): string => {
+const findClosestStore = (stores: any[], lat: number, lon: number): string => {
   let closest = stores[0];
-  let minDist = haversineDistance(lat, lon, closest.latitude!, closest.longitude!);
+  let minDist = haversineDistance(
+    lat,
+    lon,
+    closest.latitude!,
+    closest.longitude!,
+  );
   for (const store of stores.slice(1)) {
     const dist = haversineDistance(lat, lon, store.latitude!, store.longitude!);
     if (dist < minDist) {
@@ -48,7 +50,8 @@ export const findNearestStore = async (
 ): Promise<string> => {
   const client = tx || prisma;
   const stores = await getStoresWithCoordinates(client);
-  if (stores.length === 0) throw new AppError(400, "No stores with valid coordinates available");
+  if (stores.length === 0)
+    throw new AppError(400, "No stores with valid coordinates available");
   return findClosestStore(stores, latitude, longitude);
 };
 
@@ -75,23 +78,23 @@ export const generateInvoiceNumber = (): string => {
   return `TSX-${timestamp}-${random}`;
 };
 
-const findVoucherByCode = (code: string, tx: any) =>
+const findVoucherByCode = (referralVoucherId: string, tx: any) =>
   tx.referralVoucher.findUnique({
-    where: { couponCode: code.toUpperCase() },
+    where: { referralVoucherId },
   });
 
 const isVoucherValid = (v: any, now: Date): boolean =>
   !!v && now >= v.validFrom && now <= v.validUntil && !v.transactionId;
 
 export const validateVoucher = async (
-  voucherCode: string,
+  referralVoucherId: string,
   userId: string,
   tx?: any,
 ): Promise<number> => {
-  if (!voucherCode) return 0;
+  if (!referralVoucherId) return 0;
 
   const client = tx || prisma;
-  const voucher = await findVoucherByCode(voucherCode, client);
+  const voucher = await findVoucherByCode(referralVoucherId, client);
   if (!voucher || voucher.userId !== userId) {
     throw new AppError(400, "Invalid or expired voucher code");
   }
@@ -129,16 +132,20 @@ export const validateStockAtStore = async (
   }
 };
 
-const checkTotalStockItem = async (
-  item: any,
-  tx: any,
-): Promise<void> => {
+const checkTotalStockItem = async (item: any, tx: any): Promise<void> => {
   const stocks = await tx.stock.findMany({
     where: { productId: item.productId },
   });
-  const totalStock = stocks.reduce((sum: number, stock: any) => sum + stock.quantity, 0);
+
+  const totalStock = stocks.reduce(
+    (sum: number, stock: any) => sum + stock.quantity,
+    0,
+  );
   if (totalStock < item.quantity) {
-    throw new AppError(400, `Insufficient total stock for product: ${item.product.name}`);
+    throw new AppError(
+      400,
+      `Insufficient total stock for product: ${item.product.name}`,
+    );
   }
 };
 
@@ -183,4 +190,37 @@ export const getAddressLocationInfo = async (
 
   if (!address) throw new AppError(404, "Address not found");
   return { cityId: address.cityId, city: address.city };
+};
+
+// calculate each product discount
+export const calculateProductDiscount = async (
+  cartItems: any[],
+  discount: number,
+  tx?: Prisma.TransactionClient,
+) => {
+  const client = tx || prisma;
+
+  cartItems.forEach(async (item) => {
+    const hasDiscount = await client.discount.findFirst({
+      where: {
+        productId: item.productId,
+        validUntil: {
+          gt: new Date(),
+        },
+      },
+    });
+
+    if (hasDiscount?.type === "NO_REQUIREMENT") {
+      const subTotalItemPrice = item.unitPrice * item.quantity;
+      const totalItemDiscount =
+        subTotalItemPrice * Number(hasDiscount.discountAmount);
+
+      discount += totalItemDiscount;
+      item = { ...item, discountAmount: totalItemDiscount };
+    }
+
+    if (hasDiscount?.type === "BUY_ONE_GET_ONE") {
+      item = { ...item, quantity: item.quantity + 1 };
+    }
+  });
 };

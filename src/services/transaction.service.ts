@@ -12,15 +12,18 @@ import {
   validateTotalStock,
   getStoreLocationInfo,
   getAddressLocationInfo,
+  calculateProductDiscount,
 } from "../utils/transactionHelper.util";
 import { rajaOngkirService } from "./rajaOngkir.service";
+import { rajaOngkirCouriers } from "../statics/courir.static";
+import { FreeShippingVoucher } from "../../generated/prisma/client";
 
 const createOrderItems = (cartItems: any[]) =>
   cartItems.map((item) => ({
     productId: item.productId,
     quantity: item.quantity,
     unitPrice: item.product.price,
-    discountAmount: 0,
+    discountAmount: item.discountAmount || 0,
     subTotalItem: Number(item.product.price) * item.quantity,
   }));
 
@@ -37,6 +40,7 @@ export const transactionService = {
       const address = await prisma.address.findUnique({
         where: { addressId: data.addressId },
       });
+
       if (!address) throw new AppError(404, "Address not found");
       if (!address.latitude) {
         throw new AppError(400, "Address needs coordinates");
@@ -66,22 +70,61 @@ export const transactionService = {
       const originInfo = await getStoreLocationInfo(storeId);
       const destInfo = await getAddressLocationInfo(data.addressId);
 
-      // Call external API BEFORE transaction
-      const shippingResult = await rajaOngkirService.calculateShippingCost({
-        origin: originInfo.cityId,
-        destination: destInfo.cityId,
-        weight,
-        courier: "jnt",
-      });
+      // check shipping voucher
+      if (data.freeShippingVoucherId) {
+        const freeShippingVoucher = await prisma.freeShippingVoucher.findFirst({
+          where: {
+            freeShippingVoucherId: data.freeShippingVoucherId,
+            transactionId: null,
+          },
+        });
 
-      if (!shippingResult || !shippingResult.shippingCost) {
-        throw new AppError(400, "Failed to calculate shipping cost");
+        if (!freeShippingVoucher)
+          throw new AppError(400, "Invalid free shipping voucher Id");
       }
 
+      // Call external API BEFORE transaction
+      let shippingResult;
+
+      if (!data.freeShippingVoucherId) {
+        shippingResult = await rajaOngkirService.calculateShippingCost({
+          origin: originInfo.cityId,
+          destination: destInfo.cityId,
+          weight,
+          courier: "jnt",
+        });
+
+        while (!shippingResult) {
+          const restCouriers = rajaOngkirCouriers.slice(1);
+
+          restCouriers.forEach(async (courier, i) => {
+            if (!shippingCost) {
+              shippingResult = await rajaOngkirService.calculateShippingCost({
+                origin: originInfo.cityId,
+                destination: destInfo.cityId,
+                weight,
+                courier: courier,
+              });
+            }
+          });
+        }
+
+        if (!shippingResult)
+          throw new AppError(400, "Failed to calculate shipping cost");
+      }
       // Validate voucher before transaction
-      const discount = await validateVoucher(data.voucherCode || "", userId);
+      let discount = 0;
+      if (data.referralVoucherId)
+        discount = await validateVoucher(data.referralVoucherId, userId);
+
+      // check product discount
+      await calculateProductDiscount(cart.cartItems, discount);
+
       const invoice = generateInvoiceNumber();
-      const shippingCost = Number(shippingResult.shippingCost || 0);
+      const shippingCost = Number(
+        !data.freeShippingVoucherId ? shippingResult?.shippingCost : 0,
+      );
+
       const grandTotal = subtotal + shippingCost - discount;
 
       // Step 2: Execute transaction with validated data
@@ -125,14 +168,29 @@ export const transactionService = {
 
         for (const item of cart.cartItems) {
           await tx.stock.update({
-            where: { storeId_productId: { storeId, productId: item.productId } },
+            where: {
+              storeId_productId: { storeId, productId: item.productId },
+            },
             data: { quantity: { decrement: item.quantity } },
           });
         }
 
-        if (data.voucherCode) {
+        // update free shipping voucher
+        if (data.freeShippingVoucherId) {
+          await tx.freeShippingVoucher.update({
+            where: {
+              freeShippingVoucherId: data.freeShippingVoucherId,
+            },
+
+            data: {
+              transactionId: transaction.transactionId,
+            },
+          });
+        }
+
+        if (data.referralVoucherId) {
           await tx.referralVoucher.update({
-            where: { couponCode: data.voucherCode.toUpperCase() },
+            where: { referralVoucherId: data.referralVoucherId },
             data: { transactionId: transaction.transactionId },
           });
         }
