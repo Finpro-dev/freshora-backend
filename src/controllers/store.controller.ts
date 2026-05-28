@@ -1,12 +1,12 @@
-import { Response } from "express";
-import { AuthenticatedRequest } from "../types/appRequest.type";
+import { Request, Response } from "express";
+// import { AuthenticatedRequest } from "../types/appRequest.type";
 import { catchAsync } from "../utils/catchAsync.util";
 import { storeService } from "../services/store.service";
 import { CreateStoreInput } from "../schemas/createStore.schema";
 import { EditStoreInput } from "../schemas/editStore.schema";
 
 export const storeController = {
-  createStore: catchAsync(async (req: AuthenticatedRequest, res: Response) => {
+  createStore: catchAsync(async (req: Request, res: Response) => {
     const file = req.file as Express.Multer.File;
     const createdStore = await storeService.createStore(
       req.body as CreateStoreInput,
@@ -20,7 +20,7 @@ export const storeController = {
     });
   }),
 
-  getAllStore: catchAsync(async (req: AuthenticatedRequest, res: Response) => {
+  getAllStore: catchAsync(async (req: Request, res: Response) => {
     const page = Number(req.query.page) || 1;
     const limit = Number(req.query.limit) || 10;
     const search = req.query.search as string;
@@ -33,20 +33,18 @@ export const storeController = {
     });
   }),
 
-  getStoreDetails: catchAsync(
-    async (req: AuthenticatedRequest, res: Response) => {
-      const storeId = req.params.storeId as string;
-      const data = await storeService.getStoreDetails(storeId);
+  getStoreDetails: catchAsync(async (req: Request, res: Response) => {
+    const storeId = req.params.storeId as string;
+    const data = await storeService.getStoreDetails(storeId);
 
-      res.status(200).json({
-        status: "success",
-        message: "Store details successfully retrieved",
-        data,
-      });
-    },
-  ),
+    res.status(200).json({
+      status: "success",
+      message: "Store details successfully retrieved",
+      data,
+    });
+  }),
 
-  deleteStore: catchAsync(async (req: AuthenticatedRequest, res: Response) => {
+  deleteStore: catchAsync(async (req: Request, res: Response) => {
     const storeId = req.params.storeId as string;
     await storeService.deleteStore(storeId);
 
@@ -56,7 +54,7 @@ export const storeController = {
     });
   }),
 
-  editStore: catchAsync(async (req: AuthenticatedRequest, res: Response) => {
+  editStore: catchAsync(async (req: Request, res: Response) => {
     const storeId = req.params.storeId as string;
     const file = req.file as Express.Multer.File;
     const updatedStore = await storeService.editStore(storeId, file, req.body);
@@ -68,17 +66,15 @@ export const storeController = {
     });
   }),
 
-  assignStoreAdmin: catchAsync(
-    async (req: AuthenticatedRequest, res: Response) => {
-      const storeId = req.params.storeId as string;
-      const userId = req.body.userId as string;
+  assignStoreAdmin: catchAsync(async (req: Request, res: Response) => {
+    const storeId = req.params.storeId as string;
+    const userId = req.body.userId as string;
 
-      await storeService.assignAdminStore(userId, storeId);
+    await storeService.assignAdminStore(userId, storeId);
 
-      res.status(200).json({
-        status: "success",
-        message: "Admin store is assigned successfully",
-      });
-    },
-  ),
+    res.status(200).json({
+      status: "success",
+      message: "Admin store is assigned successfully",
+    });
+  }),
 };
