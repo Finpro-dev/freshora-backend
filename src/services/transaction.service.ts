@@ -1,22 +1,21 @@
-import { prisma } from "../configs/prisma.config";
 import { snap } from "../configs/midtrans.config";
+import { prisma } from "../configs/prisma.config";
 import { CreateTransactionInput } from "../schemas/createTransaction.schema";
+import { rajaOngkirCouriers } from "../statics/courir.static";
 import { AppError } from "../utils/appErrror.util";
 import { handlePrismaError } from "../utils/prismaErrorHandler.util";
 import {
-  findNearestStore,
+  calculateProductDiscount,
   calculateSubtotal,
   calculateTotalWeight,
+  findNearestStore,
   generateInvoiceNumber,
-  validateVoucher,
-  validateTotalStock,
-  getStoreLocationInfo,
   getAddressLocationInfo,
-  calculateProductDiscount,
+  getStoreLocationInfo,
+  validateTotalStock,
+  validateVoucher,
 } from "../utils/transactionHelper.util";
 import { rajaOngkirService } from "./rajaOngkir.service";
-import { rajaOngkirCouriers } from "../statics/courir.static";
-import { FreeShippingVoucher } from "../../generated/prisma/client";
 
 const createOrderItems = (cartItems: any[]) =>
   cartItems.map((item) => ({
@@ -24,7 +23,7 @@ const createOrderItems = (cartItems: any[]) =>
     quantity: item.quantity,
     unitPrice: item.product.price,
     discountAmount: item.discountAmount || 0,
-    subTotalItem: Number(item.product.price) * item.quantity,
+    subTotalItem: item.subtotal || Number(item.product.price) * item.quantity,
   }));
 
 export const transactionService = {
@@ -75,6 +74,7 @@ export const transactionService = {
         const freeShippingVoucher = await prisma.freeShippingVoucher.findFirst({
           where: {
             freeShippingVoucherId: data.freeShippingVoucherId,
+            userId,
             transactionId: null,
           },
         });
@@ -84,7 +84,7 @@ export const transactionService = {
       }
 
       // Call external API BEFORE transaction
-      let shippingResult;
+      let shippingResult = 0;
 
       if (!data.freeShippingVoucherId) {
         shippingResult = await rajaOngkirService.calculateShippingCost({
@@ -97,8 +97,8 @@ export const transactionService = {
         while (!shippingResult) {
           const restCouriers = rajaOngkirCouriers.slice(1);
 
-          restCouriers.forEach(async (courier, i) => {
-            if (!shippingCost) {
+          for (const courier of restCouriers) {
+            if (!shippingResult) {
               shippingResult = await rajaOngkirService.calculateShippingCost({
                 origin: originInfo.cityId,
                 destination: destInfo.cityId,
@@ -106,26 +106,41 @@ export const transactionService = {
                 courier: courier,
               });
             }
-          });
+          }
         }
 
         if (!shippingResult)
           throw new AppError(400, "Failed to calculate shipping cost");
       }
-      // Validate voucher before transaction
-      let discount = 0;
-      if (data.referralVoucherId)
-        discount = await validateVoucher(data.referralVoucherId, userId);
+
+      let discount = {
+        productItemDiscountAmmount: 0,
+        referralVoucherDiscount: 0,
+      };
+
+      const invoice = generateInvoiceNumber();
+      const shippingCost = Number(
+        !data.freeShippingVoucherId ? shippingResult : 0,
+      );
 
       // check product discount
       await calculateProductDiscount(cart.cartItems, discount);
 
-      const invoice = generateInvoiceNumber();
-      const shippingCost = Number(
-        !data.freeShippingVoucherId ? shippingResult?.shippingCost : 0,
-      );
+      let grandTotal = subtotal - discount.productItemDiscountAmmount;
 
-      const grandTotal = subtotal + shippingCost - discount;
+      // check referral voucher
+      if (data.referralVoucherId)
+        await validateVoucher(
+          data.referralVoucherId,
+          userId,
+          grandTotal,
+          discount,
+        );
+
+      grandTotal = grandTotal + shippingCost - discount.referralVoucherDiscount;
+
+      const totalDiscountAmount =
+        discount.productItemDiscountAmmount + discount.referralVoucherDiscount;
 
       // Step 2: Execute transaction with validated data
       return await prisma.$transaction(async (tx) => {
@@ -137,7 +152,7 @@ export const transactionService = {
             storeId,
             totalAmount: subtotal,
             shippingCost,
-            totalDiscount: discount,
+            totalDiscount: totalDiscountAmount,
             grandTotal,
             transactionStatus: "WAITING_FOR_PAYMENT",
             orderItems: { create: createOrderItems(cart.cartItems) },
@@ -203,7 +218,6 @@ export const transactionService = {
         };
       });
     } catch (error) {
-      if (error instanceof AppError) throw error;
       handlePrismaError(error);
     }
   },

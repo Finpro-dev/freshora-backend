@@ -26,6 +26,16 @@ export const freeShippingService = {
             },
           });
 
+          const isCurrentSlotUsed = await tx.freeShippingVoucher.findFirst({
+            where: {
+              userId,
+              currentTotalTransactions: totalUserTransactions,
+              transactionId: { not: null },
+            },
+          });
+
+          if (isCurrentSlotUsed) return null;
+
           // if exist and have not used yet -> update
           if (isVoucherExist) {
             return await tx.freeShippingVoucher.update({

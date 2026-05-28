@@ -5,10 +5,7 @@ export const createTransactionSchema = z.object({
     addressId: z
       .uuid("Invalid address ID format")
       .min(1, "Address ID is required"),
-    referralVoucherId: z
-      .string()
-      .max(8, "Voucher code must be at most 8 characters")
-      .optional(),
+    referralVoucherId: z.uuid("Invalid address ID format").optional(),
     freeShippingVoucherId: z.uuid("Invalid address ID format").optional(),
   }),
 });

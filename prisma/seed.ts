@@ -84,8 +84,8 @@ const store: Prisma.StoreCreateManyInput[] = [
 const stocksData: Prisma.StockCreateManyInput[] = [
   {
     storeId: "f0b8cade-383e-4c1a-ab6b-768004a25cc9",
-    productId: "332f53c1-5090-495f-8af2-856d2dc03800",
-    quantity: 3,
+    productId: "9a7aeda5-0139-470b-a797-359133c08a09",
+    quantity: 30,
   },
   {
     storeId: "f0b8cade-383e-4c1a-ab6b-768004a25cc9",
@@ -94,8 +94,43 @@ const stocksData: Prisma.StockCreateManyInput[] = [
   },
 ];
 
+const productDiscounts: Prisma.DiscountCreateManyInput[] = [
+  {
+    productId: "332f53c1-5090-495f-8af2-856d2dc03800",
+    type: "NO_REQUIREMENT",
+    discountAmount: new Prisma.Decimal(10),
+    validFrom: new Date("2026-05-01T00:00:00Z"),
+    validUntil: new Date("2026-06-30T23:59:59Z"),
+  },
+  {
+    productId: "4dc10eb2-e3b4-4aba-bcb7-b84904519e5d",
+    type: "BUY_ONE_GET_ONE",
+    discountAmount: new Prisma.Decimal(0.0),
+    validFrom: new Date("2026-05-25T00:00:00Z"),
+    validUntil: new Date("2026-06-05T23:59:59Z"),
+  },
+  {
+    productId: "9a7aeda5-0139-470b-a797-359133c08a09",
+    type: "NO_REQUIREMENT",
+    discountAmount: new Prisma.Decimal(5),
+    validFrom: new Date("2026-05-15T00:00:00Z"),
+    validUntil: new Date("2026-07-15T23:59:59Z"),
+  },
+];
+
+const referralVoucher: Prisma.ReferralVoucherCreateManyInput[] = [
+  {
+    userId: "ef18777a-85ed-4987-a846-7e8066ec2209",
+    referralOwnerId: "a8371c28-9f5d-4956-bdc9-9b5e6c435619",
+    couponCode: "CA34DQ5Z",
+    discountAmount: new Prisma.Decimal(5),
+    validFrom: new Date("2026-05-28T00:00:00Z"),
+    validUntil: new Date("2026-08-28T23:59:59Z"),
+  },
+];
+
 async function main() {
-  await prisma.stock.createMany({ data: stocksData });
+  await prisma.referralVoucher.createMany({ data: referralVoucher });
 }
 
 main()

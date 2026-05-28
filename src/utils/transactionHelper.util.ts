@@ -1,5 +1,6 @@
 import { Prisma } from "../../generated/prisma/client";
 import { prisma } from "../configs/prisma.config";
+import { TDiscount } from "../types/transaction.type";
 import { AppError } from "./appErrror.util";
 
 const EARTH_RADIUS_KM = 6371;
@@ -73,8 +74,8 @@ export const calculateTotalWeight = (cartItems: any[]): number => {
 
 // Generate unique invoice number
 export const generateInvoiceNumber = (): string => {
-  const timestamp = Date.now().toString().slice(-8);
-  const random = Math.random().toString(36).substring(2, 7).toUpperCase();
+  const timestamp = Date.now().toString().slice(-6);
+  const random = Math.random().toString(36).substring(2, 5).toUpperCase();
   return `TSX-${timestamp}-${random}`;
 };
 
@@ -86,13 +87,14 @@ const findVoucherByCode = (referralVoucherId: string, tx: any) =>
 const isVoucherValid = (v: any, now: Date): boolean =>
   !!v && now >= v.validFrom && now <= v.validUntil && !v.transactionId;
 
+// validate referral voucher
 export const validateVoucher = async (
   referralVoucherId: string,
   userId: string,
-  tx?: any,
-): Promise<number> => {
-  if (!referralVoucherId) return 0;
-
+  grandTotal: number,
+  discount: TDiscount,
+  tx?: Prisma.TransactionClient,
+): Promise<void> => {
   const client = tx || prisma;
   const voucher = await findVoucherByCode(referralVoucherId, client);
   if (!voucher || voucher.userId !== userId) {
@@ -104,7 +106,8 @@ export const validateVoucher = async (
     throw new AppError(400, "Voucher expired or already used");
   }
 
-  return Number(voucher.discountAmount);
+  discount.referralVoucherDiscount =
+    grandTotal * (Number(voucher.discountAmount) / 100);
 };
 
 const checkItemStock = async (
@@ -195,15 +198,15 @@ export const getAddressLocationInfo = async (
 // calculate each product discount
 export const calculateProductDiscount = async (
   cartItems: any[],
-  discount: number,
+  discount: TDiscount,
   tx?: Prisma.TransactionClient,
 ) => {
   const client = tx || prisma;
 
-  cartItems.forEach(async (item) => {
+  for (let item of cartItems) {
     const hasDiscount = await client.discount.findFirst({
       where: {
-        productId: item.productId,
+        productId: item.product.productId,
         validUntil: {
           gt: new Date(),
         },
@@ -211,16 +214,17 @@ export const calculateProductDiscount = async (
     });
 
     if (hasDiscount?.type === "NO_REQUIREMENT") {
-      const subTotalItemPrice = item.unitPrice * item.quantity;
+      const subTotalItemPrice = item.product.price * item.quantity;
       const totalItemDiscount =
-        subTotalItemPrice * Number(hasDiscount.discountAmount);
+        (subTotalItemPrice * Number(hasDiscount.discountAmount)) / 100;
 
-      discount += totalItemDiscount;
-      item = { ...item, discountAmount: totalItemDiscount };
+      discount.productItemDiscountAmmount += totalItemDiscount;
+      item.discountAmount = totalItemDiscount;
     }
 
     if (hasDiscount?.type === "BUY_ONE_GET_ONE") {
-      item = { ...item, quantity: item.quantity + 1 };
+      item.subtotal = item.quantity * item.product.price;
+      item.quantity += item.quantity;
     }
-  });
+  }
 };

@@ -24,20 +24,14 @@ export const rajaOngkirService = {
         },
       });
 
-      // Return shipping cost object
-      const courierData = res.data.data.at(0);
-      if (!courierData?.cost || courierData.cost.length === 0) {
-        throw new AppError(400, "No shipping cost available");
-      }
-      
-      return {
-        status: "success",
-        message: "Shipping cost calculated successfully",
-        shippingCost: courierData.cost[0].value,
-      };
+      return res.data.data.at(0).cost;
     } catch (error: any) {
       if (error.isAxiosError && error.response) {
-        throw new AppError(500, "Failed to calculate shipping cost: " + error.response.data?.rajaongkir?.status?.description);
+        throw new AppError(
+          500,
+          "Failed to calculate shipping cost: " +
+            error.response.data?.rajaongkir?.status?.description,
+        );
       } else {
         throw new AppError(500, "Failed to calculate shipping cost");
       }
