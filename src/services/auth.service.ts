@@ -191,7 +191,7 @@ export const authServices = {
 
       const hashedPassword = user?.password as string;
       const isMatch = await bcrypt.compare(password, hashedPassword);
-      console.log("password compare", isMatch);
+
       if (!isMatch) throw new AppError(401, "Invalid credentials");
 
       const tokenPayload: TokenPayload = {
