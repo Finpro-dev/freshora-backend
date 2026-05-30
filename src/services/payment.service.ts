@@ -1,26 +1,43 @@
-import { snap } from "../configs/midtrans.config";
+import { prisma } from "../configs/prisma.config";
+import { AppError } from "../utils/appErrror.util";
+import { handlePrismaError } from "../utils/prismaErrorHandler.util";
+import {
+  mapMidtransStatus,
+  reduceOrderStock,
+  updateOrderPaymentStatus,
+} from "../utils/paymentHelper.util";
 
 export const paymentService = {
-  createPayment: async () => {
-    let parameter = {
-      transaction_details: {
-        order_id: "TEST-T12345678112", // unique
-        gross_amount: 10000,
-      },
-      credit_card: {
-        secure: true,
-      },
-      customer_details: {
-        first_name: "novpa",
-        last_name: "pratama",
-        email: "agungnovpa@gmail.com",
-        phone: "08111222333",
-      },
-    };
+  processMidtransWebhook: async (payload: any): Promise<void> => {
+    try {
+      const transaction = await prisma.transaction.findUnique({
+        where: { transactionNumber: payload.order_id },
+      });
 
-    const res = await snap.createTransaction(parameter);
-    const transactionToken = res.token;
+      if (!transaction) throw new AppError(404, "Transaction not found");
 
-    return transactionToken;
+      const { transactionStatus, paymentStatus } = mapMidtransStatus(
+        payload.transaction_status,
+      );
+
+      await prisma.$transaction(async (tx) => {
+        await updateOrderPaymentStatus(
+          transaction.transactionId,
+          transactionStatus,
+          paymentStatus,
+          tx,
+        );
+
+        if (
+          paymentStatus === "SETTLEMENT" &&
+          transaction.processedAt === null
+        ) {
+          await reduceOrderStock(transaction.transactionId, tx);
+        }
+      });
+    } catch (error) {
+      if (error instanceof AppError) throw error;
+      handlePrismaError(error);
+    }
   },
 };
