@@ -406,6 +406,7 @@ model Transaction {
   totalDiscount     Decimal           @db.Decimal(10, 2)
   grandTotal        Decimal           @db.Decimal(10, 2)
   transactionStatus TransactionStatus
+  processedAt       DateTime?         
   shippedAt         DateTime?
   cancelledAt       DateTime?
   completedAt       DateTime?
