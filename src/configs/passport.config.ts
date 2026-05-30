@@ -46,7 +46,7 @@ export const configureGooglePassport = () => {
               data: {
                 firstName,
                 lastName: lastName || firstName,
-                // authProvider: "GOOGLE",
+                authProvider: "GOOGLE",
                 authProviderId,
                 avatar: user.avatar || avatar,
                 isVerified: true,
