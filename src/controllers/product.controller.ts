@@ -4,6 +4,14 @@ import { catchAsync } from "../utils/catchAsync.util";
 import { productServices } from "../services/product.service";
 
 export const productController = {
+  getAllProducts: catchAsync(async (req: Request, res: Response) => {
+    const products = await productServices.getAllProducts();
+    res.status(200).json({
+      status: "success",
+      data: products,
+    });
+  }),
+
   createProduct: catchAsync(async (req: Request, res: Response) => {
     const images = req.files as Express.Multer.File[];
     if (!images || images.length === 0) {

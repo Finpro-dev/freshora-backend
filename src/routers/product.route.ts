@@ -6,6 +6,8 @@ import { multerErrorMiddleware } from "../middlewares/multerError.middleware";
 
 const productRoute = Router();
 
+productRoute.get("/", productController.getAllProducts);
+
 productRoute.post(
   "/create-product",
   authentication,

@@ -11,6 +11,8 @@ import { Prisma } from "../../generated/prisma/client";
 import { uploadMany } from "../utils/cloudinaryUploader.util";
 
 export const productServices = {
+  getAllProducts: async () => {},
+
   createProduct: async (data: CreateProductInput) => {
     try {
       const {
