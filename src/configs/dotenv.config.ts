@@ -32,3 +32,13 @@ export const PAYMENT_GATEWAY = {
   CLIENT_KEY: process.env.MIDTRANS_CLIENT_KEY,
   SERVER_KEY: process.env.MIDTRANS_SERVER_KEY,
 };
+
+export const SHIPING_PROVIDER = {
+  RAJA_ONGKOR_SHIPPING_COST_API_KEY:
+    process.env.RAJA_ONGKOR_SHIPPING_COST_API_KEY,
+};
+
+export const GOOGLE_OAUTH = {
+  CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
+  CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
+};

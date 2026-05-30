@@ -1,22 +1,3 @@
-/*
-  Warnings:
-
-  - The primary key for the `users` table will be changed. If it partially fails, the table could be left without primary key constraint.
-  - You are about to drop the column `id` on the `users` table. All the data in the column will be lost.
-  - You are about to drop the column `name` on the `users` table. All the data in the column will be lost.
-  - You are about to alter the column `email` on the `users` table. The data in that column could be lost. The data in that column will be cast from `Text` to `VarChar(30)`.
-  - You are about to alter the column `password` on the `users` table. The data in that column could be lost. The data in that column will be cast from `Text` to `VarChar(255)`.
-  - A unique constraint covering the columns `[phone]` on the table `users` will be added. If there are existing duplicate values, this will fail.
-  - A unique constraint covering the columns `[myReferralCode]` on the table `users` will be added. If there are existing duplicate values, this will fail.
-  - Added the required column `firstName` to the `users` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `gender` to the `users` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `lastName` to the `users` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `myReferralCode` to the `users` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `phone` to the `users` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `role` to the `users` table without a default value. This is not possible if the table is not empty.
-  - The required column `userId` was added to the `users` table with a prisma-level default value. This is not possible if the table is not empty. Please add this column as optional, then populate it before making it required.
-
-*/
 -- CreateEnum
 CREATE TYPE "Gender" AS ENUM ('MALE', 'FEMALE');
 
@@ -30,6 +11,9 @@ CREATE TYPE "AddressStatus" AS ENUM ('PRIMARY', 'SECONDARY');
 CREATE TYPE "Unit" AS ENUM ('KG', 'G', 'PCS', 'PACK');
 
 -- CreateEnum
+CREATE TYPE "AuthProvider" AS ENUM ('CREDENTIALS', 'GOOGLE');
+
+-- CreateEnum
 CREATE TYPE "DietType" AS ENUM ('VEGAN', 'VEGETARIAN', 'GLUTEN_FREE', 'HALAL');
 
 -- CreateEnum
@@ -39,37 +23,42 @@ CREATE TYPE "ProductGrade" AS ENUM ('A', 'B', 'C');
 CREATE TYPE "MutationStatus" AS ENUM ('PENDING', 'PROCESSED', 'SHIPPING', 'REJECTED', 'COMPLETED');
 
 -- CreateEnum
-CREATE TYPE "TransactionStatus" AS ENUM ('PROCESSING', 'SHIPPING', 'CANCELED', 'COMPLETED');
+CREATE TYPE "TransactionStatus" AS ENUM ('PROCESSING', 'SHIPPING', 'CANCELED', 'COMPLETED', 'WAITING_FOR_PAYMENT');
 
 -- CreateEnum
 CREATE TYPE "DiscountType" AS ENUM ('BUY_ONE_GET_ONE', 'MIN_TRANSACTION', 'NO_REQUIREMENT');
 
 -- CreateEnum
-CREATE TYPE "PaymentType" AS ENUM ('CARD', 'TRANSFER');
+CREATE TYPE "PaymentType" AS ENUM ('GOPAY', 'BANK_TRANSFER', 'CREDIT_CARD', 'SHOPEEPAY', 'OVO', 'DANA', 'QRIS', 'ALFAMART', 'INDOMARET', 'AKULAKU', 'KREDIVO', 'GOOGLE_PAY');
 
 -- CreateEnum
-CREATE TYPE "PaymentStatus" AS ENUM ('WAITING_PAYMENT', 'WAITING_CONFIRMATION', 'PAID', 'CANCELED');
+CREATE TYPE "PaymentStatus" AS ENUM ('PENDING', 'SETTLEMENT', 'DENIED', 'EXPIRED', 'CANCELLED', 'REFUNDED');
 
 -- CreateEnum
 CREATE TYPE "ActivityType" AS ENUM ('MANUAL_ADD', 'MANUAL_DEDUCT', 'ORDER_REDUCTION', 'ORDER_CANCELED', 'MUTATION_IN', 'MUTATION_OUT');
 
--- AlterTable
-ALTER TABLE "users" DROP CONSTRAINT "users_pkey",
-DROP COLUMN "id",
-DROP COLUMN "name",
-ADD COLUMN     "avatar" TEXT,
-ADD COLUMN     "firstName" VARCHAR(30) NOT NULL,
-ADD COLUMN     "gender" "Gender" NOT NULL,
-ADD COLUMN     "isVerified" BOOLEAN NOT NULL DEFAULT false,
-ADD COLUMN     "lastName" VARCHAR(30) NOT NULL,
-ADD COLUMN     "myReferralCode" TEXT NOT NULL,
-ADD COLUMN     "phone" VARCHAR(15) NOT NULL,
-ADD COLUMN     "role" "Role" NOT NULL,
-ADD COLUMN     "usedReferralCode" TEXT,
-ADD COLUMN     "userId" TEXT NOT NULL,
-ALTER COLUMN "email" SET DATA TYPE VARCHAR(30),
-ALTER COLUMN "password" SET DATA TYPE VARCHAR(255),
-ADD CONSTRAINT "users_pkey" PRIMARY KEY ("userId");
+-- CreateTable
+CREATE TABLE "users" (
+    "email" VARCHAR(30) NOT NULL,
+    "password" VARCHAR(255),
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "deletedAt" TIMESTAMP(3),
+    "avatar" TEXT,
+    "firstName" VARCHAR(30) NOT NULL,
+    "gender" "Gender" NOT NULL DEFAULT 'MALE',
+    "isVerified" BOOLEAN NOT NULL DEFAULT false,
+    "lastName" VARCHAR(30) NOT NULL,
+    "myReferralCode" VARCHAR(8) NOT NULL,
+    "phone" VARCHAR(15),
+    "role" "Role" NOT NULL DEFAULT 'CUSTOMER',
+    "usedReferralCode" TEXT,
+    "userId" TEXT NOT NULL,
+    "authProvider" "AuthProvider" NOT NULL,
+    "authProviderId" TEXT,
+
+    CONSTRAINT "users_pkey" PRIMARY KEY ("userId")
+);
 
 -- CreateTable
 CREATE TABLE "addresses" (
@@ -86,6 +75,9 @@ CREATE TABLE "addresses" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "deletedAt" TIMESTAMP(3),
+    "cityId" INTEGER NOT NULL,
+    "districtId" INTEGER NOT NULL,
+    "provinceId" INTEGER NOT NULL,
 
     CONSTRAINT "addresses_pkey" PRIMARY KEY ("addressId")
 );
@@ -112,6 +104,7 @@ CREATE TABLE "refreshTokens" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "deletedAt" TIMESTAMP(3),
+    "revoked" BOOLEAN NOT NULL,
 
     CONSTRAINT "refreshTokens_pkey" PRIMARY KEY ("refreshTokenId")
 );
@@ -200,7 +193,7 @@ CREATE TABLE "productPhotos" (
 -- CreateTable
 CREATE TABLE "stores" (
     "storeId" TEXT NOT NULL,
-    "userId" TEXT NOT NULL,
+    "userId" TEXT,
     "name" VARCHAR(30) NOT NULL,
     "address" VARCHAR(100) NOT NULL,
     "district" VARCHAR(50) NOT NULL,
@@ -214,6 +207,9 @@ CREATE TABLE "stores" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "deletedAt" TIMESTAMP(3),
+    "cityId" INTEGER NOT NULL,
+    "districtId" INTEGER NOT NULL,
+    "provinceId" INTEGER NOT NULL,
 
     CONSTRAINT "stores_pkey" PRIMARY KEY ("storeId")
 );
@@ -262,6 +258,19 @@ CREATE TABLE "mutations" (
 );
 
 -- CreateTable
+CREATE TABLE "freeShippingVouchers" (
+    "freeShippingVoucherId" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "transactionId" TEXT,
+    "currentTotalTransactions" INTEGER NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "deletedAt" TIMESTAMP(3),
+
+    CONSTRAINT "freeShippingVouchers_pkey" PRIMARY KEY ("freeShippingVoucherId")
+);
+
+-- CreateTable
 CREATE TABLE "transactions" (
     "transactionId" TEXT NOT NULL,
     "transactionNumber" VARCHAR(15) NOT NULL,
@@ -275,6 +284,11 @@ CREATE TABLE "transactions" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "deletedAt" TIMESTAMP(3),
+    "completedAt" TIMESTAMP(3),
+    "discountId" TEXT,
+    "shippingCost" DECIMAL(10,2) NOT NULL,
+    "storeId" TEXT NOT NULL,
+    "transactionStatus" "TransactionStatus" NOT NULL,
 
     CONSTRAINT "transactions_pkey" PRIMARY KEY ("transactionId")
 );
@@ -300,14 +314,13 @@ CREATE TABLE "referralVouchers" (
 CREATE TABLE "payments" (
     "paymentId" TEXT NOT NULL,
     "transactionId" TEXT NOT NULL,
-    "paymentGatewayId" TEXT,
     "paymentType" "PaymentType" NOT NULL,
-    "paymentProof" TEXT,
     "paymentStatus" "PaymentStatus" NOT NULL,
     "expiresAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "deletedAt" TIMESTAMP(3),
+    "snapToken" TEXT NOT NULL,
 
     CONSTRAINT "payments_pkey" PRIMARY KEY ("paymentId")
 );
@@ -329,27 +342,8 @@ CREATE TABLE "discounts" (
 );
 
 -- CreateTable
-CREATE TABLE "storeOrders" (
-    "storeOrderId" TEXT NOT NULL,
-    "transactionId" TEXT NOT NULL,
-    "storeId" TEXT NOT NULL,
-    "discountId" TEXT,
-    "shippingCost" DECIMAL(10,2) NOT NULL,
-    "totalAmount" DECIMAL(10,2) NOT NULL,
-    "totalDiscountAmount" DECIMAL(10,2) NOT NULL,
-    "grandTotal" DECIMAL(10,2) NOT NULL,
-    "transactionStatus" "TransactionStatus" NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-    "deletedAt" TIMESTAMP(3),
-
-    CONSTRAINT "storeOrders_pkey" PRIMARY KEY ("storeOrderId")
-);
-
--- CreateTable
 CREATE TABLE "orderItems" (
     "orderItemId" TEXT NOT NULL,
-    "storeOrderId" TEXT NOT NULL,
     "productId" TEXT NOT NULL,
     "quantity" INTEGER NOT NULL,
     "unitPrice" DECIMAL(10,2) NOT NULL,
@@ -358,9 +352,19 @@ CREATE TABLE "orderItems" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "deletedAt" TIMESTAMP(3),
+    "transactionId" TEXT NOT NULL,
 
     CONSTRAINT "orderItems_pkey" PRIMARY KEY ("orderItemId")
 );
+
+-- CreateIndex
+CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "users_myReferralCode_key" ON "users"("myReferralCode");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "users_phone_key" ON "users"("phone");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "verifications_hashedToken_key" ON "verifications"("hashedToken");
@@ -393,6 +397,9 @@ CREATE UNIQUE INDEX "stores_userId_key" ON "stores"("userId");
 CREATE UNIQUE INDEX "stocks_storeId_productId_key" ON "stocks"("storeId", "productId");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "freeShippingVouchers_transactionId_key" ON "freeShippingVouchers"("transactionId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "transactions_transactionNumber_key" ON "transactions"("transactionNumber");
 
 -- CreateIndex
@@ -406,12 +413,6 @@ CREATE UNIQUE INDEX "referralVouchers_transactionId_key" ON "referralVouchers"("
 
 -- CreateIndex
 CREATE UNIQUE INDEX "payments_transactionId_key" ON "payments"("transactionId");
-
--- CreateIndex
-CREATE UNIQUE INDEX "users_phone_key" ON "users"("phone");
-
--- CreateIndex
-CREATE UNIQUE INDEX "users_myReferralCode_key" ON "users"("myReferralCode");
 
 -- AddForeignKey
 ALTER TABLE "addresses" ADD CONSTRAINT "addresses_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -441,13 +442,16 @@ ALTER TABLE "products" ADD CONSTRAINT "products_productCategoryId_fkey" FOREIGN 
 ALTER TABLE "productPhotos" ADD CONSTRAINT "productPhotos_productId_fkey" FOREIGN KEY ("productId") REFERENCES "products"("productId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "stores" ADD CONSTRAINT "stores_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "stores" ADD CONSTRAINT "stores_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("userId") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "stocks" ADD CONSTRAINT "stocks_productId_fkey" FOREIGN KEY ("productId") REFERENCES "products"("productId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "stocks" ADD CONSTRAINT "stocks_storeId_fkey" FOREIGN KEY ("storeId") REFERENCES "stores"("storeId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "stocks" ADD CONSTRAINT "stocks_productId_fkey" FOREIGN KEY ("productId") REFERENCES "products"("productId") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "stockJournals" ADD CONSTRAINT "stockJournals_mutationId_fkey" FOREIGN KEY ("mutationId") REFERENCES "mutations"("mutationId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "stockJournals" ADD CONSTRAINT "stockJournals_stockId_fkey" FOREIGN KEY ("stockId") REFERENCES "stocks"("stockId") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -456,25 +460,31 @@ ALTER TABLE "stockJournals" ADD CONSTRAINT "stockJournals_stockId_fkey" FOREIGN 
 ALTER TABLE "stockJournals" ADD CONSTRAINT "stockJournals_transactionId_fkey" FOREIGN KEY ("transactionId") REFERENCES "transactions"("transactionId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "stockJournals" ADD CONSTRAINT "stockJournals_mutationId_fkey" FOREIGN KEY ("mutationId") REFERENCES "mutations"("mutationId") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "mutations" ADD CONSTRAINT "mutations_fromStoreId_fkey" FOREIGN KEY ("fromStoreId") REFERENCES "stores"("storeId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "mutations" ADD CONSTRAINT "mutations_productId_fkey" FOREIGN KEY ("productId") REFERENCES "products"("productId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "mutations" ADD CONSTRAINT "mutations_fromStoreId_fkey" FOREIGN KEY ("fromStoreId") REFERENCES "stores"("storeId") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "mutations" ADD CONSTRAINT "mutations_toStoreId_fkey" FOREIGN KEY ("toStoreId") REFERENCES "stores"("storeId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "transactions" ADD CONSTRAINT "transactions_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "freeShippingVouchers" ADD CONSTRAINT "freeShippingVouchers_transactionId_fkey" FOREIGN KEY ("transactionId") REFERENCES "transactions"("transactionId") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "freeShippingVouchers" ADD CONSTRAINT "freeShippingVouchers_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "transactions" ADD CONSTRAINT "transactions_addressId_fkey" FOREIGN KEY ("addressId") REFERENCES "addresses"("addressId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "referralVouchers" ADD CONSTRAINT "referralVouchers_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "transactions" ADD CONSTRAINT "transactions_discountId_fkey" FOREIGN KEY ("discountId") REFERENCES "discounts"("discountId") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "transactions" ADD CONSTRAINT "transactions_storeId_fkey" FOREIGN KEY ("storeId") REFERENCES "stores"("storeId") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "transactions" ADD CONSTRAINT "transactions_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "referralVouchers" ADD CONSTRAINT "referralVouchers_referralOwnerId_fkey" FOREIGN KEY ("referralOwnerId") REFERENCES "users"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -483,22 +493,16 @@ ALTER TABLE "referralVouchers" ADD CONSTRAINT "referralVouchers_referralOwnerId_
 ALTER TABLE "referralVouchers" ADD CONSTRAINT "referralVouchers_transactionId_fkey" FOREIGN KEY ("transactionId") REFERENCES "transactions"("transactionId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "referralVouchers" ADD CONSTRAINT "referralVouchers_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "payments" ADD CONSTRAINT "payments_transactionId_fkey" FOREIGN KEY ("transactionId") REFERENCES "transactions"("transactionId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "discounts" ADD CONSTRAINT "discounts_productId_fkey" FOREIGN KEY ("productId") REFERENCES "products"("productId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "storeOrders" ADD CONSTRAINT "storeOrders_storeId_fkey" FOREIGN KEY ("storeId") REFERENCES "stores"("storeId") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "storeOrders" ADD CONSTRAINT "storeOrders_discountId_fkey" FOREIGN KEY ("discountId") REFERENCES "discounts"("discountId") ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "storeOrders" ADD CONSTRAINT "storeOrders_transactionId_fkey" FOREIGN KEY ("transactionId") REFERENCES "transactions"("transactionId") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "orderItems" ADD CONSTRAINT "orderItems_storeOrderId_fkey" FOREIGN KEY ("storeOrderId") REFERENCES "storeOrders"("storeOrderId") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "orderItems" ADD CONSTRAINT "orderItems_productId_fkey" FOREIGN KEY ("productId") REFERENCES "products"("productId") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "orderItems" ADD CONSTRAINT "orderItems_transactionId_fkey" FOREIGN KEY ("transactionId") REFERENCES "transactions"("transactionId") ON DELETE RESTRICT ON UPDATE CASCADE;

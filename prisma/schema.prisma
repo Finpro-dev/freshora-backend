@@ -57,6 +57,7 @@ enum MutationStatus {
 }
 
 enum TransactionStatus {
+  WAITING_FOR_PAYMENT
   PROCESSING
   SHIPPING
   CANCELED
@@ -107,9 +108,9 @@ model User {
   firstName        String       @db.VarChar(30)
   lastName         String       @db.VarChar(30)
   email            String       @unique @db.VarChar(30)
-  phone            String       @unique @db.VarChar(15)
-  gender           Gender
-  role             Role
+  phone            String?      @unique @db.VarChar(15)
+  gender           Gender       @default(MALE)    
+  role             Role         @default(CUSTOMER)
   password         String?      @db.VarChar(255)
   isVerified       Boolean      @default(false)
   authProvider     AuthProvider
@@ -140,8 +141,11 @@ model Address {
   addressId     String        @id @default(uuid())
   userId        String
   address       String        @db.VarChar(100)
+  districtId    Int
   district      String        @db.VarChar(50)
+  cityId        Int
   city          String        @db.VarChar(50)
+  provinceId    Int
   province      String        @db.VarChar(50)
   postalCode    String        @db.VarChar(5)
   addressStatus AddressStatus @default(SECONDARY)
@@ -289,11 +293,14 @@ model ProductPhoto {
 
 model Store {
   storeId    String  @id @default(uuid())
-  userId     String  @unique
+  userId     String? @unique
   name       String  @db.VarChar(30)
   address    String  @db.VarChar(100)
+  districtId Int
   district   String  @db.VarChar(50)
+  cityId     Int
   city       String  @db.VarChar(50)
+  provinceId Int
   province   String  @db.VarChar(50)
   postalCode String  @db.VarChar(5)
   latitude   Float?
@@ -305,11 +312,11 @@ model Store {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  user          User         @relation(fields: [userId], references: [userId])
-  mutationsFrom Mutation[]   @relation("fromStore")
-  mutationsTo   Mutation[]   @relation("toStore")
+  user          User?         @relation(fields: [userId], references: [userId])
+  mutationsFrom Mutation[]    @relation("fromStore")
+  mutationsTo   Mutation[]    @relation("toStore")
   stocks        Stock[]
-  storeOrders   StoreOrder[]
+  transactions  Transaction[]
 
   @@map("stores")
 }
@@ -388,24 +395,33 @@ model FreeShippingVoucher {
 }
 
 model Transaction {
-  transactionId     String    @id @default(uuid())
-  transactionNumber String    @unique @db.VarChar(15)
+  transactionId     String            @id @default(uuid())
+  transactionNumber String            @unique @db.VarChar(15)
   userId            String
   addressId         String
-  totalAmount       Decimal   @db.Decimal(10, 2)
-  totalDiscount     Decimal   @db.Decimal(10, 2)
-  grandTotal        Decimal   @db.Decimal(10, 2)
+  storeId           String
+  discountId        String?
+  totalAmount       Decimal           @db.Decimal(10, 2)
+  shippingCost      Decimal           @db.Decimal(10, 2)
+  totalDiscount     Decimal           @db.Decimal(10, 2)
+  grandTotal        Decimal           @db.Decimal(10, 2)
+  transactionStatus TransactionStatus
+  processedAt       DateTime?         
   shippedAt         DateTime?
   cancelledAt       DateTime?
+  completedAt       DateTime?
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
+  store      Store       @relation(fields: [storeId], references: [storeId])
+  discount   Discount?   @relation(fields: [discountId], references: [discountId])
+  orderItems OrderItem[]
+
   payments            Payment?
   user                User                 @relation(fields: [userId], references: [userId])
   address             Address              @relation(fields: [addressId], references: [addressId])
-  storeOrders         StoreOrder[]
   referralVouchers    ReferralVoucher?
   stockJournals       StockJournal[]
   freeShippingVoucher FreeShippingVoucher?
@@ -460,8 +476,8 @@ model Discount {
   validFrom      DateTime
   discountAmount Decimal      @db.Decimal(10, 2)
 
-  storeOrders StoreOrder[]
-  product     Product      @relation(fields: [productId], references: [productId])
+  transactions Transaction[]
+  product      Product       @relation(fields: [productId], references: [productId])
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -470,32 +486,9 @@ model Discount {
   @@map("discounts")
 }
 
-model StoreOrder {
-  storeOrderId        String            @id @default(uuid())
-  transactionId       String
-  storeId             String
-  discountId          String?
-  shippingCost        Decimal           @db.Decimal(10, 2)
-  totalAmount         Decimal           @db.Decimal(10, 2)
-  totalDiscountAmount Decimal           @db.Decimal(10, 2)
-  grandTotal          Decimal           @db.Decimal(10, 2)
-  transactionStatus   TransactionStatus
-
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime?
-
-  store       Store       @relation(fields: [storeId], references: [storeId])
-  discount    Discount?   @relation(fields: [discountId], references: [discountId])
-  transaction Transaction @relation(fields: [transactionId], references: [transactionId])
-  orderItems  OrderItem[]
-
-  @@map("storeOrders")
-}
-
 model OrderItem {
   orderItemId    String  @id @default(uuid())
-  storeOrderId   String
+  transactionId  String
   productId      String
   quantity       Int
   unitPrice      Decimal @db.Decimal(10, 2)
@@ -506,8 +499,8 @@ model OrderItem {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  storeOrder StoreOrder @relation(fields: [storeOrderId], references: [storeOrderId])
-  product    Product    @relation(fields: [productId], references: [productId])
+  transaction Transaction @relation(fields: [transactionId], references: [transactionId])
+  product     Product     @relation(fields: [productId], references: [productId])
 
   @@map("orderItems")
 }

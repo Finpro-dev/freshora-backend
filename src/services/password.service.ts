@@ -77,6 +77,7 @@ export const passwordService = {
       if (!user) throw new AppError(400, "Invalid user credential");
 
       // editable for credetials user only
+      // FIXME
       if (user?.authProvider !== "CREDENTIALS")
         throw new AppError(403, "You are not allowed to modify password");
 

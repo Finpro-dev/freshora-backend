@@ -8,15 +8,21 @@ import {
   SERVER_CREDENTIALS,
 } from "./configs/dotenv.config";
 import { globalErrorHandler } from "./middlewares/globalError.middleware";
-import testingRoute from "./routers/testing.route";
+import addressRoute from "./routers/address.route";
 import authRoute from "./routers/auth.route";
 import adminRoute from "./routers/admin.route";
 import productRoute from "./routers/product.route";
 import cartRoute from "./routers/cart.route";
-import userRoute from "./routers/user.route";
-import referralCouponRoute from "./routers/referralVoucher.route";
-import addressRoute from "./routers/address.route";
+import freeShippingRoute from "./routers/freeShipping.route";
+import locationRoute from "./routers/location.route";
 import paymentRoute from "./routers/payment.route";
+import referralCouponRoute from "./routers/referralVoucher.route";
+import shippingRoute from "./routers/shipping.route";
+import storeRoute from "./routers/store.route";
+import userRoute from "./routers/user.route";
+import transactionRoute from "./routers/transaction.route";
+import passport from "passport";
+import { configureGooglePassport } from "./configs/passport.config";
 
 const app: Express = express();
 
@@ -27,8 +33,15 @@ app.use(express.json());
 // cookie-parser middleware
 app.use(cookieParser());
 
+// Parse URL-encoded bodies (as sent by HTML forms)
+app.use(express.urlencoded({ extended: true }));
+
 // cors
 app.use(cors(CORS_CONFIG));
+
+// google o-auth
+app.use(passport.initialize());
+configureGooglePassport();
 
 // END-POINTS
 
@@ -55,6 +68,21 @@ app.use("/api/addresses", addressRoute);
 
 // payments
 app.use("/api/payments", paymentRoute);
+
+// shippings
+app.use("/api/shipping/cost", shippingRoute);
+
+// shippings
+app.use("/api/location", locationRoute);
+
+// shippings
+app.use("/api/free-shipping-vouchers/user", freeShippingRoute);
+
+// stores
+app.use("/api/stores", storeRoute);
+
+// transactions
+app.use("/api/transactions", transactionRoute);
 
 // globar error middleware
 app.use(globalErrorHandler);

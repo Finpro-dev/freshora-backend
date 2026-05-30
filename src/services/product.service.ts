@@ -1,5 +1,8 @@
 import { prisma } from "../configs/prisma.config";
-import { CreateProductInput } from "../schemas/product.schema";
+import {
+  CreateProductInput,
+  UpdateProductInput,
+} from "../schemas/product.schema";
 import { AppError } from "../utils/appErrror.util";
 import { handlePrismaError } from "../utils/prismaErrorHandler.util";
 import slugify from "slugify";
@@ -104,7 +107,81 @@ export const productServices = {
       throw handlePrismaError(error);
     }
   },
+  deleteProduct: async (productId: string) => {
+    try {
+      //existing product check
+      const product = await prisma.product.findUnique({
+        where: {
+          productId,
+        },
+        include: { productPhotos: true },
+      });
+      if (!product || product.deletedAt !== null) {
+        throw new AppError(404, "Product not found or already deleted");
+      }
+      const deletedProduct = await prisma.$transaction(async (tx) => {
+        // productPhoto deletion
+        await tx.productPhoto.deleteMany({
+          where: { productId },
+        });
+        // Soft Delete
+        return await tx.product.update({
+          where: { productId },
+          data: { deletedAt: new Date() },
+        });
+      });
 
-  deleteProduct: async (productId: number) => {},
-  updateProduct: async (productId: number) => {},
+      return deletedProduct;
+    } catch (error) {
+      throw handlePrismaError(error);
+    }
+  },
+  updateProduct: async (
+    productId: string,
+    data: Partial<UpdateProductInput>,
+  ) => {
+    try {
+      const { images, ...updateData } = data;
+      const product = await prisma.product.findUnique({
+        where: { productId },
+        include: { productPhotos: true },
+      }); // Validate product existence first
+      if (!product) throw new AppError(404, "Product not found");
+      if (images && (images as Express.Multer.File[]).length > 0) {
+        await prisma.productPhoto.deleteMany({
+          where: { productId },
+        });
+        const newImageUrls = await uploadMany(
+          images as Express.Multer.File[],
+          "freshora/products",
+        );
+        (updateData as any).productPhotos = {
+          create: newImageUrls.map((url) => ({
+            photoUrl: url,
+          })),
+        };
+      }
+      // new slug for updated name
+      if (updateData.name && updateData.name !== product.name) {
+        const baseSlug = slugify(updateData.name.trim(), {
+          lower: true,
+          strict: true,
+        });
+        (updateData as any).slug = `${baseSlug}-${Date.now()}`;
+      }
+      const finalData: any = { ...updateData };
+      if (updateData.price)
+        finalData.price = new Prisma.Decimal(updateData.price);
+      if (updateData.weightPerGram)
+        finalData.weightPerGram = new Prisma.Decimal(updateData.weightPerGram);
+      const updatedProduct = await prisma.product.update({
+        where: { productId },
+        data: finalData,
+        include: { productPhotos: true },
+      });
+      return updatedProduct;
+    } catch (error) {
+      throw handlePrismaError(error);
+    }
+  },
 };

@@ -9,16 +9,19 @@ export const createAddressSchema = z.object({
       .min(5, "Address must be at least 5 characters long")
       .max(100, "Address cannot exceed 100 characters"),
 
+    districtId: z.number(),
     district: z
       .string()
       .min(2, "District name is too short")
       .max(50, "District cannot exceed 50 characters"),
 
+    cityId: z.number(),
     city: z
       .string()
       .min(2, "City name is too short")
       .max(50, "City cannot exceed 50 characters"),
 
+    provinceId: z.number(),
     province: z
       .string()
       .min(2, "Province name is too short")
