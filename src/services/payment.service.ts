@@ -3,7 +3,7 @@ import { AppError } from "../utils/appErrror.util";
 import { handlePrismaError } from "../utils/prismaErrorHandler.util";
 import {
   mapMidtransStatus,
-  reduceOrderStock,
+  rollbackPaymentStock,
   updateOrderPaymentStatus,
 } from "../utils/paymentHelper.util";
 
@@ -28,11 +28,14 @@ export const paymentService = {
           tx,
         );
 
-        if (
-          paymentStatus === "SETTLEMENT" &&
-          transaction.processedAt === null
-        ) {
-          await reduceOrderStock(transaction.transactionId, tx);
+        // Rollback stock if payment denied
+        if (paymentStatus === "DENIED" && transaction.transactionStatus !== "CANCELED") {
+          await rollbackPaymentStock(transaction.transactionId, tx);
+        }
+
+        // Rollback stock if payment expired
+        if (paymentStatus === "EXPIRED" && transaction.transactionStatus !== "CANCELED") {
+          await rollbackPaymentStock(transaction.transactionId, tx);
         }
       });
     } catch (error) {
