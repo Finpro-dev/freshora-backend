@@ -9,9 +9,86 @@ import slugify from "slugify";
 import { generateSerialNumber } from "../utils/generateSerialNumber";
 import { Prisma } from "../../generated/prisma/client";
 import { uploadMany } from "../utils/cloudinaryUploader.util";
+import { GetAllProductParams } from "../types/product.type";
 
 export const productServices = {
-  getAllProducts: async () => {},
+  getAllProducts: async (params: GetAllProductParams) => {
+    const { page = 1, limit = 10, search, category } = params;
+    const skip = (page - 1) * limit;
+    const where: Prisma.ProductWhereInput = {
+      deletedAt: null,
+    };
+    if (search) {
+      where.name = {
+        contains: search,
+        mode: "insensitive",
+      };
+    }
+    if (category) {
+      where.productCategoryId = category;
+    }
+    const [products, totalCount] = await Promise.all([
+      prisma.product.findMany({
+        where: where,
+        skip,
+        take: limit,
+        include: {
+          productCategory: {
+            select: {
+              productCategoryId: true,
+              category: true,
+            },
+          },
+          productPhotos: {
+            select: {
+              photoUrl: true,
+            },
+          },
+          stocks: {
+            select: {
+              quantity: true,
+            },
+          },
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      }),
+      prisma.product.count({
+        where: where,
+      }),
+    ]);
+
+    // Calculate pagination metadata
+    const totalPages = Math.max(1, Math.ceil(totalCount / limit));
+    const hasNext = page < totalPages;
+    const hasPrev = page > 1;
+
+    return {
+      data: products,
+      pagination: {
+        page,
+        limit,
+        totalItems: totalCount,
+        totalPages,
+        hasNext,
+        hasPrev,
+      },
+    };
+  },
+
+  getProductById: async (productId: string) => {
+    const product = await prisma.product.findUnique({
+      where: {
+        productId,
+        deletedAt: null,
+      },
+    });
+    if (!product) {
+      throw new AppError(404, "Product not found");
+    }
+    return product;
+  },
 
   createProduct: async (data: CreateProductInput) => {
     try {

@@ -3,10 +3,16 @@ import { authentication, authorization } from "../middlewares/auth.middleware";
 import { productController } from "../controllers/product.controller";
 import { upload } from "../configs/multer.config";
 import { multerErrorMiddleware } from "../middlewares/multerError.middleware";
+import { productQuerySchema } from "../schemas/product.schema";
+import { validate } from "../middlewares/validation.middleware";
 
 const productRoute = Router();
 
-productRoute.get("/", productController.getAllProducts);
+productRoute.get(
+  "/",
+  validate(productQuerySchema),
+  productController.getAllProducts,
+);
 
 productRoute.post(
   "/create-product",

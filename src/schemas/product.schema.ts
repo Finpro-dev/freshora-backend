@@ -93,6 +93,21 @@ export const deleteProductSchema = z.object({
   }),
 });
 
+export const productQuerySchema = z.object({
+  query: z.object({
+    page: z.coerce.number().int().min(1, "Page must be at least 1").default(1),
+    limit: z.coerce
+      .number()
+      .int()
+      .min(1, "Limit must be at least 1")
+      .max(100, "Limit cannot exceed 100")
+      .default(10),
+    search: z.string().trim().optional(),
+    category: z.string().uuid("Invalid category ID format").optional(),
+  }),
+});
+
 export type CreateProductInput = z.infer<typeof createProductSchema>["body"];
 export type UpdateProductInput = z.infer<typeof updateProductSchema>["body"];
 export type DeleteProductInput = z.infer<typeof deleteProductSchema>["params"];
+export type ProductQueryInput = z.infer<typeof productQuerySchema>["query"];
