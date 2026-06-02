@@ -20,6 +20,10 @@ export const paymentService = {
         payload.transaction_status,
       );
 
+      console.log(payload.transaction_status);
+      console.log(transactionStatus);
+      console.log(paymentStatus);
+
       await prisma.$transaction(async (tx) => {
         await updateOrderPaymentStatus(
           transaction.transactionId,
@@ -46,7 +50,6 @@ export const paymentService = {
         }
       });
     } catch (error) {
-      if (error instanceof AppError) throw error;
       handlePrismaError(error);
     }
   },

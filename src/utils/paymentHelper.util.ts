@@ -84,7 +84,13 @@ export const updateOrderPaymentStatus = async (
 
   await tx.transaction.update({
     where: { transactionId },
-    data: { transactionStatus, processedAt: new Date() },
+    data: {
+      transactionStatus,
+      ...(transactionStatus === "PROCESSING" && { processedAt: new Date() }),
+      ...(transactionStatus === "CANCELED" && { cancelledAt: new Date() }),
+      ...(transactionStatus === "COMPLETED" && { completedAt: new Date() }),
+      ...(transactionStatus === "SHIPPING" && { shippedAt: new Date() }),
+    },
   });
 
   await tx.payment.update({
