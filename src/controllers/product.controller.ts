@@ -2,16 +2,17 @@ import { Request, Response } from "express";
 // import { AuthenticatedRequest } from "../types/appRequest.type";
 import { catchAsync } from "../utils/catchAsync.util";
 import { productServices } from "../services/product.service";
-import { GetAllProductParams } from "../types/product.type";
+import { ProductParamsInput } from "../schemas/product.schema";
 
 export const productController = {
   getAllProducts: catchAsync(async (req: Request, res: Response) => {
-    const { page, limit, search, category } = req.query;
+    const { page, limit, search, category } =
+      req.query as unknown as ProductParamsInput;
     const products = await productServices.getAllProducts({
-      page: Number(page),
-      limit: Number(limit),
-      search: search as string,
-      category: category as string,
+      page,
+      limit,
+      search,
+      category,
     });
     res.status(200).json({
       status: "success",

@@ -1,18 +1,18 @@
 import { prisma } from "../configs/prisma.config";
 import {
   CreateProductInput,
+  ProductParamsInput,
   UpdateProductInput,
 } from "../schemas/product.schema";
 import { AppError } from "../utils/appErrror.util";
 import { handlePrismaError } from "../utils/prismaErrorHandler.util";
 import slugify from "slugify";
 import { generateSerialNumber } from "../utils/generateSerialNumber";
-import { Prisma } from "../../generated/prisma/client";
+import { Prisma, Product } from "../../generated/prisma/client";
 import { uploadMany } from "../utils/cloudinaryUploader.util";
-import { GetAllProductParams } from "../types/product.type";
 
 export const productServices = {
-  getAllProducts: async (params: GetAllProductParams) => {
+  getAllProducts: async (params: ProductParamsInput) => {
     const { page = 1, limit = 10, search, category } = params;
     const skip = (page - 1) * limit;
     const where: Prisma.ProductWhereInput = {

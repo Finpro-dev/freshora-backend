@@ -110,4 +110,4 @@ export const productQuerySchema = z.object({
 export type CreateProductInput = z.infer<typeof createProductSchema>["body"];
 export type UpdateProductInput = z.infer<typeof updateProductSchema>["body"];
 export type DeleteProductInput = z.infer<typeof deleteProductSchema>["params"];
-export type ProductQueryInput = z.infer<typeof productQuerySchema>["query"];
+export type ProductParamsInput = z.infer<typeof productQuerySchema>["query"];
