@@ -111,8 +111,6 @@ export const transactionService = {
           }
         }
 
-        console.log("SHIPPING --> ", shippingResult);
-
         if (!shippingResult)
           throw new AppError(400, "Failed to calculate shipping cost");
       }
@@ -165,7 +163,7 @@ export const transactionService = {
 
         const snapResponse = await snap.createTransaction({
           transaction_details: {
-            order_id: transaction.transactionId,
+            order_id: transaction.transactionNumber,
             gross_amount: Math.floor(grandTotal),
           },
           customer_details: {

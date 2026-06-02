@@ -1,4 +1,9 @@
-import { Prisma } from "../../generated/prisma/client";
+import {
+  PaymentStatus,
+  PaymentType,
+  Prisma,
+  TransactionStatus,
+} from "../../generated/prisma/client";
 import { AppError } from "./appErrror.util";
 
 const STATUS_MAPPING = {
@@ -7,7 +12,7 @@ const STATUS_MAPPING = {
   deny: { transactionStatus: "CANCELED", paymentStatus: "DENIED" },
   expire: { transactionStatus: "CANCELED", paymentStatus: "EXPIRED" },
   cancel: { transactionStatus: "CANCELED", paymentStatus: "CANCELLED" },
-  refund: { transactionStatus: "CANCELED", paymentStatus: "REFUND" },
+  refund: { transactionStatus: "CANCELED", paymentStatus: "REFUNDED" },
 } as const;
 
 // Map Midtrans status to internal status
@@ -57,9 +62,10 @@ const rollbackOrderStock = async (
 // Update transaction and payment status
 export const updateOrderPaymentStatus = async (
   transactionId: string,
-  transactionStatus: string,
-  paymentStatus: string,
-  tx: any,
+  transactionStatus: TransactionStatus,
+  paymentStatus: PaymentStatus,
+  paymentType: PaymentType,
+  tx: Prisma.TransactionClient,
 ): Promise<void> => {
   // Get current transaction state
   const current = await tx.transaction.findUnique({
@@ -68,8 +74,8 @@ export const updateOrderPaymentStatus = async (
 
   // Allow update if:
   const isAllowedTransition =
-    current.transactionStatus === "WAITING_FOR_PAYMENT" ||
-    (current.transactionStatus === "PROCESSING" &&
+    current?.transactionStatus === "WAITING_FOR_PAYMENT" ||
+    (current?.transactionStatus === "PROCESSING" &&
       transactionStatus === "CANCELED");
 
   if (!isAllowedTransition) {
@@ -78,12 +84,15 @@ export const updateOrderPaymentStatus = async (
 
   await tx.transaction.update({
     where: { transactionId },
-    data: { transactionStatus },
+    data: { transactionStatus, processedAt: new Date() },
   });
 
   await tx.payment.update({
     where: { transactionId },
-    data: { paymentStatus },
+    data: {
+      paymentStatus,
+      paymentType: paymentType.toUpperCase() as PaymentType,
+    },
   });
 };
 

@@ -5,11 +5,9 @@ import { catchAsync } from "../utils/catchAsync.util";
 export const paymentController = {
   // Midtrans webhook endpoint (no auth)
   webhookMidtrans: catchAsync(async (req: Request, res: Response) => {
-    try {
-      await paymentService.processMidtransWebhook(req.body);
-    } catch (error) {
+    console.log(req.body);
+    await paymentService.processMidtransWebhook(req.body);
 
-    }
     res.status(200).json({
       status: "success",
       message: "Webhook processed successfully",

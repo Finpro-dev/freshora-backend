@@ -25,6 +25,7 @@ export const paymentService = {
           transaction.transactionId,
           transactionStatus,
           paymentStatus,
+          payload.payment_type,
           tx,
         );
 
