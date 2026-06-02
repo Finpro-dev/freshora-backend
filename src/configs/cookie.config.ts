@@ -19,7 +19,7 @@ export const REFRESH_COOKIE_OPTIONS: CookieOptions = {
 
 export const USER_EMAIL_VERIFY_COOKIE_OPTIONS: CookieOptions = {
   httpOnly: true,
-  secure: SERVER_CREDENTIALS.NODE_ENV === "production",
+  secure: false,
   sameSite: "lax",
   path: "/",
   maxAge: 60 * 60 * 1000 * 24,

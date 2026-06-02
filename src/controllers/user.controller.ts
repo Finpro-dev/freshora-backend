@@ -3,6 +3,7 @@ import { userService } from "../services/user.service";
 // import { AuthenticatedRequest } from "../types/appRequest.type";
 import { catchAsync } from "../utils/catchAsync.util";
 import { clearTokenCookies } from "../utils/token.util";
+import { USER_EMAIL_VERIFY_COOKIE_OPTIONS } from "../configs/cookie.config";
 
 export const userController = {
   getProfile: catchAsync(async (req: Request, res: Response) => {
@@ -39,6 +40,8 @@ export const userController = {
 
     clearTokenCookies(res);
     await userService.verifyEmail(token);
+    res.clearCookie("emailForVerify", USER_EMAIL_VERIFY_COOKIE_OPTIONS);
+
     res.status(200).json({
       status: "success",
       message: "Email is verified successfully",

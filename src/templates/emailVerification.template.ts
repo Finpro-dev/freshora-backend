@@ -21,7 +21,7 @@ export const emailVerificationTemplate = (
 
     <!-- Call to Action Button -->
     <div style="text-align: center; margin-bottom: 24px;">
-      <a href="${CORS_CREDENTIALS.FRONTEND_URL}/verify-email?token${token}&verifyType=${!verifyType ? "VERIFY_PASSWORD" : verifyType}" target="_blank" style="display: inline-block; background-color: #10b981; color: #ffffff; font-size: 14px; font-weight: 600; text-decoration: none; padding: 12px 32px; border-radius: 8px; box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);">
+      <a href="${CORS_CREDENTIALS.FRONTEND_URL}/verify-email?token=${token}&verifyType=${!verifyType ? "VERIFY_PASSWORD" : verifyType}" target="_blank" style="display: inline-block; background-color: #10b981; color: #ffffff; font-size: 14px; font-weight: 600; text-decoration: none; padding: 12px 32px; border-radius: 8px; box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);">
         Verify Email Address
       </a>
     </div>

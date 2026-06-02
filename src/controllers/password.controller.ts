@@ -7,6 +7,7 @@ import {
   SetNewPasswordParams,
 } from "../schemas/resetPassword.schema";
 import { clearTokenCookies } from "../utils/token.util";
+import { USER_EMAIL_VERIFY_COOKIE_OPTIONS } from "../configs/cookie.config";
 
 export const passwordController = {
   createPassword: catchAsync(
@@ -18,6 +19,8 @@ export const passwordController = {
       const { password } = req.body;
 
       await passwordService.createPassword(password, token);
+
+      res.clearCookie("emailForVerify", USER_EMAIL_VERIFY_COOKIE_OPTIONS);
 
       res.status(201).json({
         status: "success",

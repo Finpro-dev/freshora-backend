@@ -6,7 +6,8 @@ export const verificationRequestSchema = z.object({
       .email("Invalid email format")
       .trim()
       .toLowerCase()
-      .max(30, "Email must be at most 30 characters"),
+      .max(30, "Email must be at most 30 characters")
+      .optional(),
   }),
 });
 

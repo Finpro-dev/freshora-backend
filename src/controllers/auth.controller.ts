@@ -12,13 +12,13 @@ import { USER_EMAIL_VERIFY_COOKIE_OPTIONS } from "../configs/cookie.config";
 export const authController = {
   signup: catchAsync(
     async (req: Request<{}, {}, SignupInput>, res: Response) => {
-      const newUser = await authServices.signup(req.body);
-
       res.cookie(
         "emailForVerify",
-        newUser?.email,
+        req.body.email as string,
         USER_EMAIL_VERIFY_COOKIE_OPTIONS,
       );
+
+      await authServices.signup(req.body);
 
       res.status(201).json({
         status: "success",

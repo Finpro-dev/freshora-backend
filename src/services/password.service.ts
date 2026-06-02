@@ -33,7 +33,7 @@ export const passwordService = {
 
       if (!isValidToken)
         throw new AppError(
-          401,
+          410,
           "Link has expired, request new verification link",
         );
 
@@ -83,7 +83,7 @@ export const passwordService = {
 
       // if the user has not been authenticated
       if (!user.password && !user.isVerified)
-        throw new AppError(401, "Please verify your email to create password");
+        throw new AppError(400, "Please verify your email to create password");
 
       // check if the prev token is still active
       const isTokenActive = await prisma.resetPassword.findFirst({
@@ -151,7 +151,7 @@ export const passwordService = {
 
       if (!isValidToken)
         throw new AppError(
-          401,
+          410,
           "Link has expired, request new reset password link",
         );
 
