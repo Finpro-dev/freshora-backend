@@ -13,6 +13,7 @@ import {
 } from "../schemas/resetPassword.schema";
 import passport from "passport";
 import { handleGoogleAuthSuccess } from "../controllers/authGoogle.controller";
+import { CORS_CREDENTIALS } from "../configs/dotenv.config";
 
 const route = Router();
 
@@ -69,7 +70,7 @@ route.get(
 route.get(
   "/google/callback",
   passport.authenticate("google", {
-    failureRedirect: "http://localhost:3000/login",
+    failureRedirect: `${CORS_CREDENTIALS.FRONTEND_URL}/login`,
     session: false,
   }),
   handleGoogleAuthSuccess,

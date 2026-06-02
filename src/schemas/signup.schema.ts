@@ -42,7 +42,6 @@ export const signupSchema = z.object({
 
     usedReferralCode: z
       .string()
-      .min(5, "Referral code must be at least 1 character")
       .trim()
       .max(30, "Referral code too long")
       .optional()

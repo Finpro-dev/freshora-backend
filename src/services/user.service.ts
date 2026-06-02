@@ -103,7 +103,7 @@ export const userService = {
 
       if (!isValidToken)
         throw new AppError(
-          401,
+          410,
           "Link has expired, request new verification link",
         );
 

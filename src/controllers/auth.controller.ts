@@ -7,10 +7,17 @@ import { authServices } from "../services/auth.service";
 import { AppError } from "../utils/appErrror.util";
 import { catchAsync } from "../utils/catchAsync.util";
 import { clearTokenCookies, setTokenCookies } from "../utils/token.util";
+import { USER_EMAIL_VERIFY_COOKIE_OPTIONS } from "../configs/cookie.config";
 
 export const authController = {
   signup: catchAsync(
     async (req: Request<{}, {}, SignupInput>, res: Response) => {
+      res.cookie(
+        "emailForVerify",
+        req.body.email as string,
+        USER_EMAIL_VERIFY_COOKIE_OPTIONS,
+      );
+
       await authServices.signup(req.body);
 
       res.status(201).json({
@@ -22,7 +29,8 @@ export const authController = {
 
   verifyRequest: catchAsync(
     async (req: Request<{}, {}, VerificationRequestInput>, res: Response) => {
-      const { email } = req.body;
+      const email = req.cookies.emailForVerify || req.body.email;
+
       await authServices.verifyRequest(email);
 
       res.status(201).json({
