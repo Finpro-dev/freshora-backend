@@ -94,6 +94,8 @@ export const transactionService = {
           courier: "jnt",
         });
 
+        console.log("SHIPPING --> ", shippingResult);
+
         while (!shippingResult) {
           const restCouriers = rajaOngkirCouriers.slice(1);
 
@@ -108,6 +110,8 @@ export const transactionService = {
             }
           }
         }
+
+        console.log("SHIPPING --> ", shippingResult);
 
         if (!shippingResult)
           throw new AppError(400, "Failed to calculate shipping cost");

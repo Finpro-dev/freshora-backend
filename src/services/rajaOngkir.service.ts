@@ -24,6 +24,8 @@ export const rajaOngkirService = {
         },
       });
 
+      console.log("RES RAJA ONGKIR", res);
+
       return res.data.data.at(0).cost;
     } catch (error: any) {
       if (error.isAxiosError && error.response) {

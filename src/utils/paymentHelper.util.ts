@@ -1,3 +1,6 @@
+import { Prisma } from "../../generated/prisma/client";
+import { AppError } from "./appErrror.util";
+
 const STATUS_MAPPING = {
   capture: { transactionStatus: "PROCESSING", paymentStatus: "SETTLEMENT" },
   settlement: { transactionStatus: "PROCESSING", paymentStatus: "SETTLEMENT" },
@@ -9,14 +12,20 @@ const STATUS_MAPPING = {
 
 // Map Midtrans status to internal status
 export const mapMidtransStatus = (status: string) => {
-  const mapped = STATUS_MAPPING[status.toLowerCase() as keyof typeof STATUS_MAPPING];
-  return mapped || { transactionStatus: "WAITING_FOR_PAYMENT", paymentStatus: "PENDING" };
+  const mapped =
+    STATUS_MAPPING[status.toLowerCase() as keyof typeof STATUS_MAPPING];
+  return (
+    mapped || {
+      transactionStatus: "WAITING_FOR_PAYMENT",
+      paymentStatus: "PENDING",
+    }
+  );
 };
 
 // Rollback stock when payment fails
 const rollbackOrderStock = async (
   transactionId: string,
-  tx: any,
+  tx: Prisma.TransactionClient,
 ): Promise<void> => {
   const items = await tx.orderItem.findMany({
     where: { transactionId },
@@ -60,10 +69,11 @@ export const updateOrderPaymentStatus = async (
   // Allow update if:
   const isAllowedTransition =
     current.transactionStatus === "WAITING_FOR_PAYMENT" ||
-    (current.transactionStatus === "PROCESSING" && transactionStatus === "CANCELED");
+    (current.transactionStatus === "PROCESSING" &&
+      transactionStatus === "CANCELED");
 
   if (!isAllowedTransition) {
-    return;
+    throw new AppError(405, "You are not allowed to modify the transaction");
   }
 
   await tx.transaction.update({
@@ -80,7 +90,7 @@ export const updateOrderPaymentStatus = async (
 // Rollback payment stock
 export const rollbackPaymentStock = async (
   transactionId: string,
-  tx: any,
+  tx: Prisma.TransactionClient,
 ): Promise<void> => {
   await rollbackOrderStock(transactionId, tx);
 };
