@@ -88,4 +88,14 @@ export const storeController = {
       message: "Store status set to primary successfully",
     });
   }),
+
+  getPrimaryStore: catchAsync(async (req: Request, res: Response) => {
+    const primaryStore = await storeService.getPrimaryStore();
+
+    res.status(200).json({
+      status: "success",
+      message: "Primary store is retrieved successfully",
+      data: { storeId: primaryStore?.storeId },
+    });
+  }),
 };

@@ -31,6 +31,13 @@ route.get(
   storeController.getStoreDetails,
 );
 
+route.get(
+  "/me/primary-store",
+  authentication,
+  authorization("SUPER_ADMIN", "CUSTOMER"),
+  storeController.getPrimaryStore,
+);
+
 route.delete(
   "/:storeId",
   authentication,
