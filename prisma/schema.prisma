@@ -23,6 +23,11 @@ enum AddressStatus {
   SECONDARY
 }
 
+enum StoreStatus {
+  PRIMARY
+  SECONDARY
+}
+
 enum Unit {
   KG
   G
@@ -208,6 +213,7 @@ model ResetPassword {
 model Cart {
   cartId String @id @default(uuid())
   userId String @unique
+  storeId String 
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -215,6 +221,7 @@ model Cart {
 
   cartItems CartItem[]
   user      User       @relation(fields: [userId], references: [userId])
+  store   Store         @relation(fields: [storeId], references: [storeId])
 
   @@map("carts")
 }
@@ -307,6 +314,7 @@ model Store {
   longitude  Float?
   phone      String  @db.VarChar(15)
   avatar     String?
+  storeStatus   StoreStatus @default(SECONDARY)
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -317,6 +325,7 @@ model Store {
   mutationsTo   Mutation[]    @relation("toStore")
   stocks        Stock[]
   transactions  Transaction[]
+  carts         Cart[]
 
   @@map("stores")
 }

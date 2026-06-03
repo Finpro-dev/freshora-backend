@@ -1,15 +1,17 @@
 import { prisma } from "../configs/prisma.config";
 import { AppError } from "./appErrror.util";
 
-export const ensureUserCart = async (userId: string) => {
+export const ensureUserCart = async (userId: string, storeId?: string) => {
   let cart = await prisma.cart.findUnique({
     where: { userId },
   });
 
-  if (!cart) {
+  if (!cart && storeId) {
     cart = await prisma.cart.create({
-      data: { userId },
+      data: { userId, storeId },
     });
+  } else {
+    return null;
   }
 
   return cart;
@@ -59,7 +61,11 @@ export const fetchPaginatedCartItems = async (
       where: { cartId },
       skip,
       take: limit,
-      include: { product: { include: { productPhotos: { take: 1, select: { photoUrl: true } } } } },
+      include: {
+        product: {
+          include: { productPhotos: { take: 1, select: { photoUrl: true } } },
+        },
+      },
     }),
     prisma.cartItem.count({ where: { cartId } }),
   ]);
@@ -93,7 +99,13 @@ export const formatCartResponse = (
   return {
     cartId,
     cartItems,
-    pagination: { page, limit, total, totalPages, hasNextPage: page < totalPages },
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages,
+      hasNextPage: page < totalPages,
+    },
   };
 };
 
@@ -113,8 +125,14 @@ export const upsertCartItem = async (
       });
 };
 
-export const updateOrDeleteItem = async (cartItemId: string, newQuantity: number) => {
+export const updateOrDeleteItem = async (
+  cartItemId: string,
+  newQuantity: number,
+) => {
   return newQuantity <= 0
     ? await prisma.cartItem.delete({ where: { cartItemId } })
-    : await prisma.cartItem.update({ where: { cartItemId }, data: { quantity: newQuantity } });
+    : await prisma.cartItem.update({
+        where: { cartItemId },
+        data: { quantity: newQuantity },
+      });
 };

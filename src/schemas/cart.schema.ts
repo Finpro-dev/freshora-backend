@@ -2,9 +2,8 @@ import { z } from "zod";
 
 export const addToCartSchema = z.object({
   body: z.object({
-    productId: z
-      .string()
-      .uuid("Invalid product ID format"),
+    productId: z.uuid("Invalid product ID format"),
+    storeId: z.uuid("Invalid storeId ID format"),
     quantity: z
       .number()
       .int("Quantity must be an integer")
@@ -22,12 +21,12 @@ export const updateCartSchema = z.object({
       .max(1000, "Quantity must be at most 1000"),
     operation: z
       .enum(["set", "increase", "decrease"])
-      .describe("set = replace quantity, increase = add quantity, decrease = reduce quantity"),
+      .describe(
+        "set = replace quantity, increase = add quantity, decrease = reduce quantity",
+      ),
   }),
   params: z.object({
-    cartItemId: z
-      .string()
-      .uuid("Invalid cart item ID format"),
+    cartItemId: z.string().uuid("Invalid cart item ID format"),
   }),
 });
 

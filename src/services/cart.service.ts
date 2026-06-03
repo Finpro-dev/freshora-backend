@@ -1,5 +1,9 @@
 import { prisma } from "../configs/prisma.config";
-import { AddToCartInput, UpdateCartInput, PaginationInput } from "../schemas/cart.schema";
+import {
+  AddToCartInput,
+  UpdateCartInput,
+  PaginationInput,
+} from "../schemas/cart.schema";
 import {
   validateStockAvailability,
   validateCartItemOwnership,
@@ -14,12 +18,20 @@ import {
 import { handlePrismaError } from "../utils/prismaErrorHandler.util";
 
 export const cartServices = {
-  getAllCart: async (userId: string, pagination: PaginationInput) => {
+  getAllCart: async (
+    userId: string,
+    storeId: string,
+    pagination: PaginationInput,
+  ) => {
     try {
-      const cart = await ensureUserCart(userId);
+      const cart = await ensureUserCart(userId, storeId);
       const { page, limit, skip } = calculatePagination(pagination);
-      const { cartItems, total } = await fetchPaginatedCartItems(cart.cartId, skip, limit);
-      return formatCartResponse(cart.cartId, cartItems, total, page, limit);
+      const { cartItems, total } = await fetchPaginatedCartItems(
+        cart!.cartId,
+        skip,
+        limit,
+      );
+      return formatCartResponse(cart!.cartId, cartItems, total, page, limit);
     } catch (error) {
       handlePrismaError(error);
     }
@@ -27,26 +39,44 @@ export const cartServices = {
 
   addToCart: async (userId: string, data: AddToCartInput) => {
     try {
-      const { productId, quantity } = data;
-      const cart = await ensureUserCart(userId);
+      const { productId, storeId, quantity } = data;
+      const cart = await ensureUserCart(userId, storeId);
       const existing = await prisma.cartItem.findFirst({
-        where: { cartId: cart.cartId, productId },
+        where: { cartId: cart!.cartId, productId },
       });
       const totalQuantity = (existing?.quantity || 0) + quantity;
       await validateStockAvailability(productId, totalQuantity);
-      return await upsertCartItem(cart.cartId, productId, totalQuantity, existing);
+      return await upsertCartItem(
+        cart!.cartId,
+        productId,
+        totalQuantity,
+        existing,
+      );
     } catch (error) {
       handlePrismaError(error);
     }
   },
 
-  updateCartItem: async (userId: string, cartItemId: string, data: UpdateCartInput) => {
+  updateCartItem: async (
+    userId: string,
+    cartItemId: string,
+    data: UpdateCartInput,
+  ) => {
     try {
       const { quantity, operation } = data;
       await validateCartItemOwnership(userId, cartItemId);
-      const cartItem = await prisma.cartItem.findUniqueOrThrow({ where: { cartItemId } });
-      const newQuantity = calculateNewQuantity(cartItem.quantity, quantity, operation);
-      if (operation === "increase" || (operation === "set" && newQuantity > cartItem.quantity)) {
+      const cartItem = await prisma.cartItem.findUniqueOrThrow({
+        where: { cartItemId },
+      });
+      const newQuantity = calculateNewQuantity(
+        cartItem.quantity,
+        quantity,
+        operation,
+      );
+      if (
+        operation === "increase" ||
+        (operation === "set" && newQuantity > cartItem.quantity)
+      ) {
         await validateStockAvailability(cartItem.productId, newQuantity);
       }
       return await updateOrDeleteItem(cartItemId, newQuantity);
@@ -67,8 +97,15 @@ export const cartServices = {
   getCartCount: async (userId: string) => {
     try {
       const cart = await ensureUserCart(userId);
-      const cartItems = await prisma.cartItem.findMany({ where: { cartId: cart.cartId } });
-      const totalQuantity = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+
+      if (!cart) return 0;
+      const cartItems = await prisma.cartItem.findMany({
+        where: { cartId: cart.cartId },
+      });
+      const totalQuantity = cartItems.reduce(
+        (sum, item) => sum + item.quantity,
+        0,
+      );
       return { totalQuantity };
     } catch (error) {
       handlePrismaError(error);
