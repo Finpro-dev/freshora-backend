@@ -204,4 +204,27 @@ export const storeService = {
       handlePrismaError(error);
     }
   },
+
+  setPrimaryStore: async (storeId: string) => {
+    try {
+      await prisma.$transaction(async (tx) => {
+        await tx.store.updateMany({
+          data: {
+            storeStatus: "SECONDARY",
+          },
+        });
+
+        await tx.store.update({
+          where: {
+            storeId,
+          },
+          data: {
+            storeStatus: "PRIMARY",
+          },
+        });
+      });
+    } catch (error) {
+      handlePrismaError(error);
+    }
+  },
 };

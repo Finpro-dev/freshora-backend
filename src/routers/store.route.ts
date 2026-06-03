@@ -54,4 +54,11 @@ route.patch(
   storeController.assignStoreAdmin,
 );
 
+route.patch(
+  "/:storeId/set-primary",
+  authentication,
+  authorization("SUPER_ADMIN"),
+  storeController.setPrimaryStore,
+);
+
 export default route;
