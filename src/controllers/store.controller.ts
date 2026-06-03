@@ -77,4 +77,25 @@ export const storeController = {
       message: "Admin store is assigned successfully",
     });
   }),
+
+  setPrimaryStore: catchAsync(async (req: Request, res: Response) => {
+    const storeId = req.params.storeId as string;
+
+    await storeService.setPrimaryStore(storeId);
+
+    res.status(200).json({
+      status: "success",
+      message: "Store status set to primary successfully",
+    });
+  }),
+
+  getPrimaryStore: catchAsync(async (req: Request, res: Response) => {
+    const primaryStore = await storeService.getPrimaryStore();
+
+    res.status(200).json({
+      status: "success",
+      message: "Primary store is retrieved successfully",
+      data: { storeId: primaryStore?.storeId },
+    });
+  }),
 };

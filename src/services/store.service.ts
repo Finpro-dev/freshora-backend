@@ -13,6 +13,12 @@ export const storeService = {
       let url = "";
       if (file) url = await uploadSingle(file, "freshora/store-avatars");
 
+      const isPrimaryStoreInitialized = await prisma.store.findFirst({
+        where: {
+          storeStatus: "PRIMARY",
+        },
+      });
+
       const createdStore = await prisma.store.create({
         data: {
           ...data,
@@ -23,6 +29,7 @@ export const storeService = {
           longitude: Number(data.longitude),
           avatar: url || null,
           userId: null,
+          storeStatus: !isPrimaryStoreInitialized ? "PRIMARY" : "SECONDARY",
         },
       });
 
@@ -203,5 +210,38 @@ export const storeService = {
     } catch (error) {
       handlePrismaError(error);
     }
+  },
+
+  setPrimaryStore: async (storeId: string) => {
+    try {
+      await prisma.$transaction(async (tx) => {
+        await tx.store.updateMany({
+          data: {
+            storeStatus: "SECONDARY",
+          },
+        });
+
+        await tx.store.update({
+          where: {
+            storeId,
+          },
+          data: {
+            storeStatus: "PRIMARY",
+          },
+        });
+      });
+    } catch (error) {
+      handlePrismaError(error);
+    }
+  },
+
+  getPrimaryStore: async () => {
+    const primaryStore = await prisma.store.findFirst({
+      where: {
+        storeStatus: "PRIMARY",
+      },
+    });
+
+    return primaryStore;
   },
 };

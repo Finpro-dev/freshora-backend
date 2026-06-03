@@ -31,6 +31,13 @@ route.get(
   storeController.getStoreDetails,
 );
 
+route.get(
+  "/me/primary-store",
+  authentication,
+  authorization("SUPER_ADMIN", "CUSTOMER"),
+  storeController.getPrimaryStore,
+);
+
 route.delete(
   "/:storeId",
   authentication,
@@ -52,6 +59,13 @@ route.patch(
   authentication,
   authorization("SUPER_ADMIN"),
   storeController.assignStoreAdmin,
+);
+
+route.patch(
+  "/:storeId/set-primary",
+  authentication,
+  authorization("SUPER_ADMIN"),
+  storeController.setPrimaryStore,
 );
 
 export default route;
