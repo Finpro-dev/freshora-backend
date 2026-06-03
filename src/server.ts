@@ -23,6 +23,7 @@ import userRoute from "./routers/user.route";
 import transactionRoute from "./routers/transaction.route";
 import passport from "passport";
 import { configureGooglePassport } from "./configs/passport.config";
+import categoryRoute from "./routers/category.route";
 
 const app: Express = express();
 

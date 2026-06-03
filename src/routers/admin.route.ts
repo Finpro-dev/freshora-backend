@@ -1,35 +1,22 @@
 import { Router } from "express";
 import { adminController } from "../controllers/admin.controller";
 import { authorization, authentication } from "../middlewares/auth.middleware";
+import categoryRoute from "./category.route";
 
 const adminRoute = Router();
 
 // Apply authentication middleware first
-adminRoute.use(authentication);
+adminRoute.use(authentication, authorization("SUPER_ADMIN"));
 
 // GET /api/admin/users - Get all users (SUPER_ADMIN only)
-adminRoute.get(
-  "/users",
-  authorization("SUPER_ADMIN"),
-  adminController.getUsers,
-);
+adminRoute.get("/users", adminController.getUsers);
 
-adminRoute.post(
-  "/store-admin",
-  authorization("SUPER_ADMIN"),
-  adminController.createStoreAdmin,
-);
+adminRoute.patch("/store-admin/:adminId", adminController.updateStoreAdmin);
 
-adminRoute.patch(
-  "/store-admin/:adminId",
-  authorization("SUPER_ADMIN"),
-  adminController.updateStoreAdmin,
-);
+adminRoute.post("/store-admin", adminController.createStoreAdmin);
 
-adminRoute.delete(
-  "/store-admin/:adminId",
-  authorization("SUPER_ADMIN"),
-  adminController.deleteStoreAdmin,
-);
+adminRoute.delete("/store-admin/:adminId", adminController.deleteStoreAdmin);
+
+adminRoute.use("/categories", categoryRoute);
 
 export default adminRoute;

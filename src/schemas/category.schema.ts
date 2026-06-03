@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const createStoreSchema = z.object({
+export const createCategorySchema = z.object({
   body: z.object({
     category: z
       .string()
@@ -8,3 +8,5 @@ export const createStoreSchema = z.object({
       .max(30, "Category name cannot exceed 30 characters"),
   }),
 });
+
+export type CreateCategoryInput = z.infer<typeof createCategorySchema>["body"];

@@ -2,7 +2,6 @@ import { Request, Response } from "express";
 import { catchAsync } from "../utils/catchAsync.util";
 import { adminServices } from "../services/admin.service";
 import { SignupInput } from "../schemas/signup.schema";
-import { productServices } from "../services/product.service";
 import { VerificationRequestInput } from "../schemas/verificationRequest.schema";
 import { AppError } from "../utils/appErrror.util";
 
