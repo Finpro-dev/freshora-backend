@@ -34,22 +34,16 @@ export const transactionService = {
         where: { userId },
         include: { cartItems: { include: { product: true } } },
       });
+
       if (!cart?.cartItems.length) throw new AppError(400, "Cart is empty");
+
+      const storeId = cart.storeId;
 
       const address = await prisma.address.findUnique({
         where: { addressId: data.addressId },
       });
 
       if (!address) throw new AppError(404, "Address not found");
-      if (!address.latitude) {
-        throw new AppError(400, "Address needs coordinates");
-      }
-
-      // Find nearest store
-      const storeId = await findNearestStore(
-        address.latitude,
-        address.longitude!,
-      );
 
       // Validate total stock across all stores
       await validateTotalStock(cart.cartItems);
@@ -93,8 +87,6 @@ export const transactionService = {
           weight,
           courier: "jnt",
         });
-
-        console.log("SHIPPING --> ", shippingResult);
 
         while (!shippingResult) {
           const restCouriers = rajaOngkirCouriers.slice(1);
