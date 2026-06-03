@@ -15,7 +15,8 @@ export const cartController = {
       page: (req.query.page as unknown as number) || 1,
       limit: (req.query.limit as unknown as number) || 10,
     };
-    const cart = await cartServices.getAllCart(userId, pagination);
+    const storeId = req.body.storeId as string;
+    const cart = await cartServices.getAllCart(userId, storeId, pagination);
 
     res.status(200).json({
       status: "success",
