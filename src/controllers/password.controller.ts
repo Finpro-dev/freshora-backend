@@ -29,9 +29,12 @@ export const passwordController = {
     },
   ),
 
+  // send & resend request
   resetPassword: catchAsync(
     async (req: Request<{}, {}, ResetPasswordInput>, res: Response) => {
-      const { email } = req.body;
+      const email = req.cookies.emailForVerify || req.body.email;
+
+      res.cookie("emailForVerify", email, USER_EMAIL_VERIFY_COOKIE_OPTIONS);
 
       await passwordService.resetPassword({ email });
 
@@ -54,6 +57,7 @@ export const passwordController = {
 
       // to make sure user logout after setting up new password
       clearTokenCookies(res);
+      res.clearCookie("emailForVerify", USER_EMAIL_VERIFY_COOKIE_OPTIONS);
 
       res.status(200).json({
         status: "success",

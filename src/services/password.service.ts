@@ -95,6 +95,8 @@ export const passwordService = {
         },
       });
 
+      console.log(isTokenActive);
+
       if (isTokenActive)
         throw new AppError(
           409,
@@ -112,7 +114,7 @@ export const passwordService = {
       try {
         const fullName = generateFullName(user.firstName, user.lastName);
         await emailService.sendEmailWithToken(
-          email,
+          email!,
           resetPasswordTemplate(fullName, newToken),
         );
       } catch {

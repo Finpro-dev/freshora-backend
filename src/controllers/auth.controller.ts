@@ -31,7 +31,10 @@ export const authController = {
     async (req: Request<{}, {}, VerificationRequestInput>, res: Response) => {
       const email = req.cookies.emailForVerify || req.body.email;
 
-      await authServices.verifyRequest(email);
+      await authServices.verifyRequest({
+        email,
+        verifyType: req.body.verifyType,
+      });
 
       res.status(201).json({
         status: "success",

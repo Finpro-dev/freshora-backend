@@ -14,6 +14,7 @@ import { handlePrismaError } from "../utils/prismaErrorHandler.util";
 import { generateTokens, verifyRefreshToken } from "../utils/token.util";
 import { generateFullName } from "../utils/userDataTransform.util";
 import { verifyTokenService } from "./verifyToken.service";
+import { VerificationRequestInput } from "../schemas/verificationRequest.schema";
 
 export const authServices = {
   signup: async (data: SignupInput) => {
@@ -140,7 +141,9 @@ export const authServices = {
     }
   },
 
-  verifyRequest: async (email: string) => {
+  verifyRequest: async (data: VerificationRequestInput) => {
+    const email = String(data.email);
+    const verifyType = data.verifyType || "VERIFY_PASSWORD";
     // find user
     const isValidUser = await prisma.user.findUnique({
       where: {
@@ -176,7 +179,12 @@ export const authServices = {
       isValidUser.lastName,
     );
 
-    await verifyTokenService.createVerifyToken(userId, fullName, email);
+    await verifyTokenService.createVerifyToken(
+      userId,
+      fullName,
+      email,
+      verifyType,
+    );
   },
 
   login: async ({ email, password }: LoginInput) => {
