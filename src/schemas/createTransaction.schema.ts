@@ -5,8 +5,10 @@ export const createTransactionSchema = z.object({
     addressId: z
       .uuid("Invalid address ID format")
       .min(1, "Address ID is required"),
-    referralVoucherId: z.uuid("Invalid address ID format").optional(),
-    freeShippingVoucherId: z.uuid("Invalid address ID format").optional(),
+    referralVoucherId: z.uuid("Invalid referral voucher ID format").optional(),
+    freeShippingVoucherId: z
+      .uuid("Invalid free shipping voucher ID format")
+      .optional(),
   }),
 });
 
