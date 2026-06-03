@@ -1,0 +1,15 @@
+export const userSelect = {
+  userId: true,
+  firstName: true,
+  lastName: true,
+  email: true,
+  phone: true,
+  gender: true,
+  role: true,
+  isVerified: true,
+  avatar: true,
+  myReferralCode: true,
+  usedReferralCode: true,
+  createdAt: true,
+  updatedAt: true,
+} as const;

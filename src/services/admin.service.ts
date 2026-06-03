@@ -1,5 +1,7 @@
 import { prisma } from "../configs/prisma.config";
+import { GetUsersQuery } from "../schemas/admin.schema";
 import { SignupInput } from "../schemas/signup.schema";
+import { userSelect } from "../statics/user.select";
 import { AppError } from "../utils/appErrror.util";
 import { createUniqueReferralCode } from "../utils/createUniqueReferralCode";
 import { handlePrismaError } from "../utils/prismaErrorHandler.util";
@@ -7,9 +9,9 @@ import { generateFullName } from "../utils/userDataTransform.util";
 import { verifyTokenService } from "./verifyToken.service";
 
 export const adminServices = {
-  getAllUsers: async (query: any) => {
-    const page = Number(query.page) || 1;
-    const limit = Number(query.limit) || 10;
+  getAllUsers: async (query: GetUsersQuery) => {
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 10;
     const role = query.role;
     const skip = (page - 1) * limit;
     const allowedRoles = ["CUSTOMER", "STORE_ADMIN"]; // filter role yang diperbolehkan
@@ -25,21 +27,7 @@ export const adminServices = {
         where,
         skip,
         take: limit,
-        select: {
-          userId: true,
-          firstName: true,
-          lastName: true,
-          email: true,
-          phone: true,
-          gender: true,
-          role: true,
-          isVerified: true,
-          avatar: true,
-          myReferralCode: true,
-          usedReferralCode: true,
-          createdAt: true,
-          updatedAt: true,
-        },
+        select: userSelect,
         orderBy: {
           createdAt: "desc",
         },
@@ -59,6 +47,24 @@ export const adminServices = {
         totalPages: Math.ceil(total / limit),
       },
     };
+  },
+
+  getUserById: async (userId: string) => {
+    try {
+      const userDetails = await prisma.user.findFirst({
+        where: {
+          userId,
+          deletedAt: null,
+        },
+        select: userSelect,
+      });
+      if (!userDetails) {
+        throw new AppError(404, "User not found");
+      }
+      return userDetails;
+    } catch (error) {
+      handlePrismaError(error);
+    }
   },
 
   createStoreAdmin: async (data: SignupInput) => {
