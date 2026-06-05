@@ -23,7 +23,8 @@ export const cartServices = {
   getAllCart: async (userId: string, pagination: PaginationInput) => {
     try {
       const cart = await ensureUserCart(userId);
-      if (!cart) return formatCartResponse("", [], 0, 1, pagination.limit || 10);
+      if (!cart)
+        return formatCartResponse("", [], 0, 1, pagination.limit || 10);
 
       const { page, limit, skip } = calculatePagination(pagination);
       const { cartItems, total } = await fetchPaginatedCartItems(
@@ -43,7 +44,7 @@ export const cartServices = {
       const { productId, storeId, quantity } = data;
 
       // Get or create cart for this user
-      const cart = await ensureUserCart(userId);
+      const cart = await ensureUserCart(userId, storeId);
       if (!cart) throw new AppError(400, "Cart not found");
 
       // Enforce single-store cart: block cross-store additions
@@ -96,7 +97,11 @@ export const cartServices = {
       ) {
         const cart = await prisma.cart.findUnique({ where: { userId } });
         if (!cart) throw new AppError(404, "Cart not found");
-        await validateStockAvailability(cart.storeId, cartItem.productId, newQuantity);
+        await validateStockAvailability(
+          cart.storeId,
+          cartItem.productId,
+          newQuantity,
+        );
       }
 
       return updateOrDeleteItem(cartItemId, newQuantity);

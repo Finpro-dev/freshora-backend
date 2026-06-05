@@ -78,7 +78,10 @@ export const calculateNewQuantity = (
 };
 
 // Computes page/skip values for pagination.
-export const calculatePagination = (pagination: { page?: number; limit?: number }) => {
+export const calculatePagination = (pagination: {
+  page?: number;
+  limit?: number;
+}) => {
   const page = pagination.page || 1;
   const limit = pagination.limit || 10;
   return { page, limit, skip: (page - 1) * limit };
@@ -96,7 +99,13 @@ export const formatCartResponse = (
   return {
     cartId,
     cartItems,
-    pagination: { page, limit, total, totalPages, hasNextPage: page < totalPages },
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages,
+      hasNextPage: page < totalPages,
+    },
   };
 };
 
@@ -108,13 +117,22 @@ export const upsertCartItem = async (
   existing: any,
 ) => {
   return existing
-    ? prisma.cartItem.update({ where: { cartItemId: existing.cartItemId }, data: { quantity } })
+    ? prisma.cartItem.update({
+        where: { cartItemId: existing.cartItemId },
+        data: { quantity },
+      })
     : prisma.cartItem.create({ data: { cartId, productId, quantity } });
 };
 
 // Updates quantity or removes item if quantity drops to zero.
-export const updateOrDeleteItem = async (cartItemId: string, newQuantity: number) => {
+export const updateOrDeleteItem = async (
+  cartItemId: string,
+  newQuantity: number,
+) => {
   return newQuantity <= 0
     ? prisma.cartItem.delete({ where: { cartItemId } })
-    : prisma.cartItem.update({ where: { cartItemId }, data: { quantity: newQuantity } });
+    : prisma.cartItem.update({
+        where: { cartItemId },
+        data: { quantity: newQuantity },
+      });
 };
