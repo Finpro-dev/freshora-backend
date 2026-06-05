@@ -4,7 +4,7 @@ import { SignupInput } from "../schemas/signup.schema";
 import { VerificationRequestInput } from "../schemas/verificationRequest.schema";
 import { authServices } from "../services/auth.service";
 // import { AuthenticatedRequest } from "../types/appRequest.type";
-import { AppError } from "../utils/appErrror.util";
+import { AppError } from "../utils/appError.util";
 import { catchAsync } from "../utils/catchAsync.util";
 import { clearTokenCookies, setTokenCookies } from "../utils/token.util";
 import { USER_EMAIL_VERIFY_COOKIE_OPTIONS } from "../configs/cookie.config";

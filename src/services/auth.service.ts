@@ -6,7 +6,7 @@ import { LoginInput } from "../schemas/login.schema";
 import { SignupInput } from "../schemas/signup.schema";
 import { REFERRAL_VOUCHER_PERCENTAGE } from "../statics/referralVoucher.static";
 import { TokenPayload } from "../types/token.type";
-import { AppError } from "../utils/appErrror.util";
+import { AppError } from "../utils/appError.util";
 import { createUniqueCouponCode } from "../utils/createUniqueCouponCode";
 import { createUniqueReferralCode } from "../utils/createUniqueReferralCode";
 import { formatUserResponse } from "../utils/formatUserResponse";

@@ -84,7 +84,7 @@ app.use("/api/stores", storeRoute);
 // transactions
 app.use("/api/transactions", transactionRoute);
 
-// globar error middleware
+// global error middleware
 app.use(globalErrorHandler);
 
 if (SERVER_CREDENTIALS.NODE_ENV !== "production") {

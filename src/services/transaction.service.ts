@@ -2,7 +2,7 @@ import { snap } from "../configs/midtrans.config";
 import { prisma } from "../configs/prisma.config";
 import { CreateTransactionInput } from "../schemas/createTransaction.schema";
 import { rajaOngkirCouriers } from "../statics/courir.static";
-import { AppError } from "../utils/appErrror.util";
+import { AppError } from "../utils/appError.util";
 import { handlePrismaError } from "../utils/prismaErrorHandler.util";
 import {
   calculateProductDiscount,
