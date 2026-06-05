@@ -14,7 +14,7 @@ export const userController = {
     res.status(200).json({
       success: true,
       message: "User profile retrieved successfully",
-      user,
+      data: user,
     });
   }),
 
