@@ -2,21 +2,17 @@ import { Request, Response } from "express";
 import {
   AddToCartInput,
   UpdateCartInput,
-  PaginationInput,
 } from "../schemas/cart.schema";
 import { cartServices } from "../services/cart.service";
 import { catchAsync } from "../utils/catchAsync.util";
-// import { AuthenticatedRequest } from "../types/appRequest.type";
 
 export const cartController = {
   getAllCart: catchAsync(async (req: Request, res: Response) => {
-    const userId = req.user?.userId as string;
-    const pagination: PaginationInput = {
-      page: (req.query.page as unknown as number) || 1,
-      limit: (req.query.limit as unknown as number) || 10,
-    };
-    const storeId = req.body.storeId as string;
-    const cart = await cartServices.getAllCart(userId, storeId, pagination);
+    const userId = req.user!.userId;
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 10;
+
+    const cart = await cartServices.getAllCart(userId, { page, limit });
 
     res.status(200).json({
       status: "success",
@@ -26,11 +22,10 @@ export const cartController = {
   }),
 
   addToCart: catchAsync(async (req: Request, res: Response) => {
-    const userId = req.user?.userId as string;
-    const cartItem = await cartServices.addToCart(
-      userId,
-      req.body as AddToCartInput,
-    );
+    const userId = req.user!.userId;
+    const data = req.body as AddToCartInput;
+
+    const cartItem = await cartServices.addToCart(userId, data);
 
     res.status(201).json({
       status: "success",
@@ -40,13 +35,11 @@ export const cartController = {
   }),
 
   updateCartItem: catchAsync(async (req: Request, res: Response) => {
-    const userId = req.user?.userId as string;
+    const userId = req.user!.userId;
     const { cartItemId } = req.params as { cartItemId: string };
-    const result = await cartServices.updateCartItem(
-      userId,
-      cartItemId,
-      req.body as UpdateCartInput,
-    );
+    const data = req.body as UpdateCartInput;
+
+    const result = await cartServices.updateCartItem(userId, cartItemId, data);
 
     res.status(200).json({
       status: "success",
@@ -56,8 +49,9 @@ export const cartController = {
   }),
 
   removeCartItem: catchAsync(async (req: Request, res: Response) => {
-    const userId = req.user?.userId as string;
+    const userId = req.user!.userId;
     const { cartItemId } = req.params as { cartItemId: string };
+
     await cartServices.removeCartItem(userId, cartItemId);
 
     res.status(200).json({
@@ -67,7 +61,8 @@ export const cartController = {
   }),
 
   getCartCount: catchAsync(async (req: Request, res: Response) => {
-    const userId = req.user?.userId as string;
+    const userId = req.user!.userId;
+
     const result = await cartServices.getCartCount(userId);
 
     res.status(200).json({

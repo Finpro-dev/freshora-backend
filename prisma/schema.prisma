@@ -240,6 +240,7 @@ model CartItem {
   product Product @relation(fields: [productId], references: [productId])
 
   @@map("cartItems")
+  @@unique([cartId, productId])
 }
 
 model ProductCategory {
