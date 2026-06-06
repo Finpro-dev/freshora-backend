@@ -1,7 +1,7 @@
 import { Prisma } from "../../generated/prisma/client";
 import { prisma } from "../configs/prisma.config";
 import { TDiscount } from "../types/transaction.type";
-import { AppError } from "./appErrror.util";
+import { AppError } from "./appError.util";
 import { haversineDistance } from "./distance.util";
 
 const getStoresWithCoordinates = (tx: any) =>

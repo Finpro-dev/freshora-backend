@@ -23,7 +23,7 @@ export const passwordController = {
       res.clearCookie("emailForVerify", USER_EMAIL_VERIFY_COOKIE_OPTIONS);
 
       res.status(201).json({
-        status: "success",
+        success: true,
         message: "Account is activated successfully",
       });
     },
@@ -39,7 +39,7 @@ export const passwordController = {
       await passwordService.resetPassword({ email });
 
       res.status(200).json({
-        status: "success",
+        success: true,
         message: "Reset password link sent to the email",
       });
     },
@@ -60,7 +60,7 @@ export const passwordController = {
       res.clearCookie("emailForVerify", USER_EMAIL_VERIFY_COOKIE_OPTIONS);
 
       res.status(200).json({
-        status: "success",
+        success: true,
         message:
           "New password successfully set to your account, please re-login",
       });

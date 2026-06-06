@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { AppError } from "../utils/appErrror.util";
+import { AppError } from "../utils/appError.util";
 
 export const globalErrorHandler = (
   err: unknown,

@@ -1,5 +1,5 @@
 import { prisma } from "../configs/prisma.config";
-import { AppError } from "./appErrror.util";
+import { AppError } from "./appError.util";
 
 // Ensures the user's cart exists, creating one if necessary.
 export const ensureUserCart = async (userId: string, storeId?: string) => {

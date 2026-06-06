@@ -4,7 +4,7 @@ import {
   Prisma,
   TransactionStatus,
 } from "../../generated/prisma/client";
-import { AppError } from "./appErrror.util";
+import { AppError } from "./appError.util";
 
 const STATUS_MAPPING = {
   capture: { transactionStatus: "PROCESSING", paymentStatus: "SETTLEMENT" },

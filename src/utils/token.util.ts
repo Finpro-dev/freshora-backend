@@ -4,7 +4,7 @@ import { TokenPayload } from "../types/token.type";
 import { AUTH_TOKEN } from "../configs/dotenv.config";
 import { HASH_SALT } from "../statics/token.static";
 import { prisma } from "../configs/prisma.config";
-import { AppError } from "./appErrror.util";
+import { AppError } from "./appError.util";
 import { Response } from "express";
 import {
   ACCESS_COOKIE_OPTIONS,
