@@ -6,17 +6,17 @@ import {
 } from "../../generated/prisma/client";
 import { AppError } from "./appErrror.util";
 
-const STATUS_MAPPING = {
-  capture: { transactionStatus: "PROCESSING", paymentStatus: "SETTLEMENT" },
-  settlement: { transactionStatus: "PROCESSING", paymentStatus: "SETTLEMENT" },
-  deny: { transactionStatus: "CANCELED", paymentStatus: "DENIED" },
-  expire: { transactionStatus: "CANCELED", paymentStatus: "EXPIRED" },
-  cancel: { transactionStatus: "CANCELED", paymentStatus: "CANCELLED" },
-  refund: { transactionStatus: "CANCELED", paymentStatus: "REFUNDED" },
-} as const;
-
-// Map Midtrans status to internal status
+// Maps Midtrans transaction_status to internal transaction and payment status.
 export const mapMidtransStatus = (status: string) => {
+  const STATUS_MAPPING = {
+    capture: { transactionStatus: "PROCESSING", paymentStatus: "SETTLEMENT" },
+    settlement: { transactionStatus: "PROCESSING", paymentStatus: "SETTLEMENT" },
+    deny: { transactionStatus: "CANCELED", paymentStatus: "DENIED" },
+    expire: { transactionStatus: "CANCELED", paymentStatus: "EXPIRED" },
+    cancel: { transactionStatus: "CANCELED", paymentStatus: "CANCELLED" },
+    refund: { transactionStatus: "CANCELED", paymentStatus: "REFUNDED" },
+  } as const;
+
   const mapped =
     STATUS_MAPPING[status.toLowerCase() as keyof typeof STATUS_MAPPING];
   return (
@@ -27,9 +27,10 @@ export const mapMidtransStatus = (status: string) => {
   );
 };
 
-// Rollback stock when payment fails
+// Restores stock to the fulfillment store and creates journal entries.
 const rollbackOrderStock = async (
   transactionId: string,
+  storeId: string,
   tx: Prisma.TransactionClient,
 ): Promise<void> => {
   const items = await tx.orderItem.findMany({
@@ -37,11 +38,11 @@ const rollbackOrderStock = async (
   });
 
   for (const item of items) {
-    const stocks = await tx.stock.findMany({
-      where: { productId: item.productId },
+    const stock = await tx.stock.findUnique({
+      where: { storeId_productId: { storeId, productId: item.productId } },
     });
 
-    for (const stock of stocks) {
+    if (stock) {
       await tx.stock.update({
         where: { stockId: stock.stockId },
         data: { quantity: { increment: item.quantity } },
@@ -59,7 +60,29 @@ const rollbackOrderStock = async (
   }
 };
 
-// Update transaction and payment status
+// Releases a free-shipping voucher when payment fails.
+const rollbackFreeShippingVoucher = async (
+  transactionId: string,
+  tx: Prisma.TransactionClient,
+): Promise<void> => {
+  await tx.freeShippingVoucher.updateMany({
+    where: { transactionId },
+    data: { transactionId: null },
+  });
+};
+
+// Releases a referral voucher when payment fails.
+const rollbackReferralVoucher = async (
+  transactionId: string,
+  tx: Prisma.TransactionClient,
+): Promise<void> => {
+  await tx.referralVoucher.updateMany({
+    where: { transactionId },
+    data: { transactionId: null },
+  });
+};
+
+// Updates transaction and payment status.
 export const updateOrderPaymentStatus = async (
   transactionId: string,
   transactionStatus: TransactionStatus,
@@ -67,19 +90,24 @@ export const updateOrderPaymentStatus = async (
   paymentType: PaymentType,
   tx: Prisma.TransactionClient,
 ): Promise<void> => {
-  // Get current transaction state
   const current = await tx.transaction.findUnique({
     where: { transactionId },
   });
 
-  // Allow update if:
-  const isAllowedTransition =
-    current?.transactionStatus === "WAITING_FOR_PAYMENT" ||
-    (current?.transactionStatus === "PROCESSING" &&
-      transactionStatus === "CANCELED");
+  // Allowed transitions
+  const ALLOWED_TRANSITIONS: Record<string, TransactionStatus[]> = {
+    WAITING_FOR_PAYMENT: ["PROCESSING", "CANCELED"],
+    PROCESSING: ["SHIPPING", "CANCELED"],
+    SHIPPING: ["COMPLETED", "CANCELED"],
+  };
 
-  if (!isAllowedTransition) {
-    throw new AppError(405, "You are not allowed to modify the transaction");
+  const allowed =
+    ALLOWED_TRANSITIONS[current?.transactionStatus as string] || [];
+  if (!allowed.includes(transactionStatus)) {
+    throw new AppError(
+      405,
+      `Invalid status transition from ${current?.transactionStatus} to ${transactionStatus}`,
+    );
   }
 
   await tx.transaction.update({
@@ -102,10 +130,13 @@ export const updateOrderPaymentStatus = async (
   });
 };
 
-// Rollback payment stock
-export const rollbackPaymentStock = async (
+// Restores stock and releases vouchers when payment fails.
+export const rollbackOrder = async (
   transactionId: string,
+  storeId: string,
   tx: Prisma.TransactionClient,
 ): Promise<void> => {
-  await rollbackOrderStock(transactionId, tx);
+  await rollbackOrderStock(transactionId, storeId, tx);
+  await rollbackFreeShippingVoucher(transactionId, tx);
+  await rollbackReferralVoucher(transactionId, tx);
 };

@@ -3,15 +3,16 @@ import { AppError } from "../utils/appErrror.util";
 import { handlePrismaError } from "../utils/prismaErrorHandler.util";
 import {
   mapMidtransStatus,
-  rollbackPaymentStock,
+  rollbackOrder,
   updateOrderPaymentStatus,
 } from "../utils/paymentHelper.util";
 
 export const paymentService = {
   processMidtransWebhook: async (payload: any): Promise<void> => {
     try {
-      const transaction = await prisma.transaction.findUnique({
-        where: { transactionNumber: payload.order_id },
+      // Find transaction by order_id, exclude soft-deleted
+      const transaction = await prisma.transaction.findFirst({
+        where: { transactionNumber: payload.order_id, deletedAt: null },
       });
 
       if (!transaction) throw new AppError(404, "Transaction not found");
@@ -20,11 +21,8 @@ export const paymentService = {
         payload.transaction_status,
       );
 
-      console.log(payload.transaction_status);
-      console.log(transactionStatus);
-      console.log(paymentStatus);
-
       await prisma.$transaction(async (tx) => {
+        // Update transaction and payment status
         await updateOrderPaymentStatus(
           transaction.transactionId,
           transactionStatus,
@@ -33,20 +31,16 @@ export const paymentService = {
           tx,
         );
 
-        // Rollback stock if payment denied
+        // Rollback stock if payment is denied or expired
         if (
-          paymentStatus === "DENIED" &&
+          (paymentStatus === "DENIED" || paymentStatus === "EXPIRED") &&
           transaction.transactionStatus !== "CANCELED"
         ) {
-          await rollbackPaymentStock(transaction.transactionId, tx);
-        }
-
-        // Rollback stock if payment expired
-        if (
-          paymentStatus === "EXPIRED" &&
-          transaction.transactionStatus !== "CANCELED"
-        ) {
-          await rollbackPaymentStock(transaction.transactionId, tx);
+          await rollbackOrder(
+            transaction.transactionId,
+            transaction.storeId,
+            tx,
+          );
         }
       });
     } catch (error) {

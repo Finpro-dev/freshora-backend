@@ -15,7 +15,7 @@ export const cartController = {
     const cart = await cartServices.getAllCart(userId, { page, limit });
 
     res.status(200).json({
-      status: "success",
+      success: true,
       message: "Cart retrieved successfully",
       data: cart,
     });
@@ -28,7 +28,7 @@ export const cartController = {
     const cartItem = await cartServices.addToCart(userId, data);
 
     res.status(201).json({
-      status: "success",
+      success: true,
       message: "Item added to cart successfully",
       data: cartItem,
     });
@@ -42,7 +42,7 @@ export const cartController = {
     const result = await cartServices.updateCartItem(userId, cartItemId, data);
 
     res.status(200).json({
-      status: "success",
+      success: true,
       message: "Cart item updated successfully",
       data: result,
     });
@@ -55,7 +55,7 @@ export const cartController = {
     await cartServices.removeCartItem(userId, cartItemId);
 
     res.status(200).json({
-      status: "success",
+      success: true,
       message: "Cart item removed successfully",
     });
   }),
@@ -66,7 +66,7 @@ export const cartController = {
     const result = await cartServices.getCartCount(userId);
 
     res.status(200).json({
-      status: "success",
+      success: true,
       message: "Cart count retrieved successfully",
       data: result,
     });

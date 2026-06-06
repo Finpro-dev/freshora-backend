@@ -5,6 +5,7 @@ import {
   PaginationInput,
 } from "../schemas/cart.schema";
 import {
+  findNearestStore,
   validateStockAvailability,
   validateCartItemOwnership,
   ensureUserCart,
@@ -41,14 +42,22 @@ export const cartServices = {
   // Adds a product to the user's cart and merges quantity if the product already exists.
   addToCart: async (userId: string, data: AddToCartInput) => {
     try {
-      const { productId, storeId, quantity } = data;
+      const { productId, storeId, quantity, latitude, longitude } = data;
 
-      // Get or create cart for this user
-      const cart = await ensureUserCart(userId, storeId);
+      // Determine store: use provided storeId, or find nearest from user coordinates
+      let targetStoreId = storeId;
+      if (!targetStoreId) {
+        if (!latitude || !longitude) {
+          throw new AppError(400, "Location is required to find nearest store");
+        }
+        targetStoreId = await findNearestStore(latitude, longitude);
+      }
+      
+      const cart = await ensureUserCart(userId, targetStoreId);
       if (!cart) throw new AppError(400, "Cart not found");
 
       // Enforce single-store cart: block cross-store additions
-      if (cart.storeId !== storeId) {
+      if (cart.storeId !== targetStoreId) {
         throw new AppError(
           400,
           "Cannot add items from a different store. Clear your cart first.",
@@ -63,7 +72,7 @@ export const cartServices = {
       const totalQuantity = (existing?.quantity || 0) + quantity;
 
       // Validate stock at the cart's store
-      await validateStockAvailability(storeId, productId, totalQuantity);
+      await validateStockAvailability(targetStoreId, productId, totalQuantity);
 
       return upsertCartItem(cart.cartId, productId, totalQuantity, existing);
     } catch (error) {
