@@ -14,7 +14,7 @@ export const storeController = {
     );
 
     res.status(201).json({
-      status: "success",
+      success: true,
       message: "Store successfully created",
       data: createdStore,
     });
@@ -27,7 +27,7 @@ export const storeController = {
 
     const data = await storeService.getAllStore({ page, limit, search });
     res.status(200).json({
-      status: "success",
+      success: true,
       message: "Store data successfully retrieved",
       data,
     });
@@ -38,7 +38,7 @@ export const storeController = {
     const data = await storeService.getStoreDetails(storeId);
 
     res.status(200).json({
-      status: "success",
+      success: true,
       message: "Store details successfully retrieved",
       data,
     });
@@ -49,7 +49,7 @@ export const storeController = {
     await storeService.deleteStore(storeId);
 
     res.status(200).json({
-      status: "success",
+      success: true,
       message: "Store deleted successfully retrieved",
     });
   }),
@@ -60,7 +60,7 @@ export const storeController = {
     const updatedStore = await storeService.editStore(storeId, file, req.body);
 
     res.status(200).json({
-      status: "success",
+      success: true,
       message: "Store updated successfully",
       data: updatedStore,
     });
@@ -73,7 +73,7 @@ export const storeController = {
     await storeService.assignAdminStore(userId, storeId);
 
     res.status(200).json({
-      status: "success",
+      success: true,
       message: "Admin store is assigned successfully",
     });
   }),
@@ -84,7 +84,7 @@ export const storeController = {
     await storeService.setPrimaryStore(storeId);
 
     res.status(200).json({
-      status: "success",
+      success: true,
       message: "Store status set to primary successfully",
     });
   }),
@@ -93,7 +93,7 @@ export const storeController = {
     const primaryStore = await storeService.getPrimaryStore();
 
     res.status(200).json({
-      status: "success",
+      success: true,
       message: "Primary store is retrieved successfully",
       data: { storeId: primaryStore?.storeId },
     });
