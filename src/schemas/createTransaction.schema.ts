@@ -12,6 +12,13 @@ export const createTransactionSchema = z.object({
   }),
 });
 
+export const cancelOrderSchema = z.object({
+  params: z.object({
+    transactionId: z.string().uuid("Invalid transaction ID format"),
+  }),
+});
+
 export type CreateTransactionInput = z.infer<
   typeof createTransactionSchema
 >["body"];
+export type CancelOrderInput = z.infer<typeof cancelOrderSchema>["params"];
