@@ -3,7 +3,6 @@ export const rajaOngkirCouriers = [
   "sicepat",
   "ide",
   "sap",
-  "jnt",
   "ninja",
   "tiki",
   "lion",

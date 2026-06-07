@@ -4,12 +4,14 @@ import { z } from "zod";
 export const addToCartSchema = z.object({
   body: z.object({
     productId: z.string().uuid({ error: "Invalid product ID format" }),
-    storeId: z.string().uuid({ error: "Invalid store ID format" }),
+    storeId: z.string().uuid({ error: "Invalid store ID format" }).optional(),
     quantity: z
       .number()
       .int("Quantity must be an integer")
       .min(1, "Quantity must be at least 1")
       .max(1000, "Quantity must be at most 1000"),
+    latitude: z.number().optional(),
+    longitude: z.number().optional(),
   }),
 });
 
