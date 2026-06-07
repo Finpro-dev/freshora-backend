@@ -21,6 +21,7 @@ import shippingRoute from "./routers/shipping.route";
 import storeRoute from "./routers/store.route";
 import userRoute from "./routers/user.route";
 import transactionRoute from "./routers/transaction.route";
+import { initCronJobs } from "./jobs/cron";
 import passport from "passport";
 import { configureGooglePassport } from "./configs/passport.config";
 
@@ -83,6 +84,9 @@ app.use("/api/stores", storeRoute);
 
 // transactions
 app.use("/api/transactions", transactionRoute);
+
+// Initialize cron jobs
+initCronJobs();
 
 // global error middleware
 app.use(globalErrorHandler);

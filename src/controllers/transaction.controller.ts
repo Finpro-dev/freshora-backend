@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import {
   CancelOrderInput,
+  ConfirmOrderInput,
   CreateTransactionInput,
 } from "../schemas/createTransaction.schema";
 import { transactionService } from "../services/transaction.service";
@@ -30,6 +31,18 @@ export const transactionController = {
     res.status(200).json({
       success: true,
       message: "Order canceled successfully",
+    });
+  }),
+
+  confirmOrder: catchAsync(async (req: Request, res: Response) => {
+    const userId = req.user!.userId as string;
+    const { transactionId } = req.params as unknown as ConfirmOrderInput;
+
+    await transactionService.confirmOrder(userId, transactionId);
+
+    res.status(200).json({
+      success: true,
+      message: "Order confirmed successfully",
     });
   }),
 };

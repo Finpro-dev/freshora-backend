@@ -34,7 +34,7 @@ export const transactionService = {
 
       const { storeId } = cart;
 
-      // Verify address belongs to this user (exclude soft-deleted)
+      // Verify address belongs to this user
       const address = await prisma.address.findFirst({
         where: { addressId: data.addressId, userId, deletedAt: null },
       });
@@ -127,6 +127,35 @@ export const transactionService = {
       });
 
       return { message: "Order canceled successfully" };
+    } catch (error) {
+      handlePrismaError(error);
+    }
+  },
+
+  confirmOrder: async (userId: string, transactionId: string) => {
+    try {
+      // Verify transaction exists and belongs to user
+      const transaction = await prisma.transaction.findFirst({
+        where: { transactionId, userId, deletedAt: null },
+      });
+
+      if (!transaction) throw new AppError(404, "Transaction not found");
+
+      // User can only confirm after order is shipped
+      if (transaction.transactionStatus !== "SHIPPING") {
+        throw new AppError(400, "Order cannot be confirmed before it is shipped");
+      }
+
+      // Update transaction status to completed
+      await prisma.transaction.update({
+        where: { transactionId },
+        data: {
+          transactionStatus: "COMPLETED",
+          completedAt: new Date(),
+        },
+      });
+
+      return { message: "Order confirmed successfully" };
     } catch (error) {
       handlePrismaError(error);
     }

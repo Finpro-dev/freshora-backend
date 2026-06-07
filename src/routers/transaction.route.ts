@@ -4,6 +4,7 @@ import { authentication, authorization } from "../middlewares/auth.middleware";
 import { validate } from "../middlewares/validation.middleware";
 import {
   cancelOrderSchema,
+  confirmOrderSchema,
   createTransactionSchema,
 } from "../schemas/createTransaction.schema";
 
@@ -23,6 +24,14 @@ route.delete(
   authorization("CUSTOMER"),
   validate(cancelOrderSchema),
   transactionController.cancelOrder,
+);
+
+route.put(
+  "/:transactionId/confirm",
+  authentication,
+  authorization("CUSTOMER"),
+  validate(confirmOrderSchema),
+  transactionController.confirmOrder,
 );
 
 export default route;
