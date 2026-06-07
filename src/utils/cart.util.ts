@@ -1,6 +1,6 @@
 import { Prisma } from "../../generated/prisma/client";
 import { prisma } from "../configs/prisma.config";
-import { AppError } from "./appErrror.util";
+import { AppError } from "./appError.util";
 import { haversineDistance } from "./distance.util";
 
 // Finds the store closest to user's coordinates using Haversine formula.

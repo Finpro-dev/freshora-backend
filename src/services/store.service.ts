@@ -3,7 +3,7 @@ import { prisma } from "../configs/prisma.config";
 import { CreateStoreInput } from "../schemas/createStore.schema";
 import { EditStoreInput } from "../schemas/editStore.schema";
 import { GetAllStore } from "../types/store.type";
-import { AppError } from "../utils/appErrror.util";
+import { AppError } from "../utils/appError.util";
 import { uploadSingle } from "../utils/cloudinaryUploader.util";
 import { handlePrismaError } from "../utils/prismaErrorHandler.util";
 

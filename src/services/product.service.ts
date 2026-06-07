@@ -3,7 +3,7 @@ import {
   CreateProductInput,
   UpdateProductInput,
 } from "../schemas/product.schema";
-import { AppError } from "../utils/appErrror.util";
+import { AppError } from "../utils/appError.util";
 import { handlePrismaError } from "../utils/prismaErrorHandler.util";
 import slugify from "slugify";
 import { generateSerialNumber } from "../utils/generateSerialNumber";

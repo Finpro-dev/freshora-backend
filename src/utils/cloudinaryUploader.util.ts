@@ -3,7 +3,7 @@ import {
   MAX_FILE_SIZE_IMG,
   MAX_PRODUCT_UPLOAD_IMG,
 } from "../statics/multer.static";
-import { AppError } from "./appErrror.util";
+import { AppError } from "./appError.util";
 import { uploadCloudinary } from "./uploadCloudinary.util";
 
 export const uploadSingle = async (

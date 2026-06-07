@@ -1,5 +1,5 @@
 import { Prisma } from "../../generated/prisma/client";
-import { AppError } from "./appErrror.util";
+import { AppError } from "./appError.util";
 
 export const handlePrismaError = (error: any): never => {
   console.log("Error --> ", error); // FIXME

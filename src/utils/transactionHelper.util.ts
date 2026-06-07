@@ -1,7 +1,43 @@
 import { Prisma } from "../../generated/prisma/client";
 import { prisma } from "../configs/prisma.config";
 import { TDiscount } from "../types/transaction.type";
-import { AppError } from "./appErrror.util";
+import { AppError } from "./appError.util";
+import { haversineDistance } from "./distance.util";
+
+const getStoresWithCoordinates = (tx: any) =>
+  tx.store.findMany({
+    where: { latitude: { not: null }, longitude: { not: null } },
+  });
+
+const findClosestStore = (stores: any[], lat: number, lon: number): string => {
+  let closest = stores[0];
+  let minDist = haversineDistance(
+    lat,
+    lon,
+    closest.latitude!,
+    closest.longitude!,
+  );
+  for (const store of stores.slice(1)) {
+    const dist = haversineDistance(lat, lon, store.latitude!, store.longitude!);
+    if (dist < minDist) {
+      minDist = dist;
+      closest = store;
+    }
+  }
+  return closest.storeId;
+};
+
+export const findNearestStore = async (
+  latitude: number,
+  longitude: number,
+  tx?: any,
+): Promise<string> => {
+  const client = tx || prisma;
+  const stores = await getStoresWithCoordinates(client);
+  if (stores.length === 0)
+    throw new AppError(400, "No stores with valid coordinates available");
+  return findClosestStore(stores, latitude, longitude);
+};
 
 // Cart computation helpers
 // Calculate subtotal from cart items

@@ -12,9 +12,9 @@ export const userController = {
     const user = await userService.getProfile(userId);
 
     res.status(200).json({
-      status: "success",
+      success: true,
       message: "User profile retrieved successfully",
-      user,
+      data: user,
     });
   }),
 
@@ -29,7 +29,7 @@ export const userController = {
     );
 
     res.status(200).json({
-      status: "success",
+      success: true,
       message: "Profile updated successfully",
       user: updatedUser,
     });
@@ -43,7 +43,7 @@ export const userController = {
     res.clearCookie("emailForVerify", USER_EMAIL_VERIFY_COOKIE_OPTIONS);
 
     res.status(200).json({
-      status: "success",
+      success: true,
       message: "Email is verified successfully",
     });
   }),
@@ -55,7 +55,7 @@ export const userController = {
 
     const data = await userService.getAllUnassignedAdmin(page, limit, search);
     res.status(200).json({
-      status: "success",
+      success: true,
       message: "Unassigned store admin is retrieved successfully",
       data,
     });

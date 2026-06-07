@@ -12,7 +12,7 @@ export const formatUserResponse = (user: User) => {
     isVerified: user.isVerified,
     avatar: user.avatar,
     myReferralCode: user.myReferralCode,
-    usedReferralCpde: user.usedReferralCode,
+    usedReferralCode: user.usedReferralCode,
     createdAt: user.createdAt,
   };
 };

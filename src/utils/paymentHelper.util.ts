@@ -4,7 +4,7 @@ import {
   Prisma,
   TransactionStatus,
 } from "../../generated/prisma/client";
-import { AppError } from "./appErrror.util";
+import { AppError } from "./appError.util";
 
 // Maps Midtrans transaction_status to internal transaction and payment status.
 export const mapMidtransStatus = (status: string) => {

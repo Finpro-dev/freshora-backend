@@ -2,7 +2,7 @@ import { handlePrismaError } from "../utils/prismaErrorHandler.util";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
 import { prisma } from "../configs/prisma.config";
-import { AppError } from "../utils/appErrror.util";
+import { AppError } from "../utils/appError.util";
 import { HASH_SALT } from "../statics/token.static";
 import { ResetPasswordInput } from "../schemas/resetPassword.schema";
 import { generateRawToken } from "../utils/token.util";

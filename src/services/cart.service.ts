@@ -17,7 +17,7 @@ import {
   updateOrDeleteItem,
 } from "../utils/cart.util";
 import { handlePrismaError } from "../utils/prismaErrorHandler.util";
-import { AppError } from "../utils/appErrror.util";
+import { AppError } from "../utils/appError.util";
 
 export const cartServices = {
   // Retrieves the user's cart with paginated items.
