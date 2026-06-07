@@ -42,11 +42,17 @@ export const findNearestStore = async (
 // Cart computation helpers
 // Calculate subtotal from cart items
 export const calculateSubtotal = (cartItems: any[]): number =>
-  cartItems.reduce((sum, item) => sum + Number(item.product.price) * item.quantity, 0);
+  cartItems.reduce(
+    (sum, item) => sum + Number(item.product.price) * item.quantity,
+    0,
+  );
 
 // Calculate total weight in grams
 export const calculateTotalWeight = (cartItems: any[]): number =>
-  cartItems.reduce((sum, item) => sum + Number(item.product.weightPerGram) * item.quantity, 0);
+  cartItems.reduce(
+    (sum, item) => sum + Number(item.product.weightPerGram) * item.quantity,
+    0,
+  );
 
 // Generate unique invoice number
 export const generateInvoiceNumber = (): string => {
@@ -87,10 +93,15 @@ export const getAddressLocationInfo = async (
 // Pre-check: validates total stock across ALL stores
 export const validateTotalStock = async (cartItems: any[]): Promise<void> => {
   for (const item of cartItems) {
-    const stocks = await prisma.stock.findMany({ where: { productId: item.productId } });
+    const stocks = await prisma.stock.findMany({
+      where: { productId: item.productId },
+    });
     const totalStock = stocks.reduce((sum, s) => sum + s.quantity, 0);
     if (totalStock < item.quantity) {
-      throw new AppError(400, `Insufficient total stock for: ${item.product.name}`);
+      throw new AppError(
+        400,
+        `Insufficient total stock for: ${item.product.name}`,
+      );
     }
   }
 };
@@ -130,12 +141,16 @@ export const validateVoucher = async (
     where: { referralVoucherId },
   });
 
+  console.log("VOUCHER --> ", voucher);
+
   if (!voucher || voucher.userId !== userId)
     throw new AppError(400, "Invalid or expired voucher code");
 
   const now = new Date();
   if (!isReferralVoucherValid(voucher, now))
     throw new AppError(400, "Voucher expired or already used");
+
+  console.log("VOUCHER --> ", voucher);
 
   discount.referralVoucherDiscount =
     grandTotal * (Number(voucher.discountAmount) / 100);
@@ -150,7 +165,8 @@ export const calculateProductDiscount = (
     if (!item.product?.discounts?.length) continue;
 
     const bogoDiscount = item.product.discounts.find(
-      (d: any) => d.type === "BUY_ONE_GET_ONE" && new Date(d.validUntil) > new Date(),
+      (d: any) =>
+        d.type === "BUY_ONE_GET_ONE" && new Date(d.validUntil) > new Date(),
     );
 
     if (bogoDiscount?.type === "BUY_ONE_GET_ONE") {
@@ -163,12 +179,14 @@ export const calculateProductDiscount = (
     }
 
     const noReqDiscount = item.product.discounts.find(
-      (d: any) => d.type === "NO_REQUIREMENT" && new Date(d.validUntil) > new Date(),
+      (d: any) =>
+        d.type === "NO_REQUIREMENT" && new Date(d.validUntil) > new Date(),
     );
 
     if (noReqDiscount?.type === "NO_REQUIREMENT") {
       const subTotal = Number(item.product.price) * item.quantity;
-      const totalDiscount = (subTotal * Number(noReqDiscount.discountAmount)) / 100;
+      const totalDiscount =
+        (subTotal * Number(noReqDiscount.discountAmount)) / 100;
       discount.productItemDiscountAmmount += totalDiscount;
       item.discountAmount = totalDiscount;
       item.subtotal = subTotal - totalDiscount;

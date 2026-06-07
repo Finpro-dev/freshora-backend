@@ -79,16 +79,26 @@ export const transactionService = {
       // 9. Calculate shipping cost
       let shippingCost = 0;
       if (!data.freeShippingVoucherId) {
-        shippingCost = await calculateShipping(originInfo.cityId, destInfo.cityId, weight);
+        shippingCost = await calculateShipping(
+          originInfo.cityId,
+          destInfo.cityId,
+          weight,
+        );
       } else {
         // Validate free-shipping voucher ownership and usage
         await validateFreeShippingVoucher(data.freeShippingVoucherId, userId);
       }
 
       // 10. Apply referral voucher
-      let grandTotal = subtotal - discount.productItemDiscountAmmount + shippingCost;
+      let grandTotal =
+        subtotal - discount.productItemDiscountAmmount + shippingCost;
       if (data.referralVoucherId) {
-        await validateVoucher(data.referralVoucherId, userId, grandTotal, discount);
+        await validateVoucher(
+          data.referralVoucherId,
+          userId,
+          grandTotal,
+          discount,
+        );
         grandTotal -= discount.referralVoucherDiscount;
       }
 
@@ -138,9 +148,17 @@ export const transactionService = {
 
         // 11c. Decrement stock atomically and write journal for each item
         for (const item of cart.cartItems) {
-          await decrementStock(storeId, item.productId, item.quantity, transaction.transactionId, tx);
+          await decrementStock(
+            storeId,
+            item.productId,
+            item.quantity,
+            transaction.transactionId,
+            tx,
+          );
           const stock = await tx.stock.findUnique({
-            where: { storeId_productId: { storeId, productId: item.productId } },
+            where: {
+              storeId_productId: { storeId, productId: item.productId },
+            },
           });
           await createStockJournal(
             stock!.stockId,
@@ -153,14 +171,28 @@ export const transactionService = {
 
         // 11d. Mark vouchers as used
         if (data.freeShippingVoucherId) {
-          await applyFreeShippingVoucher(data.freeShippingVoucherId, transaction.transactionId, tx);
+          await applyFreeShippingVoucher(
+            data.freeShippingVoucherId,
+            transaction.transactionId,
+            tx,
+          );
         }
         if (data.referralVoucherId) {
-          await applyReferralVoucher(data.referralVoucherId, transaction.transactionId, tx);
+          await applyReferralVoucher(
+            data.referralVoucherId,
+            transaction.transactionId,
+            tx,
+          );
         }
 
         // 11e. Clear the cart
         await tx.cartItem.deleteMany({ where: { cartId: cart.cartId } });
+
+        await tx.cart.delete({
+          where: {
+            cartId: cart.cartId,
+          },
+        });
 
         return {
           transactionId: transaction.transactionId,

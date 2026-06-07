@@ -1,6 +1,6 @@
 import { Prisma } from "../../generated/prisma/client";
 import { rajaOngkirCouriers } from "../statics/courir.static";
-import { AppError } from "./appErrror.util";
+import { AppError } from "./appError.util";
 import { rajaOngkirService } from "../services/rajaOngkir.service";
 
 // Builds OrderItem records from cart items after discounts have been applied.
@@ -10,7 +10,9 @@ export const buildOrderItems = (cartItems: any[]) =>
     quantity: item.quantity,
     unitPrice: new Prisma.Decimal(item.product.price),
     discountAmount: new Prisma.Decimal(item.discountAmount || 0),
-    subTotalItem: new Prisma.Decimal(item.subtotal ?? Number(item.product.price) * item.quantity),
+    subTotalItem: new Prisma.Decimal(
+      item.subtotal ?? Number(item.product.price) * item.quantity,
+    ),
   }));
 
 // Tries each courier sequentially until one returns a shipping cost.

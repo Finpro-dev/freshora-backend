@@ -1,5 +1,5 @@
 import { Prisma } from "../../generated/prisma/client";
-import { AppError } from "./appErrror.util";
+import { AppError } from "./appError.util";
 
 // Checks and decrements stock inside a Prisma transaction
 export const decrementStock = async (
@@ -15,9 +15,16 @@ export const decrementStock = async (
 
   if (!stock || stock.quantity < quantity) {
     const available = stock?.quantity ?? 0;
+
+    const product = await tx.product.findUnique({
+      where: {
+        productId,
+      },
+    });
+
     throw new AppError(
       400,
-      `Insufficient stock for product ${productId}: requested ${quantity}, available ${available}`,
+      `Insufficient stock for product ${product?.name}: requested ${quantity}, available ${available}`,
     );
   }
 

@@ -10,7 +10,10 @@ import { AppError } from "./appError.util";
 export const mapMidtransStatus = (status: string) => {
   const STATUS_MAPPING = {
     capture: { transactionStatus: "PROCESSING", paymentStatus: "SETTLEMENT" },
-    settlement: { transactionStatus: "PROCESSING", paymentStatus: "SETTLEMENT" },
+    settlement: {
+      transactionStatus: "PROCESSING",
+      paymentStatus: "SETTLEMENT",
+    },
     deny: { transactionStatus: "CANCELED", paymentStatus: "DENIED" },
     expire: { transactionStatus: "CANCELED", paymentStatus: "EXPIRED" },
     cancel: { transactionStatus: "CANCELED", paymentStatus: "CANCELLED" },
