@@ -1,5 +1,34 @@
+import { Prisma } from "../../generated/prisma/client";
 import { prisma } from "../configs/prisma.config";
 import { AppError } from "./appError.util";
+import { haversineDistance } from "./distance.util";
+
+// Finds the store closest to user's coordinates using Haversine formula.
+export const findNearestStore = async (
+  latitude: number,
+  longitude: number,
+  tx?: Prisma.TransactionClient,
+): Promise<string> => {
+  const client = tx || prisma;
+  const stores = await client.store.findMany({
+    where: { latitude: { not: null }, longitude: { not: null } },
+  });
+
+  if (stores.length === 0)
+    throw new AppError(400, "No stores with valid coordinates available");
+
+  let closest = stores[0];
+  let minDist = haversineDistance(latitude, longitude, closest.latitude!, closest.longitude!);
+
+  for (const store of stores.slice(1)) {
+    const dist = haversineDistance(latitude, longitude, store.latitude!, store.longitude!);
+    if (dist < minDist) {
+      minDist = dist;
+      closest = store;
+    }
+  }
+  return closest.storeId;
+};
 
 // Ensures the user's cart exists, creating one if necessary.
 export const ensureUserCart = async (userId: string, storeId?: string) => {
