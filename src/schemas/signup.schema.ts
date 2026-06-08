@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 const GenderEnum = z.enum(["MALE", "FEMALE"]);
-const RoleEnum = z.enum(["CUSTOMER", "STORE_ADMIN", "SUPER_ADMIN"]);
+const RoleEnum = z.enum(["CUSTOMER", "STORE_ADMIN"]);
 
 const phoneRegex = /^(?:\+62|62|08)[2-9]\d{7,11}$/;
 
