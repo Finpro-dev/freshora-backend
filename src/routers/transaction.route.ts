@@ -6,9 +6,18 @@ import {
   cancelOrderSchema,
   confirmOrderSchema,
   createTransactionSchema,
+  getOrderListSchema,
 } from "../schemas/createTransaction.schema";
 
 const route = Router();
+
+route.get(
+  "/",
+  authentication,
+  authorization("CUSTOMER"),
+  validate(getOrderListSchema),
+  transactionController.getOrderList,
+);
 
 route.post(
   "/",

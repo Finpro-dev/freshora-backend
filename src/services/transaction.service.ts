@@ -1,5 +1,9 @@
+import { Prisma } from "../../generated/prisma/client";
 import { prisma } from "../configs/prisma.config";
-import { CreateTransactionInput } from "../schemas/createTransaction.schema";
+import {
+  CreateTransactionInput,
+  GetOrderListInput,
+} from "../schemas/createTransaction.schema";
 import { TDiscount } from "../types/transaction.type";
 import { AppError } from "../utils/appError.util";
 import { handlePrismaError } from "../utils/prismaErrorHandler.util";
@@ -156,6 +160,72 @@ export const transactionService = {
       });
 
       return { message: "Order confirmed successfully" };
+    } catch (error) {
+      handlePrismaError(error);
+    }
+  },
+
+  getOrderList: async (userId: string, params: GetOrderListInput) => {
+    try {
+      const { search, status, startDate, endDate, sortBy, sortOrder, page = 1, limit = 10 } = params;
+
+      const skip = (page - 1) * limit;
+
+      const where: Prisma.TransactionWhereInput = {
+        userId,
+        deletedAt: null,
+      };
+
+      // Filter by transaction status
+      if (status) where.transactionStatus = status;
+
+      // Filter by date
+      if (startDate) {
+        const start = new Date(startDate);
+        if (!isNaN(start.getTime())) where.createdAt = { gte: start };
+      }
+
+      if (endDate) {
+        const end = new Date(endDate);
+        if (!isNaN(end.getTime())) {
+          where.createdAt = { ...(where.createdAt as object), lte: end };
+        }
+      }
+
+      // Search by transaction number
+      if (search) {
+        where.transactionNumber = { contains: search, mode: "insensitive" };
+      }
+
+      const [transactions, total] = await Promise.all([
+        prisma.transaction.findMany({
+          where,
+          skip,
+          take: limit,
+          orderBy: { [sortBy]: sortOrder },
+          include: {
+            store: { select: { name: true } },
+            orderItems: {
+              include: {
+                product: {
+                  select: {
+                    name: true,
+                    productPhotos: { take: 1, select: { photoUrl: true } },
+                  },
+                },
+              },
+            },
+          },
+        }),
+        prisma.transaction.count({ where }),
+      ]);
+
+      const totalPages = Math.ceil(total / limit);
+
+      return {
+        transactions,
+        pagination: { page, limit, total, totalPages, hasNextPage: page < totalPages },
+      };
     } catch (error) {
       handlePrismaError(error);
     }
