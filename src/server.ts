@@ -24,6 +24,7 @@ import searchRecommendationRoute from "./routers/searchRecommendation.route";
 import transactionRoute from "./routers/transaction.route";
 import passport from "passport";
 import { configureGooglePassport } from "./configs/passport.config";
+import { cleanupRefreshTokenCron } from "./jobs/cleanupRefreshToken.cron";
 
 const app: Express = express();
 
@@ -97,5 +98,6 @@ if (SERVER_CREDENTIALS.NODE_ENV !== "production") {
     console.log(
       `🦄 🌱 [server]: Server is running at http://localhost:${port}`,
     );
+    cleanupRefreshTokenCron();
   });
 }
