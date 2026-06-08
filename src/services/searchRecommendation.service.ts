@@ -3,14 +3,19 @@ import { SearchRecommendationInput } from "../schemas/searchRecommendation.schem
 
 export const searchRecommendationService = {
   getSearchRecommendation: async ({ search }: SearchRecommendationInput) => {
-    if (!search?.trim()) return;
-
-    const limit = 10;
+    if (!search?.trim()) return [];
+    const searchFormatted = search.replace("-", " | "); // must be in form of e.g. this | is | novpa
+    const limit = 5;
     const searchRecommendation = await prisma.product.findMany({
+      where: {
+        name: {
+          search: searchFormatted,
+        },
+      },
       orderBy: {
         _relevance: {
-          fields: ["name", "description"],
-          search: String(search),
+          fields: ["name"],
+          search: searchFormatted,
           sort: "desc",
         },
       },
