@@ -5,7 +5,6 @@ import { rajaOngkirService } from "../services/rajaOngkir.service";
 
 export const shippingController = {
   calculateShippingCost: catchAsync(async (req: Request, res: Response) => {
-    console.log(req.body);
     const { origin, destination, weight, courier, price } = req.body;
     const cost = await rajaOngkirService.calculateShippingCost({
       origin,

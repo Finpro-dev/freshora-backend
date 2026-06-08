@@ -19,8 +19,6 @@ export const passwordService = {
         .update(token)
         .digest("hex");
 
-      console.log("Hashed token", hashedToken);
-
       // search token
       const isValidToken = await prisma.verification.findUnique({
         where: {
@@ -94,8 +92,6 @@ export const passwordService = {
           },
         },
       });
-
-      console.log(isTokenActive);
 
       if (isTokenActive)
         throw new AppError(

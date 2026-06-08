@@ -141,16 +141,12 @@ export const validateVoucher = async (
     where: { referralVoucherId },
   });
 
-  console.log("VOUCHER --> ", voucher);
-
   if (!voucher || voucher.userId !== userId)
     throw new AppError(400, "Invalid or expired voucher code");
 
   const now = new Date();
   if (!isReferralVoucherValid(voucher, now))
     throw new AppError(400, "Voucher expired or already used");
-
-  console.log("VOUCHER --> ", voucher);
 
   discount.referralVoucherDiscount =
     grandTotal * (Number(voucher.discountAmount) / 100);

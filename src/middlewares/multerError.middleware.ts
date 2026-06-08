@@ -11,7 +11,6 @@ export const multerErrorMiddleware: ErrorRequestHandler = (
   res,
   next,
 ) => {
-  console.log("ERR", err); //FIXME
   if (err instanceof MulterError && err.code === "LIMIT_UNEXPECTED_FILE") {
     throw new AppError(
       400,
