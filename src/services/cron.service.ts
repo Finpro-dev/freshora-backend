@@ -6,14 +6,14 @@ export const cronService = {
   // Auto-confirms orders
   autoConfirmExpiredOrders: async (): Promise<number> => {
     try {
-      const sevenDaysAgo = new Date();
-      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      const fiveDaysAgo = new Date();
+      fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
 
       const result = await prisma.$transaction(async (tx) => {
         const expiredOrders = await tx.transaction.findMany({
           where: {
             transactionStatus: "SHIPPING",
-            shippedAt: { lt: sevenDaysAgo },
+            shippedAt: { lt: fiveDaysAgo },
             deletedAt: null,
           },
         });
