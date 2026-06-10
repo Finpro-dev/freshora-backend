@@ -24,7 +24,6 @@ import searchRecommendationRoute from "./routers/searchRecommendation.route";
 import transactionRoute from "./routers/transaction.route";
 import passport from "passport";
 import { configureGooglePassport } from "./configs/passport.config";
-import categoryRoute from "./routers/category.route";
 import { cleanupRefreshTokenCron } from "./jobs/cleanupRefreshToken.cron";
 
 const app: Express = express();
