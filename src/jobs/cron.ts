@@ -1,10 +1,13 @@
 import cron from "node-cron";
 import { cronService } from "../services/cron.service";
+import { refreshTokenService } from "../services/refreshToken.service";
 
 // Runs every 5 minutes
 const AUTO_CANCEL_SCHEDULE = "*/5 * * * *";
 // Runs every hour
 const AUTO_CONFIRM_SCHEDULE = "0 * * * *";
+// runs every 5 minutes
+const AUTO_DELETE_REFRESH_TOKEN_SCHEDULE = "*/5 * * * *";
 
 const autoCancelExpiredPayments = async () => {
   console.log("[CRON] Running auto-cancel expired payments...");
@@ -30,8 +33,21 @@ const autoConfirmExpiredOrders = async () => {
   }
 };
 
+export const autoDeleteRefreshToken = async () => {
+  console.log("[CRON] Checking for expired refresh token...");
+
+  try {
+    const count = (await refreshTokenService.removeRefreshToken()) || 0;
+    if (count > 0)
+      console.log(`[CRON] Successfully deleted ${count} refresh tokens.`);
+  } catch (error) {
+    console.error("[CRON] Error during auto-delete:", error);
+  }
+};
+
 export const initCronJobs = () => {
   cron.schedule(AUTO_CANCEL_SCHEDULE, autoCancelExpiredPayments);
   cron.schedule(AUTO_CONFIRM_SCHEDULE, autoConfirmExpiredOrders);
+  cron.schedule(AUTO_DELETE_REFRESH_TOKEN_SCHEDULE, autoDeleteRefreshToken);
   console.log("[CRON] Jobs initialized");
 };

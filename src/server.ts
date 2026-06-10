@@ -99,7 +99,7 @@ if (SERVER_CREDENTIALS.NODE_ENV !== "production") {
     console.log(
       `🦄 🌱 [server]: Server is running at http://localhost:${port}`,
     );
-    cleanupRefreshTokenCron(); // fixme ->> merge with init cronJobs (handled by Novpa)
+
     // Initialize cron jobs
     initCronJobs();
   });
