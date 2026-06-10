@@ -5,7 +5,7 @@ import {
   GetDiscountInput,
 } from "../schemas/discount.schema";
 import { Prisma } from "../../generated/prisma/client";
-import { AppError } from "../utils/appErrror.util";
+import { AppError } from "../utils/appError.util";
 
 export const discountServices = {
   getDiscount: async (params: GetDiscountInput) => {
