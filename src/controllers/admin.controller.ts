@@ -27,24 +27,15 @@ export const adminController = {
       });
     },
   ),
-  verifyRequest: catchAsync(
-    async (req: Request<{}, {}, VerificationRequestInput>, res: Response) => {
-      const { email } = req.body;
-      await adminServices.verifyRequest(String(email));
-
-      res.status(201).json({
-        status: "success",
-        message: "Verification link has been sent to your email",
-      });
-    },
-  ),
 
   updateStoreAdmin: catchAsync(async (req: Request, res: Response) => {}),
+
   deleteStoreAdmin: catchAsync(async (req: Request, res: Response) => {
     const { adminId } = req.params;
     if (!adminId || typeof adminId !== "string") {
       throw new AppError(400, "Invalid or missing admin ID");
     }
+
     await adminServices.deleteStoreAdmin(adminId);
     res.status(200).json({
       status: "success",

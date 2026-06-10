@@ -2,30 +2,29 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import "dotenv/config";
 import express, { Express } from "express";
+import passport from "passport";
 import { CORS_CONFIG } from "./configs/cors.config";
 import {
   DATABASE_CREDENTIALS,
   SERVER_CREDENTIALS,
 } from "./configs/dotenv.config";
+import { configureGooglePassport } from "./configs/passport.config";
+import { initCronJobs } from "./jobs/cron";
 import { globalErrorHandler } from "./middlewares/globalError.middleware";
 import addressRoute from "./routers/address.route";
-import authRoute from "./routers/auth.route";
 import adminRoute from "./routers/admin.route";
-import productRoute from "./routers/product.route";
+import authRoute from "./routers/auth.route";
 import cartRoute from "./routers/cart.route";
 import freeShippingRoute from "./routers/freeShipping.route";
 import locationRoute from "./routers/location.route";
 import paymentRoute from "./routers/payment.route";
+import productRoute from "./routers/product.route";
 import referralCouponRoute from "./routers/referralVoucher.route";
+import searchRecommendationRoute from "./routers/searchRecommendation.route";
 import shippingRoute from "./routers/shipping.route";
 import storeRoute from "./routers/store.route";
-import userRoute from "./routers/user.route";
-import searchRecommendationRoute from "./routers/searchRecommendation.route";
 import transactionRoute from "./routers/transaction.route";
-import { initCronJobs } from "./jobs/cron";
-import passport from "passport";
-import { configureGooglePassport } from "./configs/passport.config";
-import { cleanupRefreshTokenCron } from "./jobs/cleanupRefreshToken.cron";
+import userRoute from "./routers/user.route";
 
 const app: Express = express();
 

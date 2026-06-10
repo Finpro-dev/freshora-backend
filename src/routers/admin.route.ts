@@ -5,9 +5,12 @@ import { authorization, authentication } from "../middlewares/auth.middleware";
 const adminRoute = Router();
 
 adminRoute.use(authentication); // Apply authentication middleware first
-adminRoute.use(authorization("SUPER_ADMIN"));
 
-adminRoute.get("/users", adminController.getUsers);
+adminRoute.get(
+  "/users",
+  authorization("SUPER_ADMIN"),
+  adminController.getUsers,
+);
 
 adminRoute.post(
   "/store-admin",
