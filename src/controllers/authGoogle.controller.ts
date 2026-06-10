@@ -1,5 +1,4 @@
 import { Request, Response } from "express";
-// import { AuthenticatedRequest } from "../types/appRequest.type";
 import { generateTokens, setTokenCookies } from "../utils/token.util";
 import { CORS_CREDENTIALS } from "../configs/dotenv.config";
 

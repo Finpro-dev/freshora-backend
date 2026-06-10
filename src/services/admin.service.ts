@@ -10,6 +10,7 @@ export const adminServices = {
     const where: any = {
       deletedAt: null,
     };
+
     if (role && allowedRoles.includes(role)) {
       where.role = role;
     }

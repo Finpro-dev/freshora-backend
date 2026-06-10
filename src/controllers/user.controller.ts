@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import { userService } from "../services/user.service";
-// import { AuthenticatedRequest } from "../types/appRequest.type";
 import { catchAsync } from "../utils/catchAsync.util";
 import { clearTokenCookies } from "../utils/token.util";
 import { USER_EMAIL_VERIFY_COOKIE_OPTIONS } from "../configs/cookie.config";

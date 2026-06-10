@@ -3,7 +3,6 @@ import { LoginInput } from "../schemas/login.schema";
 import { SignupInput } from "../schemas/signup.schema";
 import { VerificationRequestInput } from "../schemas/verificationRequest.schema";
 import { authServices } from "../services/auth.service";
-// import { AuthenticatedRequest } from "../types/appRequest.type";
 import { AppError } from "../utils/appError.util";
 import { catchAsync } from "../utils/catchAsync.util";
 import { clearTokenCookies, setTokenCookies } from "../utils/token.util";
