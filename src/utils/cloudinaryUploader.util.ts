@@ -10,7 +10,6 @@ export const uploadSingle = async (
   file: Express.Multer.File,
   folder: string,
 ) => {
-  console.log(file);
   if (!file) {
     throw new AppError(400, "No file uploaded");
   }

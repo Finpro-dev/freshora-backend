@@ -24,7 +24,7 @@ route.post("/login", validate(loginSchema), authController.login);
 route.post(
   "/logout",
   authentication,
-  authorization("SUPER_ADMIN"),
+  authorization("CUSTOMER", "STORE_ADMIN", "SUPER_ADMIN"),
   authController.logout,
 );
 

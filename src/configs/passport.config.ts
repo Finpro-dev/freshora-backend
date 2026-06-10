@@ -22,8 +22,6 @@ export const configureGooglePassport = () => {
           const avatar = profile.photos?.[0].value;
           const authProviderId = profile.id;
 
-          console.log("profile.displayName ==>", profile.displayName);
-
           if (!email)
             return done(
               new AppError(404, "Email is not found in your Google account"),

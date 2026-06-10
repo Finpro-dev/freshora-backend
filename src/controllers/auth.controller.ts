@@ -31,6 +31,12 @@ export const authController = {
     async (req: Request<{}, {}, VerificationRequestInput>, res: Response) => {
       const email = req.cookies.emailForVerify || req.body.email;
 
+      res.cookie(
+        "emailForVerify",
+        req.body.email as string,
+        USER_EMAIL_VERIFY_COOKIE_OPTIONS,
+      );
+
       await authServices.verifyRequest({
         email,
         verifyType: req.body.verifyType,
@@ -64,6 +70,7 @@ export const authController = {
 
   logout: catchAsync(async (req: Request, res: Response) => {
     const userId = req.user?.userId as string;
+    console.log(userId);
     await authServices.logout(userId);
 
     clearTokenCookies(res);
