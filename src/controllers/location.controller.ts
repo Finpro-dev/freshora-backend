@@ -7,8 +7,8 @@ export const locationController = {
     const provinces = await rajaOngkirService.getProvinces();
 
     res.status(200).json({
-      status: "success",
-      message: "Provices data retrieved successfully",
+      success: true,
+      message: "Provinces data retrieved successfully",
       data: provinces,
     });
   }),
@@ -18,7 +18,7 @@ export const locationController = {
     const cities = await rajaOngkirService.getCityByProvince(provinceId);
 
     res.status(200).json({
-      status: "success",
+      success: true,
       message: "Cities data retrieved successfully",
       data: cities,
     });
@@ -29,7 +29,7 @@ export const locationController = {
     const districts = await rajaOngkirService.getDistrictByCity(cityId);
 
     res.status(200).json({
-      status: "success",
+      success: true,
       message: "Districts data retrieved successfully",
       data: districts,
     });

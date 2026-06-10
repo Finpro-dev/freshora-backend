@@ -1,7 +1,7 @@
 import { NODEMAILER_CREDENTIALS } from "../configs/dotenv.config";
 import { transporter } from "../configs/nodemailer.config";
 import { emailTestingTemplate } from "../templates/emailTesting.template";
-import { AppError } from "../utils/appErrror.util";
+import { AppError } from "../utils/appError.util";
 import { uploadMany } from "../utils/cloudinaryUploader.util";
 
 export const testingService = {
@@ -16,7 +16,6 @@ export const testingService = {
         html: template.html,
       });
     } catch (error) {
-      console.log(error);
       throw new AppError(400, `There is a problem during sending the email`);
     }
   },

@@ -6,7 +6,7 @@ import { LoginInput } from "../schemas/login.schema";
 import { SignupInput } from "../schemas/signup.schema";
 import { REFERRAL_VOUCHER_PERCENTAGE } from "../statics/referralVoucher.static";
 import { TokenPayload } from "../types/token.type";
-import { AppError } from "../utils/appErrror.util";
+import { AppError } from "../utils/appError.util";
 import { createUniqueCouponCode } from "../utils/createUniqueCouponCode";
 import { createUniqueReferralCode } from "../utils/createUniqueReferralCode";
 import { formatUserResponse } from "../utils/formatUserResponse";
@@ -14,6 +14,7 @@ import { handlePrismaError } from "../utils/prismaErrorHandler.util";
 import { generateTokens, verifyRefreshToken } from "../utils/token.util";
 import { generateFullName } from "../utils/userDataTransform.util";
 import { verifyTokenService } from "./verifyToken.service";
+import { VerificationRequestInput } from "../schemas/verificationRequest.schema";
 
 export const authServices = {
   signup: async (data: SignupInput) => {
@@ -140,7 +141,9 @@ export const authServices = {
     }
   },
 
-  verifyRequest: async (email: string) => {
+  verifyRequest: async (data: VerificationRequestInput) => {
+    const email = String(data.email);
+    const verifyType = data.verifyType || "VERIFY_PASSWORD";
     // find user
     const isValidUser = await prisma.user.findUnique({
       where: {
@@ -176,7 +179,12 @@ export const authServices = {
       isValidUser.lastName,
     );
 
-    await verifyTokenService.createVerifyToken(userId, fullName, email);
+    await verifyTokenService.createVerifyToken(
+      userId,
+      fullName,
+      email,
+      verifyType,
+    );
   },
 
   login: async ({ email, password }: LoginInput) => {
@@ -192,7 +200,7 @@ export const authServices = {
       const hashedPassword = user?.password as string;
       const isMatch = await bcrypt.compare(password, hashedPassword);
 
-      if (!isMatch) throw new AppError(401, "Invalid credentials");
+      if (!isMatch) throw new AppError(400, "Invalid credentials");
 
       const tokenPayload: TokenPayload = {
         userId: user.userId,

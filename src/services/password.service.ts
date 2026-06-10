@@ -2,7 +2,7 @@ import { handlePrismaError } from "../utils/prismaErrorHandler.util";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
 import { prisma } from "../configs/prisma.config";
-import { AppError } from "../utils/appErrror.util";
+import { AppError } from "../utils/appError.util";
 import { HASH_SALT } from "../statics/token.static";
 import { ResetPasswordInput } from "../schemas/resetPassword.schema";
 import { generateRawToken } from "../utils/token.util";
@@ -19,8 +19,6 @@ export const passwordService = {
         .update(token)
         .digest("hex");
 
-      console.log("Hashed token", hashedToken);
-
       // search token
       const isValidToken = await prisma.verification.findUnique({
         where: {
@@ -33,7 +31,7 @@ export const passwordService = {
 
       if (!isValidToken)
         throw new AppError(
-          401,
+          410,
           "Link has expired, request new verification link",
         );
 
@@ -83,7 +81,7 @@ export const passwordService = {
 
       // if the user has not been authenticated
       if (!user.password && !user.isVerified)
-        throw new AppError(401, "Please verify your email to create password");
+        throw new AppError(400, "Please verify your email to create password");
 
       // check if the prev token is still active
       const isTokenActive = await prisma.resetPassword.findFirst({
@@ -112,7 +110,7 @@ export const passwordService = {
       try {
         const fullName = generateFullName(user.firstName, user.lastName);
         await emailService.sendEmailWithToken(
-          email,
+          email!,
           resetPasswordTemplate(fullName, newToken),
         );
       } catch {
@@ -151,7 +149,7 @@ export const passwordService = {
 
       if (!isValidToken)
         throw new AppError(
-          401,
+          410,
           "Link has expired, request new reset password link",
         );
 

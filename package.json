@@ -5,8 +5,10 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon src/server.ts",
-    "build": "tsc",
-    "start": "node dist/server.js"
+    "build": "prisma generate && tsc",
+    "start": "node dist/server.js",
+    "vercel-build": "prisma generate && tsc",
+    "install": "prisma generate"
   },
   "keywords": [],
   "author": "",
@@ -20,6 +22,7 @@
     "cloudinary": "^2.10.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
+    "cron": "^4.4.0",
     "date-fns": "^4.3.0",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
@@ -27,6 +30,7 @@
     "jsonwebtoken": "^9.0.3",
     "midtrans-client": "^1.4.3",
     "multer": "^2.1.1",
+    "node-cron": "^4.2.1",
     "nodemailer": "^8.0.7",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",

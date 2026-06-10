@@ -1,7 +1,7 @@
 import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import { GOOGLE_OAUTH } from "./dotenv.config";
-import { AppError } from "../utils/appErrror.util";
+import { AppError } from "../utils/appError.util";
 import { prisma } from "./prisma.config";
 import { createUniqueReferralCode } from "../utils/createUniqueReferralCode";
 import { generateFullName } from "../utils/userDataTransform.util";
@@ -21,8 +21,6 @@ export const configureGooglePassport = () => {
           const [firstName, lastName] = profile.displayName.split(" ");
           const avatar = profile.photos?.[0].value;
           const authProviderId = profile.id;
-
-          console.log("profile.displayName ==>", profile.displayName);
 
           if (!email)
             return done(
@@ -46,7 +44,7 @@ export const configureGooglePassport = () => {
               data: {
                 firstName,
                 lastName: lastName || firstName,
-                authProvider: "GOOGLE",
+                authProvider: "GOOGLE", // update authProvider
                 authProviderId,
                 avatar: user.avatar || avatar,
                 isVerified: true,

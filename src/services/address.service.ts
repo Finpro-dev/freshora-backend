@@ -2,7 +2,7 @@ import { prisma } from "../configs/prisma.config";
 import { CreateAddressInput } from "../schemas/createAddress.schema";
 import { EditAddressInput } from "../schemas/editAddressSchema";
 import { MAX_ADDRESS_PER_USER } from "../statics/address.static";
-import { AppError } from "../utils/appErrror.util";
+import { AppError } from "../utils/appError.util";
 import { handlePrismaError } from "../utils/prismaErrorHandler.util";
 
 export const addressService = {

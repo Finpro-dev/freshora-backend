@@ -1,7 +1,7 @@
 import { UserWhereInput } from "../../generated/prisma/models";
 import { prisma } from "../configs/prisma.config";
 import { UpdateUserProfileInput } from "../schemas/updateUserProfile.schema";
-import { AppError } from "../utils/appErrror.util";
+import { AppError } from "../utils/appError.util";
 import { uploadSingle } from "../utils/cloudinaryUploader.util";
 import { formatUserResponse } from "../utils/formatUserResponse";
 import { handlePrismaError } from "../utils/prismaErrorHandler.util";
@@ -103,7 +103,7 @@ export const userService = {
 
       if (!isValidToken)
         throw new AppError(
-          401,
+          410,
           "Link has expired, request new verification link",
         );
 

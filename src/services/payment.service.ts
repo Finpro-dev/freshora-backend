@@ -1,26 +1,50 @@
-import { snap } from "../configs/midtrans.config";
+import { prisma } from "../configs/prisma.config";
+import { AppError } from "../utils/appError.util";
+import { handlePrismaError } from "../utils/prismaErrorHandler.util";
+import {
+  mapMidtransStatus,
+  rollbackOrder,
+  updateOrderPaymentStatus,
+} from "../utils/paymentHelper.util";
 
 export const paymentService = {
-  createPayment: async () => {
-    let parameter = {
-      transaction_details: {
-        order_id: "TEST-T12345678112", // unique
-        gross_amount: 10000,
-      },
-      credit_card: {
-        secure: true,
-      },
-      customer_details: {
-        first_name: "novpa",
-        last_name: "pratama",
-        email: "agungnovpa@gmail.com",
-        phone: "08111222333",
-      },
-    };
+  processMidtransWebhook: async (payload: any): Promise<void> => {
+    try {
+      // Find transaction by order_id, exclude soft-deleted
+      const transaction = await prisma.transaction.findFirst({
+        where: { transactionNumber: payload.order_id, deletedAt: null },
+      });
 
-    const res = await snap.createTransaction(parameter);
-    const transactionToken = res.token;
+      if (!transaction) throw new AppError(404, "Transaction not found");
 
-    return transactionToken;
+      const { transactionStatus, paymentStatus } = mapMidtransStatus(
+        payload.transaction_status,
+      );
+
+      await prisma.$transaction(async (tx) => {
+        // Update transaction and payment status
+        await updateOrderPaymentStatus(
+          transaction.transactionId,
+          transactionStatus,
+          paymentStatus,
+          payload.payment_type,
+          tx,
+        );
+
+        // Rollback stock if payment is denied or expired
+        if (
+          (paymentStatus === "DENIED" || paymentStatus === "EXPIRED") &&
+          transaction.transactionStatus !== "CANCELED"
+        ) {
+          await rollbackOrder(
+            transaction.transactionId,
+            transaction.storeId,
+            tx,
+          );
+        }
+      });
+    } catch (error) {
+      handlePrismaError(error);
+    }
   },
 };

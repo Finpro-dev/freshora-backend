@@ -11,8 +11,8 @@ export const referralVoucherController = {
       await referralVoucherService.getReferralVoucherDetails(userId);
 
     res.status(200).json({
-      status: "success",
-      message: "Referral vouhcer details is retrieved successfully",
+      success: true,
+      message: "Referral voucher details is retrieved successfully",
       data: referralVoucher,
     });
   }),
