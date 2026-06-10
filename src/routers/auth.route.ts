@@ -21,7 +21,12 @@ route.post("/signup", validate(signupSchema), authController.signup);
 
 route.post("/login", validate(loginSchema), authController.login);
 
-route.post("/logout", authentication, authController.logout);
+route.post(
+  "/logout",
+  authentication,
+  authorization("CUSTOMER", "STORE_ADMIN", "SUPER_ADMIN"),
+  authController.logout,
+);
 
 route.post("/refresh", authController.refresh);
 
