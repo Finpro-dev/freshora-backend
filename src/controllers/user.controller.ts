@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
 import { userService } from "../services/user.service";
-// import { AuthenticatedRequest } from "../types/appRequest.type";
 import { catchAsync } from "../utils/catchAsync.util";
 import { clearTokenCookies } from "../utils/token.util";
+import { USER_EMAIL_VERIFY_COOKIE_OPTIONS } from "../configs/cookie.config";
 
 export const userController = {
   getProfile: catchAsync(async (req: Request, res: Response) => {
@@ -11,9 +11,9 @@ export const userController = {
     const user = await userService.getProfile(userId);
 
     res.status(200).json({
-      status: "success",
+      success: true,
       message: "User profile retrieved successfully",
-      user,
+      data: user,
     });
   }),
 
@@ -28,7 +28,7 @@ export const userController = {
     );
 
     res.status(200).json({
-      status: "success",
+      success: true,
       message: "Profile updated successfully",
       user: updatedUser,
     });
@@ -39,8 +39,10 @@ export const userController = {
 
     clearTokenCookies(res);
     await userService.verifyEmail(token);
+    res.clearCookie("emailForVerify", USER_EMAIL_VERIFY_COOKIE_OPTIONS);
+
     res.status(200).json({
-      status: "success",
+      success: true,
       message: "Email is verified successfully",
     });
   }),
@@ -52,7 +54,7 @@ export const userController = {
 
     const data = await userService.getAllUnassignedAdmin(page, limit, search);
     res.status(200).json({
-      status: "success",
+      success: true,
       message: "Unassigned store admin is retrieved successfully",
       data,
     });

@@ -2,9 +2,22 @@ import { Router } from "express";
 import { transactionController } from "../controllers/transaction.controller";
 import { authentication, authorization } from "../middlewares/auth.middleware";
 import { validate } from "../middlewares/validation.middleware";
-import { createTransactionSchema } from "../schemas/createTransaction.schema";
+import {
+  cancelOrderSchema,
+  confirmOrderSchema,
+  createTransactionSchema,
+  getOrderListSchema,
+} from "../schemas/createTransaction.schema";
 
 const route = Router();
+
+route.get(
+  "/",
+  authentication,
+  authorization("CUSTOMER"),
+  validate(getOrderListSchema),
+  transactionController.getOrderList,
+);
 
 route.post(
   "/",
@@ -12,6 +25,22 @@ route.post(
   authorization("CUSTOMER"),
   validate(createTransactionSchema),
   transactionController.createOrder,
+);
+
+route.delete(
+  "/:transactionId",
+  authentication,
+  authorization("CUSTOMER"),
+  validate(cancelOrderSchema),
+  transactionController.cancelOrder,
+);
+
+route.put(
+  "/:transactionId/confirm",
+  authentication,
+  authorization("CUSTOMER"),
+  validate(confirmOrderSchema),
+  transactionController.confirmOrder,
 );
 
 export default route;

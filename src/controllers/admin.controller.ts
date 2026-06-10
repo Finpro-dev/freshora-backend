@@ -4,7 +4,7 @@ import { adminServices } from "../services/admin.service";
 import { SignupInput } from "../schemas/signup.schema";
 import { productServices } from "../services/product.service";
 import { VerificationRequestInput } from "../schemas/verificationRequest.schema";
-import { AppError } from "../utils/appErrror.util";
+import { AppError } from "../utils/appError.util";
 
 export const adminController = {
   getUsers: catchAsync(async (req: Request, res: Response) => {
@@ -30,7 +30,7 @@ export const adminController = {
   verifyRequest: catchAsync(
     async (req: Request<{}, {}, VerificationRequestInput>, res: Response) => {
       const { email } = req.body;
-      await adminServices.verifyRequest(email);
+      await adminServices.verifyRequest(String(email));
 
       res.status(201).json({
         status: "success",

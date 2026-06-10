@@ -16,3 +16,11 @@ export const REFRESH_COOKIE_OPTIONS: CookieOptions = {
   maxAge: 14 * 24 * 60 * 60 * 1000,
   path: "/",
 };
+
+export const USER_EMAIL_VERIFY_COOKIE_OPTIONS: CookieOptions = {
+  httpOnly: true,
+  secure: false,
+  sameSite: "lax",
+  path: "/",
+  maxAge: 60 * 60 * 1000 * 24,
+};

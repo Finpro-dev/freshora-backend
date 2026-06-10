@@ -3,7 +3,6 @@ import { catchAsync } from "../utils/catchAsync.util";
 import { addressService } from "../services/address.service";
 import { CreateAddressInput } from "../schemas/createAddress.schema";
 import { EditAddressInput } from "../schemas/editAddressSchema";
-// import { Request } from "../types/appRequest.type";
 
 export const addressController = {
   createAddress: catchAsync(async (req: Request, res: Response) => {
@@ -14,7 +13,7 @@ export const addressController = {
     );
 
     res.status(201).json({
-      status: "success",
+      success: true,
       message: "Address created successfully",
       data: address,
     });
@@ -25,7 +24,7 @@ export const addressController = {
     const userAddresses = await addressService.getAllUserAddresses(userId);
 
     res.status(201).json({
-      status: "success",
+      success: true,
       message: "User Addresses retrieved successfully",
       data: userAddresses,
     });
@@ -38,7 +37,7 @@ export const addressController = {
     const address = await addressService.getAddressDetails(userId, addressId);
 
     res.status(200).json({
-      status: "success",
+      success: true,
       message: "Address retreived successfully",
       data: address,
     });
@@ -55,7 +54,7 @@ export const addressController = {
     );
 
     res.status(200).json({
-      status: "success",
+      success: true,
       message: "Address retreived successfully",
       data: address,
     });
@@ -68,7 +67,7 @@ export const addressController = {
     await addressService.deleteUserAddress(userId, addressId);
 
     res.status(200).json({
-      status: "success",
+      success: true,
       message: "Address deleted successfully",
     });
   }),

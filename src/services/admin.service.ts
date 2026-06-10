@@ -1,6 +1,6 @@
 import { prisma } from "../configs/prisma.config";
 import { SignupInput } from "../schemas/signup.schema";
-import { AppError } from "../utils/appErrror.util";
+import { AppError } from "../utils/appError.util";
 import { createUniqueReferralCode } from "../utils/createUniqueReferralCode";
 import { handlePrismaError } from "../utils/prismaErrorHandler.util";
 import { generateFullName } from "../utils/userDataTransform.util";

@@ -1,6 +1,7 @@
 generator client {
   provider = "prisma-client"
   output   = "../generated/prisma"
+  previewFeatures = ["fullTextSearchPostgres"]
 }
 
 datasource db {
@@ -19,6 +20,11 @@ enum Role {
 }
 
 enum AddressStatus {
+  PRIMARY
+  SECONDARY
+}
+
+enum StoreStatus {
   PRIMARY
   SECONDARY
 }
@@ -208,6 +214,7 @@ model ResetPassword {
 model Cart {
   cartId String @id @default(uuid())
   userId String @unique
+  storeId String 
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -215,6 +222,7 @@ model Cart {
 
   cartItems CartItem[]
   user      User       @relation(fields: [userId], references: [userId])
+  store   Store         @relation(fields: [storeId], references: [storeId])
 
   @@map("carts")
 }
@@ -233,6 +241,7 @@ model CartItem {
   product Product @relation(fields: [productId], references: [productId])
 
   @@map("cartItems")
+  @@unique([cartId, productId])
 }
 
 model ProductCategory {
@@ -307,6 +316,7 @@ model Store {
   longitude  Float?
   phone      String  @db.VarChar(15)
   avatar     String?
+  storeStatus   StoreStatus @default(SECONDARY)
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -317,6 +327,7 @@ model Store {
   mutationsTo   Mutation[]    @relation("toStore")
   stocks        Stock[]
   transactions  Transaction[]
+  carts         Cart[]
 
   @@map("stores")
 }
