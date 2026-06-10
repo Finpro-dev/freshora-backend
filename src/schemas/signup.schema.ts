@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 const GenderEnum = z.enum(["MALE", "FEMALE"]);
-const RoleEnum = z.enum(["CUSTOMER", "STORE_ADMIN", "SUPER_ADMIN"]);
+const RoleEnum = z.enum(["CUSTOMER", "STORE_ADMIN"]);
 
 const phoneRegex = /^(?:\+62|62|08)[2-9]\d{7,11}$/;
 
@@ -42,7 +42,6 @@ export const signupSchema = z.object({
 
     usedReferralCode: z
       .string()
-      .min(5, "Referral code must be at least 1 character")
       .trim()
       .max(30, "Referral code too long")
       .optional()

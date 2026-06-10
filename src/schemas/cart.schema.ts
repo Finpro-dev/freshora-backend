@@ -1,18 +1,21 @@
 import { z } from "zod";
 
+// Schema for adding a product to the cart.
 export const addToCartSchema = z.object({
   body: z.object({
-    productId: z
-      .string()
-      .uuid("Invalid product ID format"),
+    productId: z.string().uuid({ error: "Invalid product ID format" }),
+    storeId: z.string().uuid({ error: "Invalid store ID format" }).optional(),
     quantity: z
       .number()
       .int("Quantity must be an integer")
       .min(1, "Quantity must be at least 1")
       .max(1000, "Quantity must be at most 1000"),
+    latitude: z.number().optional(),
+    longitude: z.number().optional(),
   }),
 });
 
+// Schema for updating a cart item's quantity.
 export const updateCartSchema = z.object({
   body: z.object({
     quantity: z
@@ -20,17 +23,16 @@ export const updateCartSchema = z.object({
       .int("Quantity must be an integer")
       .min(1, "Quantity must be at least 1")
       .max(1000, "Quantity must be at most 1000"),
-    operation: z
-      .enum(["set", "increase", "decrease"])
-      .describe("set = replace quantity, increase = add quantity, decrease = reduce quantity"),
+    operation: z.enum(["set", "increase", "decrease"]).describe(
+      "set = replace quantity, increase = add quantity, decrease = reduce quantity",
+    ),
   }),
   params: z.object({
-    cartItemId: z
-      .string()
-      .uuid("Invalid cart item ID format"),
+    cartItemId: z.string().uuid({ error: "Invalid cart item ID format" }),
   }),
 });
 
+// Schema for pagination query parameters.
 export const paginationSchema = z.object({
   query: z.object({
     page: z
@@ -47,6 +49,7 @@ export const paginationSchema = z.object({
   }),
 });
 
+// Inferred TypeScript types
 export type AddToCartInput = z.infer<typeof addToCartSchema>["body"];
 export type UpdateCartInput = z.infer<typeof updateCartSchema>["body"];
 export type PaginationInput = z.infer<typeof paginationSchema>["query"];

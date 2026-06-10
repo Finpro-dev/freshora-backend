@@ -2,7 +2,7 @@
 
 import { ErrorRequestHandler } from "express";
 import { MulterError } from "multer";
-import { AppError } from "../utils/appErrror.util";
+import { AppError } from "../utils/appError.util";
 import { MAX_PRODUCT_UPLOAD_IMG } from "../statics/multer.static";
 
 export const multerErrorMiddleware: ErrorRequestHandler = (
@@ -11,7 +11,6 @@ export const multerErrorMiddleware: ErrorRequestHandler = (
   res,
   next,
 ) => {
-  console.log("ERR", err); //FIXME
   if (err instanceof MulterError && err.code === "LIMIT_UNEXPECTED_FILE") {
     throw new AppError(
       400,

@@ -7,6 +7,7 @@ import {
   SetNewPasswordParams,
 } from "../schemas/resetPassword.schema";
 import { clearTokenCookies } from "../utils/token.util";
+import { USER_EMAIL_VERIFY_COOKIE_OPTIONS } from "../configs/cookie.config";
 
 export const passwordController = {
   createPassword: catchAsync(
@@ -19,21 +20,26 @@ export const passwordController = {
 
       await passwordService.createPassword(password, token);
 
+      res.clearCookie("emailForVerify", USER_EMAIL_VERIFY_COOKIE_OPTIONS);
+
       res.status(201).json({
-        status: "success",
+        success: true,
         message: "Account is activated successfully",
       });
     },
   ),
 
+  // send & resend request
   resetPassword: catchAsync(
     async (req: Request<{}, {}, ResetPasswordInput>, res: Response) => {
-      const { email } = req.body;
+      const email = req.cookies.emailForVerify || req.body.email;
+
+      res.cookie("emailForVerify", email, USER_EMAIL_VERIFY_COOKIE_OPTIONS);
 
       await passwordService.resetPassword({ email });
 
       res.status(200).json({
-        status: "success",
+        success: true,
         message: "Reset password link sent to the email",
       });
     },
@@ -51,9 +57,10 @@ export const passwordController = {
 
       // to make sure user logout after setting up new password
       clearTokenCookies(res);
+      res.clearCookie("emailForVerify", USER_EMAIL_VERIFY_COOKIE_OPTIONS);
 
       res.status(200).json({
-        status: "success",
+        success: true,
         message:
           "New password successfully set to your account, please re-login",
       });

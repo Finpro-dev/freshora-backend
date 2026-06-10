@@ -20,10 +20,12 @@ import referralCouponRoute from "./routers/referralVoucher.route";
 import shippingRoute from "./routers/shipping.route";
 import storeRoute from "./routers/store.route";
 import userRoute from "./routers/user.route";
+import searchRecommendationRoute from "./routers/searchRecommendation.route";
 import transactionRoute from "./routers/transaction.route";
 import passport from "passport";
 import { configureGooglePassport } from "./configs/passport.config";
 import categoryRoute from "./routers/category.route";
+import { cleanupRefreshTokenCron } from "./jobs/cleanupRefreshToken.cron";
 
 const app: Express = express();
 
@@ -85,7 +87,10 @@ app.use("/api/stores", storeRoute);
 // transactions
 app.use("/api/transactions", transactionRoute);
 
-// globar error middleware
+// search recommendation
+app.use("/api/search-recommendations", searchRecommendationRoute);
+
+// global error middleware
 app.use(globalErrorHandler);
 
 if (SERVER_CREDENTIALS.NODE_ENV !== "production") {
@@ -94,5 +99,6 @@ if (SERVER_CREDENTIALS.NODE_ENV !== "production") {
     console.log(
       `🦄 🌱 [server]: Server is running at http://localhost:${port}`,
     );
+    cleanupRefreshTokenCron();
   });
 }
