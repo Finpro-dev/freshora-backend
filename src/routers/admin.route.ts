@@ -2,6 +2,7 @@ import { Router } from "express";
 import { adminController } from "../controllers/admin.controller";
 import { authorization, authentication } from "../middlewares/auth.middleware";
 import categoryRoute from "./category.route";
+import discountRoute from "./discount.route";
 import { validate } from "../middlewares/validation.middleware";
 import { getUsersSchema } from "../schemas/admin.schema";
 
@@ -22,5 +23,7 @@ adminRoute.post("/store-admin", adminController.createStoreAdmin);
 adminRoute.delete("/store-admin/:adminId", adminController.deleteStoreAdmin);
 
 adminRoute.use("/categories", categoryRoute);
+
+adminRoute.use("/discounts", discountRoute);
 
 export default adminRoute;

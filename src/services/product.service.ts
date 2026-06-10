@@ -15,6 +15,7 @@ export const productServices = {
   getAllProducts: async (params: ProductParamsInput) => {
     const { page = 1, limit = 10, search, category } = params;
     const skip = (page - 1) * limit;
+    const currentDate = new Date();
     const where: Prisma.ProductWhereInput = {
       deletedAt: null,
     };
@@ -27,7 +28,7 @@ export const productServices = {
     if (category) {
       where.productCategoryId = category;
     }
-    const [products, totalCount] = await Promise.all([
+    const [products, totalCount] = await prisma.$transaction([
       prisma.product.findMany({
         where: where,
         skip,
@@ -49,6 +50,13 @@ export const productServices = {
               quantity: true,
             },
           },
+          discounts: {
+            where: {
+              deletedAt: null,
+              validFrom: { lte: currentDate },
+              validUntil: { gte: currentDate },
+            },
+          },
         },
         orderBy: {
           createdAt: "desc",
@@ -58,36 +66,75 @@ export const productServices = {
         where: where,
       }),
     ]);
+    const productsWithFinalPrice = products.map((product) => {
+      let finalPrice = Number(product.price); // Pastikan dikonversi ke tipe data number
+      const activeDiscount = product.discounts[0]; // Ambil diskon pertama yang aktif jika ada
 
+      // Hitung jika tipe diskon adalah potongan langsung (NO_REQUIREMENT)
+      if (activeDiscount && activeDiscount.type === "NO_REQUIREMENT") {
+        finalPrice = Math.max(
+          0,
+          finalPrice - Number(activeDiscount.discountAmount),
+        );
+      }
+
+      return {
+        ...product,
+        finalPrice, // Properti baru yang akan muncul di Postman & Front-End
+      };
+    });
     // Calculate pagination metadata
     const totalPages = Math.max(1, Math.ceil(totalCount / limit));
-    const hasNext = page < totalPages;
-    const hasPrev = page > 1;
 
     return {
-      data: products,
-      pagination: {
+      meta: {
         page,
         limit,
-        totalItems: totalCount,
+        totalData: totalCount,
         totalPages,
-        hasNext,
-        hasPrev,
       },
+      data: productsWithFinalPrice,
     };
   },
 
   getProductById: async (productId: string) => {
+    const currentDate = new Date();
     const product = await prisma.product.findUnique({
       where: {
         productId,
         deletedAt: null,
       },
+      include: {
+        productCategory: true,
+        productPhotos: true,
+        stocks: true,
+        discounts: {
+          where: {
+            deletedAt: null,
+            validFrom: { lte: currentDate },
+            validUntil: { gte: currentDate },
+          },
+        },
+      },
     });
     if (!product) {
       throw new AppError(404, "Product not found");
     }
-    return product;
+    // 🌟 KALKULASI DINAMIS untuk detail produk tunggal
+    let finalPrice = Number(product.price);
+    const activeDiscount = product.discounts[0];
+
+    if (activeDiscount && activeDiscount.type === "NO_REQUIREMENT") {
+      finalPrice = Math.max(
+        0,
+        finalPrice - Number(activeDiscount.discountAmount),
+      );
+    }
+
+    return {
+      ...product,
+      finalPrice,
+    };
   },
 
   createProduct: async (data: CreateProductInput) => {

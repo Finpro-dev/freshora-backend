@@ -34,11 +34,15 @@ export const productController = {
     if (!images || images.length === 0) {
       return res.status(400).json({ message: "Product images are required" });
     }
-    await productServices.createProduct({ ...req.body, images });
+    const newProduct = await productServices.createProduct({
+      ...req.body,
+      images,
+    });
 
-    res.status(200).json({
+    res.status(201).json({
       status: "success",
       message: "Product created successfully",
+      data: newProduct,
     });
   }),
 
