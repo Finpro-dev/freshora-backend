@@ -36,7 +36,6 @@ export const authentication = (
 
     next();
   } catch (error) {
-    console.log("LOG ERROR AUTENTIKASI SAAT LOGOUT:", error);
     if (
       error instanceof TokenExpiredError &&
       error.name === "TokenExpiredError"
