@@ -92,16 +92,12 @@ app.use("/api/search-recommendations", searchRecommendationRoute);
 // global error middleware
 app.use(globalErrorHandler);
 
-if (SERVER_CREDENTIALS.NODE_ENV !== "production") {
-  const port = DATABASE_CREDENTIALS.PORT;
-  app.listen(port, () => {
-    console.log(
-      `🦄 🌱 [server]: Server is running at http://localhost:${port}`,
-    );
+const port = DATABASE_CREDENTIALS.PORT;
+app.listen(port, () => {
+  console.log(`🦄 🌱 [server]: Server is running at http://localhost:${port}`);
 
-    // Initialize cron jobs
-    initCronJobs();
-  });
-}
+  // Initialize cron jobs
+  initCronJobs();
+});
 
 export default app;
