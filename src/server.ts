@@ -103,3 +103,5 @@ if (SERVER_CREDENTIALS.NODE_ENV !== "production") {
     initCronJobs();
   });
 }
+
+export default app;
