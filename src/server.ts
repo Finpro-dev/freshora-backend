@@ -4,10 +4,7 @@ import "dotenv/config";
 import express, { Express } from "express";
 import passport from "passport";
 import { CORS_CONFIG } from "./configs/cors.config";
-import {
-  DATABASE_CREDENTIALS,
-  SERVER_CREDENTIALS,
-} from "./configs/dotenv.config";
+import { DATABASE_CREDENTIALS } from "./configs/dotenv.config";
 import { configureGooglePassport } from "./configs/passport.config";
 import { initCronJobs } from "./jobs/cron";
 import { globalErrorHandler } from "./middlewares/globalError.middleware";
