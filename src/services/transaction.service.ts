@@ -15,11 +15,12 @@ import {
   getStoreLocationInfo,
   validateFreeShippingVoucher,
   validateTotalStock,
-  validateVoucher,
+ validateVoucher,
 } from "../utils/transactionHelper.util";
 import { calculateShipping } from "../utils/transactionOrder.util";
 import { executeCreateOrder } from "../utils/createTransaction.util";
 import { cancelTransaction } from "../utils/cancelTransaction.util";
+import { createMutationAlert } from "../utils/stock.util";
 
 export const transactionService = {
   createOrder: async (userId: string, data: CreateTransactionInput) => {
@@ -44,7 +45,26 @@ export const transactionService = {
       });
       if (!address) throw new AppError(404, "Address not found");
 
-      // total stock across all stores
+      // Pre-check stock at store level and create mutation alerts if insufficient
+      for (const item of cart.cartItems) {
+        const stock = await prisma.stock.findUnique({
+          where: { storeId_productId: { storeId, productId: item.productId } },
+        });
+
+        if (!stock || stock.quantity < item.quantity) {
+          const available = stock?.quantity ?? 0;
+
+          // Create mutation alert for Super Admin
+          await createMutationAlert(storeId, item.productId, item.quantity, available);
+
+          throw new AppError(
+            400,
+            `Insufficient stock for ${item.product.name}: requested ${item.quantity}, available ${available}`,
+          );
+        }
+      }
+
+      // Validate total stock across all stores
       await validateTotalStock(cart.cartItems);
 
       // Fetch user info for Midtrans customer_details
@@ -76,7 +96,6 @@ export const transactionService = {
       if (!data.freeShippingVoucherId) {
         shippingCost = await calculateShipping(originInfo.cityId, destInfo.cityId, weight);
       } else {
-        // Validate free-shipping voucher ownership and usage
         await validateFreeShippingVoucher(data.freeShippingVoucherId, userId);
       }
 
@@ -113,19 +132,16 @@ export const transactionService = {
 
   cancelOrder: async (userId: string, transactionId: string) => {
     try {
-      // Verify transaction exists and belongs to user
       const transaction = await prisma.transaction.findFirst({
         where: { transactionId, userId, deletedAt: null },
       });
 
       if (!transaction) throw new AppError(404, "Transaction not found");
 
-      // only cancel before payment is made
       if (transaction.transactionStatus !== "WAITING_FOR_PAYMENT") {
         throw new AppError(400, "Order cannot be canceled after payment has been made");
       }
 
-      // Execute cancel in atomic transaction
       await prisma.$transaction(async (tx) => {
         await cancelTransaction(transactionId, transaction.storeId, tx);
       });
@@ -138,19 +154,16 @@ export const transactionService = {
 
   confirmOrder: async (userId: string, transactionId: string) => {
     try {
-      // Verify transaction exists and belongs to user
       const transaction = await prisma.transaction.findFirst({
         where: { transactionId, userId, deletedAt: null },
       });
 
       if (!transaction) throw new AppError(404, "Transaction not found");
 
-      // User can only confirm after order is shipped
       if (transaction.transactionStatus !== "SHIPPING") {
         throw new AppError(400, "Order cannot be confirmed before it is shipped");
       }
 
-      // Update transaction status to completed
       await prisma.transaction.update({
         where: { transactionId },
         data: {
@@ -176,10 +189,8 @@ export const transactionService = {
         deletedAt: null,
       };
 
-      // Filter by transaction status
       if (status) where.transactionStatus = status;
 
-      // Filter by date
       if (startDate) {
         const start = new Date(startDate);
         if (!isNaN(start.getTime())) where.createdAt = { gte: start };
@@ -192,7 +203,6 @@ export const transactionService = {
         }
       }
 
-      // Search by transaction number
       if (search) {
         where.transactionNumber = { contains: search, mode: "insensitive" };
       }
@@ -224,7 +234,7 @@ export const transactionService = {
 
       return {
         transactions,
-        pagination: { page, limit, total, totalPages, hasNextPage: page < totalPages },
+        pagination: { page, limit, total, totalPages, hasNextPage: page < Math.ceil(total / limit) },
       };
     } catch (error) {
       handlePrismaError(error);

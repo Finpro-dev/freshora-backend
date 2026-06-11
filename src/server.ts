@@ -15,6 +15,7 @@ import addressRoute from "./routers/address.route";
 import adminRoute from "./routers/admin.route";
 import adminOrderRoute from "./routers/adminOrder.route";
 import authRoute from "./routers/auth.route";
+import mutationRoute from "./routers/mutation.route";
 import cartRoute from "./routers/cart.route";
 import freeShippingRoute from "./routers/freeShipping.route";
 import locationRoute from "./routers/location.route";
@@ -56,6 +57,9 @@ app.use("/api/admin", adminRoute);
 
 //admin order router
 app.use("/api/admin/orders", adminOrderRoute);
+
+//mutation router
+app.use("/api/mutations", mutationRoute);
 
 //product router
 app.use("/api/products", productRoute);
