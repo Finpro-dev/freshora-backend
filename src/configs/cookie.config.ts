@@ -4,7 +4,7 @@ import { SERVER_CREDENTIALS } from "./dotenv.config";
 export const ACCESS_COOKIE_OPTIONS: CookieOptions = {
   httpOnly: true,
   secure: SERVER_CREDENTIALS.NODE_ENV === "production",
-  sameSite: "lax",
+  sameSite: SERVER_CREDENTIALS.NODE_ENV === "production" ? "none" : "lax",
   maxAge: 15 * 60 * 1000,
   path: "/",
 };
@@ -12,15 +12,15 @@ export const ACCESS_COOKIE_OPTIONS: CookieOptions = {
 export const REFRESH_COOKIE_OPTIONS: CookieOptions = {
   httpOnly: true,
   secure: SERVER_CREDENTIALS.NODE_ENV === "production",
-  sameSite: "lax",
+  sameSite: SERVER_CREDENTIALS.NODE_ENV === "production" ? "none" : "lax",
   maxAge: 14 * 24 * 60 * 60 * 1000,
   path: "/",
 };
 
 export const USER_EMAIL_VERIFY_COOKIE_OPTIONS: CookieOptions = {
   httpOnly: true,
-  secure: false,
-  sameSite: "lax",
+  secure: SERVER_CREDENTIALS.NODE_ENV === "production",
+  sameSite: SERVER_CREDENTIALS.NODE_ENV === "production" ? "none" : "lax",
   path: "/",
   maxAge: 60 * 60 * 1000 * 24,
 };
