@@ -90,17 +90,7 @@ export const setTokenCookies = (
 };
 
 export const clearTokenCookies = (res: Response) => {
-  res.clearCookie("accessToken", {
-    ...ACCESS_COOKIE_OPTIONS,
-    ...(SERVER_CREDENTIALS.NODE_ENV === "production" && {
-      domain: "freshora-gorcery.vercel.app",
-    }),
-  });
+  res.clearCookie("accessToken", ACCESS_COOKIE_OPTIONS);
 
-  res.clearCookie("refreshToken", {
-    ...REFRESH_COOKIE_OPTIONS,
-    ...(SERVER_CREDENTIALS.NODE_ENV === "production" && {
-      domain: "freshora-gorcery.vercel.app",
-    }),
-  });
+  res.clearCookie("refreshToken", REFRESH_COOKIE_OPTIONS);
 };
