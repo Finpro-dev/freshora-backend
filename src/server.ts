@@ -4,10 +4,7 @@ import "dotenv/config";
 import express, { Express } from "express";
 import passport from "passport";
 import { CORS_CONFIG } from "./configs/cors.config";
-import {
-  DATABASE_CREDENTIALS,
-  SERVER_CREDENTIALS,
-} from "./configs/dotenv.config";
+import { DATABASE_CREDENTIALS } from "./configs/dotenv.config";
 import { configureGooglePassport } from "./configs/passport.config";
 import { initCronJobs } from "./jobs/cron";
 import { globalErrorHandler } from "./middlewares/globalError.middleware";
@@ -100,14 +97,12 @@ app.use("/api/search-recommendations", searchRecommendationRoute);
 // global error middleware
 app.use(globalErrorHandler);
 
-if (SERVER_CREDENTIALS.NODE_ENV !== "production") {
-  const port = DATABASE_CREDENTIALS.PORT;
-  app.listen(port, () => {
-    console.log(
-      `🦄 🌱 [server]: Server is running at http://localhost:${port}`,
-    );
+const port = DATABASE_CREDENTIALS.PORT;
+app.listen(port, () => {
+  console.log(`🦄 🌱 [server]: Server is running at http://localhost:${port}`);
 
-    // Initialize cron jobs
-    initCronJobs();
-  });
-}
+  // Initialize cron jobs
+  initCronJobs();
+});
+
+export default app;
