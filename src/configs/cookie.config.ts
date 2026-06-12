@@ -14,7 +14,8 @@ export const ACCESS_COOKIE_OPTIONS: CookieOptions = {
 export const REFRESH_COOKIE_OPTIONS: CookieOptions = {
   httpOnly: true,
   secure: isProd,
-  sameSite: isProd ? "none" : "lax",
+  sameSite: "none",
+  // sameSite: isProd ? "none" : "lax",
   maxAge: 14 * 24 * 60 * 60 * 1000,
   path: "/",
 };
@@ -22,7 +23,8 @@ export const REFRESH_COOKIE_OPTIONS: CookieOptions = {
 export const USER_EMAIL_VERIFY_COOKIE_OPTIONS: CookieOptions = {
   httpOnly: true,
   secure: isProd,
-  sameSite: isProd ? "none" : "lax",
+  sameSite: "none",
+  // sameSite: isProd ? "none" : "lax",
   path: "/",
   maxAge: 60 * 60 * 1000 * 24,
 };
