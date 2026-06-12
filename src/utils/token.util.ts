@@ -1,7 +1,7 @@
 import jwt, { TokenExpiredError } from "jsonwebtoken";
 import crypto from "crypto";
 import { TokenPayload } from "../types/token.type";
-import { AUTH_TOKEN } from "../configs/dotenv.config";
+import { AUTH_TOKEN, SERVER_CREDENTIALS } from "../configs/dotenv.config";
 import { HASH_SALT } from "../statics/token.static";
 import { prisma } from "../configs/prisma.config";
 import { AppError } from "./appError.util";
@@ -92,10 +92,15 @@ export const setTokenCookies = (
 export const clearTokenCookies = (res: Response) => {
   res.clearCookie("accessToken", {
     ...ACCESS_COOKIE_OPTIONS,
-    domain: "freshora-gorcery.vercel.app",
+    ...(SERVER_CREDENTIALS.NODE_ENV === "production" && {
+      domain: "freshora-gorcery.vercel.app",
+    }),
   });
+
   res.clearCookie("refreshToken", {
     ...REFRESH_COOKIE_OPTIONS,
-    domain: "freshora-gorcery.vercel.app",
+    ...(SERVER_CREDENTIALS.NODE_ENV === "production" && {
+      domain: "freshora-gorcery.vercel.app",
+    }),
   });
 };

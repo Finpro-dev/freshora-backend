@@ -68,9 +68,8 @@ export const authController = {
   }),
 
   logout: catchAsync(async (req: Request, res: Response) => {
-    console.log(req.user?.userId);
-    const userId = req.user?.userId as string;
-    await authServices.logout(userId);
+    const userId = req.user?.userId;
+    await authServices.logout(userId as string);
 
     clearTokenCookies(res);
 

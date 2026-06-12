@@ -21,8 +21,6 @@ export const authentication = (
 ) => {
   const accessToken = req.cookies.accessToken;
 
-  console.log("Access token", accessToken);
-
   try {
     if (!accessToken) {
       throw new AppError(401, "Unauthenticated action");
@@ -35,8 +33,6 @@ export const authentication = (
       role: decoded.role,
       fullName: decoded.fullName,
     };
-
-    console.log("Req user", req.user);
 
     next();
   } catch (error) {
