@@ -1,19 +1,37 @@
 import { Prisma } from "../../generated/prisma/client";
 import { prisma } from "../configs/prisma.config";
+import {
+  CreateMutationInput,
+  MutationListInput,
+} from "../schemas/mutation.schema";
 import { AppError } from "../utils/appError.util";
+import {
+  handleMutationStatusUpdate,
+  validateMutationStatusTransition,
+} from "../utils/mutation.util";
 import { handlePrismaError } from "../utils/prismaErrorHandler.util";
 import { createStockJournal } from "../utils/stockJournal.util";
-import { validateMutationStatusTransition, handleMutationStatusUpdate } from "../utils/mutation.util";
-import { MutationListInput, CreateMutationInput } from "../schemas/mutation.schema";
 
 // Get all mutations with pagination, filtering, sorting
 export const getAllMutations = async (
   role: string,
   storeId: string | null,
-  filters: MutationListInput
+  filters: MutationListInput,
 ) => {
   try {
-    const { search, productId, status, fromStoreId, toStoreId, startDate, endDate, sortBy, sortOrder, page = 1, limit = 10 } = filters;
+    const {
+      search,
+      productId,
+      status,
+      fromStoreId,
+      toStoreId,
+      startDate,
+      endDate,
+      sortBy,
+      sortOrder,
+      page = 1,
+      limit = 10,
+    } = filters;
     const skip = (page - 1) * limit;
 
     const where: Prisma.MutationWhereInput = { deletedAt: null };
@@ -34,7 +52,8 @@ export const getAllMutations = async (
 
     if (endDate) {
       const end = new Date(endDate);
-      if (!isNaN(end.getTime())) where.createdAt = { ...(where.createdAt as object || {}), lte: end };
+      if (!isNaN(end.getTime()))
+        where.createdAt = { ...((where.createdAt as object) || {}), lte: end };
     }
 
     if (search) {
@@ -58,7 +77,13 @@ export const getAllMutations = async (
 
     return {
       mutations,
-      pagination: { page, limit, total, totalPages: Math.ceil(total / limit), hasNextPage: page < Math.ceil(total / limit) },
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+        hasNextPage: page < Math.ceil(total / limit),
+      },
     };
   } catch (error) {
     handlePrismaError(error);
@@ -66,7 +91,11 @@ export const getAllMutations = async (
 };
 
 // Get single mutation detail
-export const getMutationDetail = async (mutationId: string, role: string, storeId: string | null) => {
+export const getMutationDetail = async (
+  mutationId: string,
+  role: string,
+  storeId: string | null,
+) => {
   try {
     const where: Prisma.MutationWhereInput = { mutationId, deletedAt: null };
 
@@ -78,8 +107,12 @@ export const getMutationDetail = async (mutationId: string, role: string, storeI
       where,
       include: {
         product: { select: { productId: true, name: true } },
-        fromStore: { select: { storeId: true, name: true, address: true, phone: true } },
-        toStore: { select: { storeId: true, name: true, address: true, phone: true } },
+        fromStore: {
+          select: { storeId: true, name: true, address: true, phone: true },
+        },
+        toStore: {
+          select: { storeId: true, name: true, address: true, phone: true },
+        },
         stockJournals: { orderBy: { createdAt: "desc" } },
       },
     });
@@ -103,22 +136,42 @@ export const createMutation = async (data: CreateMutationInput) => {
 
     if (!fromStore) throw new AppError(404, "Source store not found");
     if (!toStore) throw new AppError(404, "Destination store not found");
-    if (fromStoreId === toStoreId) throw new AppError(400, "Source and destination store cannot be the same");
+    if (fromStoreId === toStoreId)
+      throw new AppError(
+        400,
+        "Source and destination store cannot be the same",
+      );
 
     const sourceStock = await prisma.stock.findUnique({
       where: { storeId_productId: { storeId: fromStoreId, productId } },
     });
 
     if (!sourceStock || sourceStock.quantity < quantity) {
-      throw new AppError(400, `Insufficient stock at source store: available ${sourceStock?.quantity ?? 0}, required ${quantity}`);
+      throw new AppError(
+        400,
+        `Insufficient stock at source store: available ${sourceStock?.quantity ?? 0}, required ${quantity}`,
+      );
     }
 
     const mutation = await prisma.$transaction(async (tx) => {
       const newMutation = await tx.mutation.create({
-        data: { productId, fromStoreId, toStoreId, quantity, mutationStatus: "PROCESSED" },
+        data: {
+          productId,
+          fromStoreId,
+          toStoreId,
+          quantity,
+          mutationStatus: "PROCESSED",
+        },
       });
 
-      await createStockJournal(sourceStock.stockId, -quantity, "MUTATION_OUT", tx, undefined, newMutation.mutationId);
+      await createStockJournal(
+        sourceStock.stockId,
+        -quantity,
+        "MUTATION_OUT",
+        tx,
+        undefined,
+        newMutation.mutationId,
+      );
 
       return newMutation;
     });
@@ -160,7 +213,10 @@ export const updateMutationStatus = async (
 };
 
 // Get mutation statistics
-export const getMutationStats = async (role: string, storeId: string | null) => {
+export const getMutationStats = async (
+  role: string,
+  storeId: string | null,
+) => {
   try {
     const where: Prisma.MutationWhereInput = { deletedAt: null };
 

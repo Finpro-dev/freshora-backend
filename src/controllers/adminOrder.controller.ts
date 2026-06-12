@@ -1,9 +1,16 @@
 import { Request, Response } from "express";
-import { catchAsync } from "../utils/catchAsync.util";
-import { getAllOrders, getOrderDetail, getOrderStats } from "../services/adminOrderRead.service";
-import { updateOrderToShipping, cancelOrder } from "../services/adminOrderWrite.service";
-import { AdminOrderListInput } from "../schemas/adminOrder.schema";
 import { prisma } from "../configs/prisma.config";
+import { AdminOrderListInput } from "../schemas/adminOrder.schema";
+import {
+  getAllOrders,
+  getOrderDetail,
+  getOrderStats,
+} from "../services/adminOrderRead.service";
+import {
+  cancelOrder,
+  updateOrderToShipping,
+} from "../services/adminOrderWrite.service";
+import { catchAsync } from "../utils/catchAsync.util";
 
 export const adminOrderController = {
   getAllOrders: catchAsync(async (req: Request, res: Response) => {
