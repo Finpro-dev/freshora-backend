@@ -5,7 +5,7 @@ import { AppError } from "./appError.util";
 const ADMIN_STATUS_TRANSITIONS: Record<TransactionStatus, TransactionStatus[]> = {
   WAITING_FOR_PAYMENT: ["CANCELED"],
   PROCESSING: ["SHIPPING", "CANCELED"],
-  SHIPPING: ["CANCELED"],
+  SHIPPING: [],
   COMPLETED: [],
   CANCELED: [],
 };
