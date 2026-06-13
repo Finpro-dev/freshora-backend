@@ -30,7 +30,7 @@ export const userController = {
     res.status(200).json({
       success: true,
       message: "Profile updated successfully",
-      user: updatedUser,
+      data: updatedUser,
     });
   }),
 
