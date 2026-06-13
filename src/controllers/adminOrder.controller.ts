@@ -24,7 +24,7 @@ export const adminOrderController = {
     }
 
     const filters = req.query as unknown as AdminOrderListInput;
-    const result = await getAllOrders(role, storeId, filters);
+    const result = await getAllOrders(storeId, filters);
 
     res.status(200).json({
       success: true,

@@ -39,12 +39,12 @@ export const cancelOrder = async (transactionId: string, role: string, storeId: 
       const existingOrder = await tx.transaction.findFirst({ where });
       if (!existingOrder) throw new AppError(404, "Order not found");
 
-      if (!["WAITING_FOR_PAYMENT", "PROCESSING", "SHIPPING"].includes(existingOrder.transactionStatus)) {
+      if (!["WAITING_FOR_PAYMENT", "PROCESSING"].includes(existingOrder.transactionStatus)) {
         throw new AppError(400, "Order cannot be canceled at this stage");
       }
 
       const updated = await tx.transaction.updateMany({
-        where: { transactionId, transactionStatus: { in: ["WAITING_FOR_PAYMENT", "PROCESSING", "SHIPPING"] } },
+        where: { transactionId, transactionStatus: { in: ["WAITING_FOR_PAYMENT", "PROCESSING"] } },
         data: { transactionStatus: "CANCELED", cancelledAt: new Date() },
       });
 

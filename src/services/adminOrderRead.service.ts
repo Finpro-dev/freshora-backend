@@ -6,7 +6,6 @@ import { buildAdminOrderFilter, formatAdminOrderResponse } from "../utils/adminO
 import { AdminOrderListInput } from "../schemas/adminOrder.schema";
 
 export const getAllOrders = async (
-  role: string,
   storeId: string | null,
   filters: AdminOrderListInput
 ) => {
