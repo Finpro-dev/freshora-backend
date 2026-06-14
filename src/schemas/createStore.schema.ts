@@ -47,9 +47,12 @@ export const createStoreSchema = z
 
       phone: z
         .string()
-        .min(9, "Phone number is too short")
-        .max(15, "Phone number cannot exceed 15 characters")
-        .regex(phoneRegex, "Phone number must contain numbers only"),
+        .min(1, { message: "Phone number is required" })
+        .min(9, { message: "Phone number is too short" })
+        .max(15, { message: "Phone number cannot exceed 15 characters" })
+        .regex(phoneRegex, {
+          message: "Invalid phone number format. Use 08... or +62...",
+        }),
 
       latitude: z.coerce
         .number({ message: "Latitude must be a valid number" })

@@ -1,16 +1,13 @@
 import { NextFunction, Request, Response } from "express";
 import { TokenExpiredError } from "jsonwebtoken";
-// import { AuthenticatedRequest } from "../types/appRequest.type";
-import { AppError } from "../utils/appErrror.util";
+import { AppError } from "../utils/appError.util";
 import { verifyAccessToken } from "../utils/token.util";
 import { Role } from "../../generated/prisma/enums";
 import { TokenPayload } from "../types/token.type";
 
 declare global {
   namespace Express {
-    interface Request {
-      user?: TokenPayload;
-    }
+    interface User extends TokenPayload {}
   }
 }
 

@@ -1,5 +1,4 @@
 import { Request, Response } from "express";
-// import { AuthenticatedRequest } from "../types/appRequest.type";
 import { catchAsync } from "../utils/catchAsync.util";
 import { referralVoucherService } from "../services/referralVoucher.service";
 
@@ -11,8 +10,8 @@ export const referralVoucherController = {
       await referralVoucherService.getReferralVoucherDetails(userId);
 
     res.status(200).json({
-      status: "success",
-      message: "Referral vouhcer details is retrieved successfully",
+      success: true,
+      message: "Referral voucher details is retrieved successfully",
       data: referralVoucher,
     });
   }),

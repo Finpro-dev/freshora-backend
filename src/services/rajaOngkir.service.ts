@@ -1,6 +1,6 @@
 import axios from "axios";
 import { SHIPING_PROVIDER } from "../configs/dotenv.config";
-import { AppError } from "../utils/appErrror.util";
+import { AppError } from "../utils/appError.util";
 import { RAJA_ONGKIR } from "../statics/address.static";
 
 export const rajaOngkirService = {

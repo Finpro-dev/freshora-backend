@@ -1,5 +1,5 @@
 import { Prisma } from "../../generated/prisma/client";
-import { AppError } from "./appErrror.util";
+import { AppError } from "./appError.util";
 
 export const handlePrismaError = (error: any): never => {
   console.log("Error --> ", error); // FIXME
@@ -9,11 +9,19 @@ export const handlePrismaError = (error: any): never => {
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
     switch (error.code) {
       case "P2002": {
-        const target =
-          (error.meta?.target as string[])?.join(", ") || "this field";
+        let targets = error.meta?.target as string[] | undefined;
+
+        if (!targets && error.meta?.driverAdapterError) {
+          const metaAny = error.meta as any;
+
+          targets =
+            metaAny.driverAdapterError?.cause?.constraint?.fields?.join(", ") ||
+            "This field";
+        }
+
         throw new AppError(
           409,
-          `Unique constraint failed: The ${target} is already in use.`,
+          `Unique constraint failed: ${targets} is already in use.`,
         );
       }
 

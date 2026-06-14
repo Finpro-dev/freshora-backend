@@ -2,7 +2,7 @@ import { prisma } from "../configs/prisma.config";
 import { generateRawToken } from "../utils/token.util";
 import crypto from "crypto";
 import { emailService } from "./email.service";
-import { AppError } from "../utils/appErrror.util";
+import { AppError } from "../utils/appError.util";
 import { handlePrismaError } from "../utils/prismaErrorHandler.util";
 import { emailVerificationTemplate } from "../templates/emailVerification.template";
 import { Prisma } from "../../generated/prisma/client";

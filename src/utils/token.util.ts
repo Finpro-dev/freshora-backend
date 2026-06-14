@@ -1,10 +1,10 @@
 import jwt, { TokenExpiredError } from "jsonwebtoken";
 import crypto from "crypto";
 import { TokenPayload } from "../types/token.type";
-import { AUTH_TOKEN } from "../configs/dotenv.config";
+import { AUTH_TOKEN, SERVER_CREDENTIALS } from "../configs/dotenv.config";
 import { HASH_SALT } from "../statics/token.static";
 import { prisma } from "../configs/prisma.config";
-import { AppError } from "./appErrror.util";
+import { AppError } from "./appError.util";
 import { Response } from "express";
 import {
   ACCESS_COOKIE_OPTIONS,
@@ -91,5 +91,6 @@ export const setTokenCookies = (
 
 export const clearTokenCookies = (res: Response) => {
   res.clearCookie("accessToken", ACCESS_COOKIE_OPTIONS);
+
   res.clearCookie("refreshToken", REFRESH_COOKIE_OPTIONS);
 };
