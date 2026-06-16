@@ -42,6 +42,9 @@ export const addressService = {
         userId,
         deletedAt: null,
       },
+      orderBy: {
+        createdAt: "desc",
+      },
     });
   },
 
