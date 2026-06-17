@@ -16,17 +16,23 @@ export const editAddressSchema = z.object({
       .max(50, "District cannot exceed 50 characters")
       .optional(),
 
+    districtId: z.number("District Id must be a number").optional(),
+
     city: z
       .string()
       .min(2, "City name is too short")
       .max(50, "City cannot exceed 50 characters")
       .optional(),
 
+    cityId: z.number("City Id must be a number").optional(),
+
     province: z
       .string()
       .min(2, "Province name is too short")
       .max(50, "Province cannot exceed 50 characters")
       .optional(),
+
+    provinceId: z.number("Province Id must be a number").optional(),
 
     postalCode: z
       .string()
