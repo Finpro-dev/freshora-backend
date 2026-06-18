@@ -49,6 +49,12 @@ export const productServices = {
               quantity: true,
             },
           },
+
+          discounts: {
+            select: {
+              discountAmount: true,
+            },
+          },
         },
         orderBy: {
           createdAt: "desc",

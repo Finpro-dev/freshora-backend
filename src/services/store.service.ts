@@ -1,11 +1,13 @@
 import { StoreWhereInput } from "../../generated/prisma/models";
 import { prisma } from "../configs/prisma.config";
+import { CalculateNearestStore } from "../schemas/calculateNearestStore.schema";
 import { CreateStoreInput } from "../schemas/createStore.schema";
 import { EditStoreInput } from "../schemas/editStore.schema";
 import { GetAllStore } from "../types/store.type";
 import { AppError } from "../utils/appError.util";
 import { uploadSingle } from "../utils/cloudinaryUploader.util";
 import { handlePrismaError } from "../utils/prismaErrorHandler.util";
+import haversine from "haversine-distance";
 
 export const storeService = {
   createStore: async (data: CreateStoreInput, file: Express.Multer.File) => {
@@ -34,6 +36,76 @@ export const storeService = {
       });
 
       return createdStore;
+    } catch (error) {
+      handlePrismaError(error);
+    }
+  },
+
+  getNearestStore: async ({ lat, lng }: CalculateNearestStore) => {
+    try {
+      let storeId = "";
+      if (!Number(lat) && !Number(lng)) {
+        const primaryStore = await storeService.getPrimaryStore();
+        storeId = primaryStore?.storeId as string;
+
+        return storeId;
+      }
+
+      const stores = await prisma.store.findMany({
+        where: {
+          deletedAt: null,
+          latitude: {
+            not: null,
+          },
+          longitude: {
+            not: null,
+          },
+        },
+        select: {
+          storeId: true,
+          latitude: true,
+          longitude: true,
+        },
+      });
+
+      if (!stores?.length) {
+        const primaryStore = await storeService.getPrimaryStore();
+        storeId = primaryStore?.storeId as string;
+
+        return storeId;
+      }
+
+      // loop
+      const initStoreCoords = {
+        latitude: stores?.[0].latitude as number,
+        longitude: stores?.[0].longitude as number,
+      };
+
+      const userCoords = {
+        latitude: lat as number,
+        longitude: lng as number,
+      };
+
+      let minDistance = haversine(userCoords, initStoreCoords);
+
+      stores?.forEach((store) => {
+        const storeCoords = {
+          latitude: store.latitude as number,
+          longitude: store.longitude as number,
+        };
+
+        const distance = haversine(userCoords, storeCoords);
+        console.log("distance ->", distance);
+
+        if (distance < minDistance) {
+          minDistance = distance;
+          storeId = store.storeId;
+        }
+      });
+
+      console.log("min distance ->", minDistance);
+
+      return storeId;
     } catch (error) {
       handlePrismaError(error);
     }

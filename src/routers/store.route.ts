@@ -5,6 +5,7 @@ import { upload } from "../configs/multer.config";
 import { validate } from "../middlewares/validation.middleware";
 import { createStoreSchema } from "../schemas/createStore.schema";
 import { editStoreSchma } from "../schemas/editStore.schema";
+import { calculateNearestStore } from "../schemas/calculateNearestStore.schema";
 
 const route = Router();
 
@@ -15,6 +16,12 @@ route.post(
   upload.single("avatar"),
   validate(createStoreSchema),
   storeController.createStore,
+);
+
+route.get(
+  "/nearest",
+  validate(calculateNearestStore),
+  storeController.getNearestStore,
 );
 
 route.get(
