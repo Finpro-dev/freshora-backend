@@ -1,5 +1,5 @@
 import { prisma } from "../configs/prisma.config";
-import { AppError } from "../utils/appErrror.util";
+import { AppError } from "../utils/appError.util";
 import { handlePrismaError } from "../utils/prismaErrorHandler.util";
 
 export const categoryServices = {

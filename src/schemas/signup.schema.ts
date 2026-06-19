@@ -11,14 +11,12 @@ export const signupSchema = z.object({
       .string()
       .min(1, "First name is required")
       .trim()
-      .toLowerCase()
       .max(30, "First name must be at most 30 characters"),
 
     lastName: z
       .string()
       .min(1, "Last name is required")
       .trim()
-      .toLowerCase()
       .max(30, "Last name must be at most 30 characters"),
 
     email: z

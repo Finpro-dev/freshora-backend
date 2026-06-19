@@ -23,8 +23,6 @@ import searchRecommendationRoute from "./routers/searchRecommendation.route";
 import shippingRoute from "./routers/shipping.route";
 import storeRoute from "./routers/store.route";
 import transactionRoute from "./routers/transaction.route";
-import passport from "passport";
-import { configureGooglePassport } from "./configs/passport.config";
 import categoryRoute from "./routers/category.route";
 import userRoute from "./routers/user.route";
 
@@ -96,6 +94,9 @@ app.use("/api/transactions", transactionRoute);
 
 // search recommendation
 app.use("/api/search-recommendations", searchRecommendationRoute);
+
+// product category
+app.use("/api/product-categories", categoryRoute);
 
 // global error middleware
 app.use(globalErrorHandler);
