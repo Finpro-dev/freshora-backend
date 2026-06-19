@@ -19,6 +19,23 @@ export const productController = {
     });
   }),
 
+  getProductByStoreId: catchAsync(async (req: Request, res: Response) => {
+    const storeId = req.params.storeId as string;
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 30;
+
+    const products = await productServices.getProductByStoreId(
+      storeId,
+      page,
+      limit,
+    );
+
+    res.status(200).json({
+      success: true,
+      data: products,
+    });
+  }),
+
   getProductById: catchAsync(async (req: Request, res: Response) => {
     const { productId } = req.params as { productId: string };
     const product = await productServices.getProductById(productId);

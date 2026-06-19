@@ -95,15 +95,12 @@ export const storeService = {
         };
 
         const distance = haversine(userCoords, storeCoords);
-        console.log("distance ->", distance);
 
         if (distance < minDistance) {
           minDistance = distance;
           storeId = store.storeId;
         }
       });
-
-      console.log("min distance ->", minDistance);
 
       return storeId;
     } catch (error) {
