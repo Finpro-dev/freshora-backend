@@ -49,6 +49,12 @@ export const productServices = {
               quantity: true,
             },
           },
+
+          discounts: {
+            select: {
+              discountAmount: true,
+            },
+          },
         },
         orderBy: {
           createdAt: "desc",
@@ -75,6 +81,31 @@ export const productServices = {
         hasPrev,
       },
     };
+  },
+
+  getProductByStoreId: async (storeId: string, page: number, limit: number) => {
+    const offset = (page - 1) * limit;
+    const products = await prisma.stock.findMany({
+      where: {
+        storeId,
+        deletedAt: null,
+      },
+      include: {
+        product: true,
+      },
+      take: limit,
+    });
+
+    const totalProduct = await prisma.stock.count({
+      where: {
+        storeId,
+        deletedAt: null,
+      },
+    });
+
+    const totalPage = Math.ceil(totalProduct / limit);
+
+    return { totalPage, totalProduct, products };
   },
 
   getProductById: async (productId: string) => {
