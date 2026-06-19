@@ -62,7 +62,7 @@ export const authController = {
       success: true,
       message: "Login successful",
       data: {
-        user,
+        ...user,
       },
     });
   }),

@@ -91,7 +91,20 @@ export const productServices = {
         deletedAt: null,
       },
       include: {
-        product: true,
+        product: {
+          include: {
+            discounts: {
+              where: {
+                deletedAt: null,
+              },
+            },
+            productPhotos: {
+              select: {
+                photoUrl: true,
+              },
+            },
+          },
+        },
       },
       take: limit,
     });
