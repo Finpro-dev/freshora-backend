@@ -12,7 +12,10 @@ export const handleGoogleAuthSuccess = async (req: Request, res: Response) => {
     const { accessToken, refreshToken } = await generateTokens(user);
     setTokenCookies(res, accessToken, refreshToken);
 
-    return res.redirect(`${CORS_CREDENTIALS.FRONTEND_URL as string}`);
+    const callbackUrl = user.role === "CUSTOMER" ? "/" : "/dashboard";
+    return res.redirect(
+      `${CORS_CREDENTIALS.FRONTEND_URL as string}${callbackUrl}`,
+    );
   } catch (error) {
     return res.redirect(`${CORS_CREDENTIALS.FRONTEND_URL as string}/login`);
   }
