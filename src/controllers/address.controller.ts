@@ -3,7 +3,6 @@ import { catchAsync } from "../utils/catchAsync.util";
 import { addressService } from "../services/address.service";
 import { CreateAddressInput } from "../schemas/createAddress.schema";
 import { EditAddressInput } from "../schemas/editAddressSchema";
-// import { Request } from "../types/appRequest.type";
 
 export const addressController = {
   createAddress: catchAsync(async (req: Request, res: Response) => {

@@ -1,5 +1,4 @@
 import { Request, Response } from "express";
-// import { AuthenticatedRequest } from "../types/appRequest.type";
 import { catchAsync } from "../utils/catchAsync.util";
 import { productServices } from "../services/product.service";
 import { ProductParamsInput } from "../schemas/product.schema";
@@ -19,7 +18,24 @@ export const productController = {
       ...products,
     });
   }),
+  
+  getProductByStoreId: catchAsync(async (req: Request, res: Response) => {
+    const storeId = req.params.storeId as string;
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 30;
 
+    const products = await productServices.getProductByStoreId(
+      storeId,
+      page,
+      limit,
+    );
+
+    res.status(200).json({
+      success: true,
+      data: products,
+    });
+  }),
+  
   getProductById: catchAsync(async (req: Request, res: Response) => {
     const { productId } = req.params as { productId: string };
     const product = await productServices.getProductById(productId);

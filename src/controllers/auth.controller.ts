@@ -3,7 +3,6 @@ import { LoginInput } from "../schemas/login.schema";
 import { SignupInput } from "../schemas/signup.schema";
 import { VerificationRequestInput } from "../schemas/verificationRequest.schema";
 import { authServices } from "../services/auth.service";
-// import { AuthenticatedRequest } from "../types/appRequest.type";
 import { AppError } from "../utils/appError.util";
 import { catchAsync } from "../utils/catchAsync.util";
 import { clearTokenCookies, setTokenCookies } from "../utils/token.util";
@@ -31,6 +30,12 @@ export const authController = {
     async (req: Request<{}, {}, VerificationRequestInput>, res: Response) => {
       const email = req.cookies.emailForVerify || req.body.email;
 
+      res.cookie(
+        "emailForVerify",
+        req.body.email as string,
+        USER_EMAIL_VERIFY_COOKIE_OPTIONS,
+      );
+
       await authServices.verifyRequest({
         email,
         verifyType: req.body.verifyType,
@@ -57,14 +62,16 @@ export const authController = {
       success: true,
       message: "Login successful",
       data: {
-        user,
+        ...user,
       },
     });
   }),
 
   logout: catchAsync(async (req: Request, res: Response) => {
-    const userId = req.user?.userId as string;
-    await authServices.logout(userId);
+    const userId = req.user?.userId;
+    await authServices.logout(userId as string);
+
+    console.log("userId", userId);
 
     clearTokenCookies(res);
 

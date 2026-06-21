@@ -1,9 +1,9 @@
 import { Request, Response } from "express";
-// import { AuthenticatedRequest } from "../types/appRequest.type";
 import { catchAsync } from "../utils/catchAsync.util";
 import { storeService } from "../services/store.service";
 import { CreateStoreInput } from "../schemas/createStore.schema";
 import { EditStoreInput } from "../schemas/editStore.schema";
+import { CalculateNearestStore } from "../schemas/calculateNearestStore.schema";
 
 export const storeController = {
   createStore: catchAsync(async (req: Request, res: Response) => {
@@ -17,6 +17,19 @@ export const storeController = {
       success: true,
       message: "Store successfully created",
       data: createdStore,
+    });
+  }),
+
+  getNearestStore: catchAsync(async (req: Request, res: Response) => {
+    const { lat, lng } = req.query as CalculateNearestStore;
+    const storeId = await storeService.getNearestStore({ lat, lng });
+
+    res.status(200).json({
+      success: true,
+      message: "Nearest store successfully reached",
+      data: {
+        storeId,
+      },
     });
   }),
 
