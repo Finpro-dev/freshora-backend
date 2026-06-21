@@ -2,7 +2,7 @@ import { prisma } from "../configs/prisma.config";
 import { GetUsersQuery } from "../schemas/admin.schema";
 import { SignupInput } from "../schemas/signup.schema";
 import { userSelect } from "../statics/user.select";
-import { AppError } from "../utils/appErrror.util";
+import { AppError } from "../utils/appError.util";
 import { createUniqueReferralCode } from "../utils/createUniqueReferralCode";
 import { handlePrismaError } from "../utils/prismaErrorHandler.util";
 import { generateFullName } from "../utils/userDataTransform.util";
@@ -165,7 +165,32 @@ export const adminServices = {
     await verifyTokenService.createVerifyToken(userId, fullName, email);
   },
 
-  updateStoreAdmin: async (adminId: string, data: Partial<SignupInput>) => {},
+  updateStoreAdmin: async (adminId: string, data: Partial<SignupInput>) => {
+    try {
+      const { firstName, lastName, phone } = data;
+      const storeAdmin = await prisma.user.findUnique({
+        where: {
+          userId: adminId,
+        },
+      });
+      if (!storeAdmin) {
+        throw new AppError(404, "Store admin not found");
+      }
+      const updatedStoreAdmin = await prisma.user.update({
+        where: {
+          userId: adminId,
+        },
+        data: {
+          firstName,
+          lastName,
+          phone,
+        },
+      });
+      return updatedStoreAdmin;
+    } catch (error) {
+      throw handlePrismaError(error);
+    }
+  },
   deleteStoreAdmin: async (adminId: string) => {
     try {
       const storeAdmin = await prisma.user.findUnique({
