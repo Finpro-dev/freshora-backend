@@ -50,11 +50,11 @@ adminRoute.use(
   categoryRoute,
 );
 
-adminRoute.use(
-  "/discounts",
-  authentication,
-  authorization("STORE_ADMIN", "SUPER_ADMIN"),
-  discountRoute,
-);
+// adminRoute.use(
+//   "/discounts",
+//   authentication,
+//   authorization("STORE_ADMIN", "SUPER_ADMIN"),
+//   discountRoute,
+// );
 
 export default adminRoute;
