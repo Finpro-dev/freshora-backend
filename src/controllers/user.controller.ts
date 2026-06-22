@@ -49,7 +49,7 @@ export const userController = {
 
   getAllUnassignUsers: catchAsync(async (req: Request, res: Response) => {
     const page = Number(req.query.page) || 1;
-    const limit = Number(req.query.limit) || 1;
+    const limit = Number(req.query.limit) || 20;
     const search = req.query.search as string;
 
     const data = await userService.getAllUnassignedAdmin(page, limit, search);

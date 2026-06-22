@@ -151,6 +151,15 @@ export const storeService = {
       orderBy: {
         createdAt: "desc",
       },
+      include: {
+        user: {
+          select: {
+            avatar: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
     });
 
     const totalData = await prisma.store.count({
@@ -170,6 +179,17 @@ export const storeService = {
     const storeDetails = await prisma.store.findUnique({
       where: {
         storeId,
+      },
+      include: {
+        user: {
+          select: {
+            userId: true,
+            avatar: true,
+            firstName: true,
+            lastName: true,
+            isVerified: true,
+          },
+        },
       },
     });
 
@@ -211,6 +231,7 @@ export const storeService = {
         postalCode,
         province,
         provinceId,
+        userId,
       } = data;
 
       let url = "";
@@ -223,6 +244,7 @@ export const storeService = {
         where: { storeId },
         data: {
           ...(address && { address }),
+          ...(userId && { userId }),
           ...(city && { city }),
           ...(cityId && { cityId: Number(cityId) }),
           ...(district && { district }),
