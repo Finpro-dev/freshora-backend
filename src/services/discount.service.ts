@@ -21,7 +21,7 @@ export const discountServices = {
     }
     if (status === "ACTIVE") {
       where.validFrom = {
-        lte: currentDate, // validFrom <= waktu sekarang
+        lte: currentDate,
       };
       where.validUntil = {
         gte: currentDate, // validUntil >= waktu sekarang
