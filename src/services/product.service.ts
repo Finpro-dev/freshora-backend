@@ -13,26 +13,33 @@ import { uploadMany } from "../utils/cloudinaryUploader.util";
 
 export const productServices = {
   getAllProducts: async (params: ProductParamsInput) => {
-    const { page = 1, limit = 10, search, category } = params;
+    // PERBAIKAN UTAMA: Paksa parameter query dari Express menjadi Number murni
+    const page = Number(params.page) || 1;
+    const limit = Number(params.limit) || 10;
+    const { search, category } = params;
+
     const skip = (page - 1) * limit;
     const currentDate = new Date();
     const where: Prisma.ProductWhereInput = {
       deletedAt: null,
     };
+
     if (search) {
       where.name = {
         contains: search,
         mode: "insensitive",
       };
     }
+
     if (category) {
       where.productCategoryId = category;
     }
+
     const [products, totalCount] = await prisma.$transaction([
       prisma.product.findMany({
         where: where,
         skip,
-        take: limit,
+        take: limit, // Sekarang aman karena 'limit' sudah pasti berupa angka murni (Int)
         include: {
           productCategory: {
             select: {
@@ -66,11 +73,11 @@ export const productServices = {
         where: where,
       }),
     ]);
-    const productsWithFinalPrice = products.map((product) => {
-      let finalPrice = Number(product.price); // Pastikan dikonversi ke tipe data number
-      const activeDiscount = product.discounts[0]; // Ambil diskon pertama yang aktif jika ada
 
-      // Hitung jika tipe diskon adalah potongan langsung (NO_REQUIREMENT)
+    const productsWithFinalPrice = products.map((product) => {
+      let finalPrice = Number(product.price);
+      const activeDiscount = product.discounts[0];
+
       if (activeDiscount && activeDiscount.type === "NO_REQUIREMENT") {
         finalPrice = Math.max(
           0,
@@ -80,9 +87,10 @@ export const productServices = {
 
       return {
         ...product,
-        finalPrice, // Properti baru yang akan muncul di Postman & Front-End
+        finalPrice,
       };
     });
+
     // Calculate pagination metadata
     const totalPages = Math.max(1, Math.ceil(totalCount / limit));
 
