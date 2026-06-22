@@ -13,7 +13,6 @@ import { uploadMany } from "../utils/cloudinaryUploader.util";
 
 export const productServices = {
   getAllProducts: async (params: ProductParamsInput) => {
-    // PERBAIKAN UTAMA: Paksa parameter query dari Express menjadi Number murni
     const page = Number(params.page) || 1;
     const limit = Number(params.limit) || 10;
     const { search, category } = params;
@@ -35,44 +34,66 @@ export const productServices = {
       where.productCategoryId = category;
     }
 
-    const [products, totalCount] = await prisma.$transaction([
-      prisma.product.findMany({
-        where: where,
-        skip,
-        take: limit, // Sekarang aman karena 'limit' sudah pasti berupa angka murni (Int)
-        include: {
-          productCategory: {
-            select: {
-              productCategoryId: true,
-              category: true,
+    // PERBAIKAN backend: Ambil daftar seluruh kategori secara master/global
+    const [products, totalCount, outOfStockCount, allCategories] =
+      await prisma.$transaction([
+        prisma.product.findMany({
+          where: where,
+          skip,
+          take: limit,
+          include: {
+            productCategory: {
+              select: {
+                productCategoryId: true,
+                category: true,
+              },
+            },
+            productPhotos: {
+              select: {
+                photoUrl: true,
+              },
+            },
+            stocks: {
+              select: {
+                quantity: true,
+              },
+            },
+            discounts: {
+              where: {
+                deletedAt: null,
+                validFrom: { lte: currentDate },
+                validUntil: { gte: currentDate },
+              },
             },
           },
-          productPhotos: {
-            select: {
-              photoUrl: true,
+          orderBy: {
+            createdAt: "desc",
+          },
+        }),
+        prisma.product.count({
+          where: where,
+        }),
+        prisma.product.count({
+          where: {
+            ...where,
+            stocks: {
+              none: {
+                quantity: { gt: 0 },
+              },
             },
           },
-          stocks: {
-            select: {
-              quantity: true,
-            },
+        }),
+        // Query master kategori agar dropdown tidak bug lagi
+        prisma.productCategory.findMany({
+          select: {
+            productCategoryId: true,
+            category: true,
           },
-          discounts: {
-            where: {
-              deletedAt: null,
-              validFrom: { lte: currentDate },
-              validUntil: { gte: currentDate },
-            },
+          orderBy: {
+            category: "asc",
           },
-        },
-        orderBy: {
-          createdAt: "desc",
-        },
-      }),
-      prisma.product.count({
-        where: where,
-      }),
-    ]);
+        }),
+      ]);
 
     const productsWithFinalPrice = products.map((product) => {
       let finalPrice = Number(product.price);
@@ -91,13 +112,12 @@ export const productServices = {
       };
     });
 
-    // Calculate pagination metadata
     const totalPages = Math.max(1, Math.ceil(totalCount / limit));
     const hasNext = page < totalPages;
     const hasPrev = page > 1;
 
     return {
-      data: productsWithFinalPrice, // Mengembalikan produk yang SUDAH ada harga diskonnya
+      data: productsWithFinalPrice,
       pagination: {
         page,
         limit,
@@ -106,6 +126,10 @@ export const productServices = {
         hasNext,
         hasPrev,
       },
+      stats: {
+        totalOutOfStock: outOfStockCount,
+      },
+      categories: allCategories, // <-- Mengirim data kategori master
     };
   },
 
