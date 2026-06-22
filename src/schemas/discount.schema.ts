@@ -6,35 +6,37 @@ const DiscountTypeEnum = z.enum([
   "NO_REQUIREMENT",
 ]);
 
+const DiscountValueTypeEnum = z.enum(["PERCENTAGE", "NOMINAL"]); // 🆕
+
 export const createDiscountSchema = z.object({
   body: z
     .object({
       productId: z.string().uuid("Invalid product ID format"),
-
       type: DiscountTypeEnum,
-
+      valueType: DiscountValueTypeEnum, // 🆕
       discountAmount: z.coerce
         .number()
-        .positive("Discount value must be greater than 0"),
-
+        .nonnegative("Discount value cannot be negative"), // Diubah ke nonnegative agar BOGO bisa bernilai 0
       minTransaction: z.coerce
         .number()
         .positive("Minimum transaction must be greater than 0")
         .nullable()
         .optional(),
-
+      maxDiscount: z.coerce
+        .number()
+        .positive("Max discount limit must be greater than 0")
+        .nullable()
+        .optional(), // 🆕
       validFrom: z.string().datetime(),
-
       validUntil: z.string().datetime(),
     })
     .superRefine((data, ctx) => {
       const validFrom = new Date(data.validFrom);
       const validUntil = new Date(data.validUntil);
-
-      // Ambil batas bawah waktu hari ini (mulai dari jam 00:00:00)
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
+      // 1. Validasi Tanggal
       if (validFrom < today) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
@@ -42,7 +44,6 @@ export const createDiscountSchema = z.object({
           message: "Valid from date cannot be in the past",
         });
       }
-
       if (validUntil <= validFrom) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
@@ -51,22 +52,26 @@ export const createDiscountSchema = z.object({
         });
       }
 
-      if (
-        (data.type === "MIN_TRANSACTION" &&
-          data.minTransaction === undefined) ||
-        data.minTransaction === null
-      ) {
+      // 2. Validasi Nilai Persentase (Maksimal 100%)
+      if (data.valueType === "PERCENTAGE" && data.discountAmount > 100) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["discountAmount"],
+          message: "Percentage discount cannot exceed 100%",
+        });
+      }
+
+      // 3. Validasi Kondisional MIN_TRANSACTION
+      const hasMinTransaction =
+        data.minTransaction !== undefined && data.minTransaction !== null;
+      if (data.type === "MIN_TRANSACTION" && !hasMinTransaction) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           path: ["minTransaction"],
           message: "minTransaction is required for MIN_TRANSACTION discount",
         });
       }
-
-      if (
-        data.type !== "MIN_TRANSACTION" &&
-        data.minTransaction !== undefined
-      ) {
+      if (data.type !== "MIN_TRANSACTION" && hasMinTransaction) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           path: ["minTransaction"],
@@ -74,20 +79,16 @@ export const createDiscountSchema = z.object({
             "minTransaction can only be used with MIN_TRANSACTION discount",
         });
       }
+
+      // 4. Validasi Kondisional Limitasi Diskon (maxDiscount)
+      // Limitasi maxDiscount hanya masuk akal jika tipenya PERCENTAGE pada MIN_TRANSACTION
+      if (data.valueType === "NOMINAL" && data.maxDiscount) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["maxDiscount"],
+          message:
+            "Limitation (maxDiscount) is only applicable for PERCENTAGE discount type",
+        });
+      }
     }),
 });
-
-export const getDiscountSchema = z.object({
-  query: z.object({
-    page: z.coerce.number().int().min(1).default(1),
-
-    limit: z.coerce.number().int().min(1).max(100).default(10),
-
-    type: DiscountTypeEnum.optional(),
-
-    status: z.enum(["ACTIVE", "EXPIRED"]).optional(),
-  }),
-});
-
-export type CreateDiscountInput = z.infer<typeof createDiscountSchema>["body"];
-export type GetDiscountInput = z.infer<typeof getDiscountSchema>["query"];

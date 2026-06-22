@@ -76,6 +76,11 @@ enum DiscountType {
   NO_REQUIREMENT
 }
 
+enum DiscountValueType {
+  PERCENTAGE
+  NOMINAL
+}
+
 enum PaymentType {
   GOPAY
   BANK_TRANSFER
@@ -481,18 +486,22 @@ model Payment {
 model Discount {
   discountId     String       @id @default(uuid())
   productId      String
-  type           DiscountType
-  minTransaction Decimal?     @db.Decimal(10, 2)
-  validUntil     DateTime
+  type           DiscountType 
+  valueType      DiscountValueType @default(NOMINAL) 
+  
+  discountAmount Decimal      @db.Decimal(10, 2) 
+  minTransaction Decimal?     @db.Decimal(10, 2) 
+  maxDiscount    Decimal?     @db.Decimal(10, 2) 
+  
   validFrom      DateTime
-  discountAmount Decimal      @db.Decimal(10, 2)
+  validUntil     DateTime
 
-  transactions Transaction[]
-  product      Product       @relation(fields: [productId], references: [productId])
+  transactions   Transaction[]
+  product        Product       @relation(fields: [productId], references: [productId])
 
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  deletedAt      DateTime?
 
   @@map("discounts")
 }
