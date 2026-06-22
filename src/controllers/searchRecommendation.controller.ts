@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
-import { catchAsync } from "../utils/catchAsync.util";
 import { searchRecommendationService } from "../services/searchRecommendation.service";
-import { SearchRecommendationInput } from "../schemas/searchRecommendation.schema";
+import { catchAsync } from "../utils/catchAsync.util";
 
 export const searchRecommendationController = {
   getSearchRecommendation: catchAsync(

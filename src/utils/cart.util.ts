@@ -31,14 +31,29 @@ export const findNearestStore = async (
 };
 
 // Ensures the user's cart exists, creating one if necessary.
-export const ensureUserCart = async (userId: string, storeId?: string) => {
-  let cart = await prisma.cart.findUnique({ where: { userId } });
+export const ensureUserCart = async (
+  userId: string,
+  storeId?: string,
+  tx?: Prisma.TransactionClient,
+) => {
+  const client = tx || prisma;
+  let cart = await client.cart.findUnique({ where: { userId } });
 
-  if (cart) return cart;
+  if (cart) {
+    // Cart exists with a different store — clear items and reassign store
+    if (storeId && cart.storeId !== storeId) {
+      await client.cartItem.deleteMany({ where: { cartId: cart.cartId } });
+      cart = await client.cart.update({
+        where: { cartId: cart.cartId },
+        data: { storeId },
+      });
+    }
+    return cart;
+  }
 
   if (!storeId) return null;
 
-  return prisma.cart.create({ data: { userId, storeId } });
+  return client.cart.create({ data: { userId, storeId } });
 };
 
 // Validates stock at the specified store for a product.

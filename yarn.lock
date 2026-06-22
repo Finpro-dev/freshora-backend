@@ -1135,6 +1135,11 @@ hasown@^2.0.2:
   dependencies:
     function-bind "^1.1.2"
 
+haversine-distance@^1.2.4:
+  version "1.2.4"
+  resolved "https://registry.npmjs.org/haversine-distance/-/haversine-distance-1.2.4.tgz"
+  integrity sha512-8MHQBQXR7GXZJIvitCf/ux+gwLtWOxmXNNz5dReG+jJbuvaEoj6QIXlaIO3cPr433BFWM4jececJaLYpwxnZhg==
+
 hono@^4, hono@^4.12.8:
   version "4.12.18"
   resolved "https://registry.npmjs.org/hono/-/hono-4.12.18.tgz"

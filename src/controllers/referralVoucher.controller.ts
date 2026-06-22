@@ -1,5 +1,4 @@
 import { Request, Response } from "express";
-// import { AuthenticatedRequest } from "../types/appRequest.type";
 import { catchAsync } from "../utils/catchAsync.util";
 import { referralVoucherService } from "../services/referralVoucher.service";
 

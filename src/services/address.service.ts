@@ -42,6 +42,9 @@ export const addressService = {
         userId,
         deletedAt: null,
       },
+      orderBy: {
+        createdAt: "desc",
+      },
     });
   },
 
@@ -63,6 +66,9 @@ export const addressService = {
       address,
       addressStatus,
       city,
+      cityId,
+      districtId,
+      provinceId,
       district,
       postalCode,
       province,
@@ -103,10 +109,13 @@ export const addressService = {
 
           data: {
             ...(address && { address }),
-            ...(city && { address }),
+            ...(city && { city }),
             ...(district && { district }),
-            ...(postalCode && { postalCode }),
             ...(province && { province }),
+            ...(districtId && { districtId }),
+            ...(cityId && { cityId }),
+            ...(provinceId && { provinceId }),
+            ...(postalCode && { postalCode }),
             ...(latitude && { latitude }),
             ...(longitude && { longitude }),
           },

@@ -15,6 +15,7 @@ productRoute.get(
 );
 
 productRoute.get("/:productId", productController.getProductById);
+productRoute.get("/store/:storeId", productController.getProductByStoreId);
 
 productRoute.post(
   "/create-product",
