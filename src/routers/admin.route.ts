@@ -3,6 +3,7 @@ import { adminController } from "../controllers/admin.controller";
 import { authorization, authentication } from "../middlewares/auth.middleware";
 import categoryRoute from "./category.route";
 import discountRoute from "./discount.route";
+import stockRouter from "./stock.route";
 import { validate } from "../middlewares/validation.middleware";
 import { getUsersSchema } from "../schemas/admin.schema";
 
@@ -55,6 +56,13 @@ adminRoute.use(
   authentication,
   authorization("STORE_ADMIN", "SUPER_ADMIN"),
   discountRoute,
+);
+
+adminRoute.use(
+  "/inventory",
+  authentication,
+  authorization("SUPER_ADMIN", "STORE_ADMIN"),
+  stockRouter,
 );
 
 export default adminRoute;

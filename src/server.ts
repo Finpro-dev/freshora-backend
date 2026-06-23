@@ -25,6 +25,7 @@ import storeRoute from "./routers/store.route";
 import transactionRoute from "./routers/transaction.route";
 import categoryRoute from "./routers/category.route";
 import userRoute from "./routers/user.route";
+import stockRouter from "./routers/stock.route";
 
 const app: Express = express();
 
@@ -94,9 +95,6 @@ app.use("/api/transactions", transactionRoute);
 
 // search recommendation
 app.use("/api/search-recommendations", searchRecommendationRoute);
-
-// product category
-app.use("/api/product-categories", categoryRoute);
 
 // global error middleware
 app.use(globalErrorHandler);

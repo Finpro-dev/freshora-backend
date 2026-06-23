@@ -141,6 +141,7 @@ model User {
   store               Store?
   verifications       Verification[]
   freeShippingVoucher FreeShippingVoucher[]
+  stockJournals       StockJournal[]
 
   voucherOwners ReferralVoucher?  @relation("voucherOwner")
   referralOwner ReferralVoucher[] @relation("referralOwner")
@@ -363,6 +364,7 @@ model StockJournal {
   type           ActivityType
   transactionId  String?
   mutationId     String?
+  updatedBy      String?       
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -371,6 +373,7 @@ model StockJournal {
   stock       Stock        @relation(fields: [stockId], references: [stockId])
   transaction Transaction? @relation(fields: [transactionId], references: [transactionId])
   mutation    Mutation?    @relation(fields: [mutationId], references: [mutationId])
+  user        User?         @relation(fields: [updatedBy], references: [userId]) 
 
   @@map("stockJournals")
 }
