@@ -327,6 +327,7 @@ model Store {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
+  discounts      Discount[]
   user          User?         @relation(fields: [userId], references: [userId])
   mutationsFrom Mutation[]    @relation("fromStore")
   mutationsTo   Mutation[]    @relation("toStore")
@@ -484,23 +485,25 @@ model Payment {
 }
 
 model Discount {
-  discountId     String       @id @default(uuid())
+  discountId     String            @id @default(uuid())
   productId      String
+  storeId        String?           // 🆕 TAMBAHKAN INI agar diskon tidak bocor ke toko lain!
   type           DiscountType 
   valueType      DiscountValueType @default(NOMINAL) 
   
-  discountAmount Decimal      @db.Decimal(10, 2) 
-  minTransaction Decimal?     @db.Decimal(10, 2) 
-  maxDiscount    Decimal?     @db.Decimal(10, 2) 
+  discountAmount Decimal           @db.Decimal(10, 2) 
+  minTransaction Decimal?          @db.Decimal(10, 2) 
+  maxDiscount    Decimal?          @db.Decimal(10, 2) 
   
   validFrom      DateTime
   validUntil     DateTime
 
   transactions   Transaction[]
-  product        Product       @relation(fields: [productId], references: [productId])
+  product        Product           @relation(fields: [productId], references: [productId])
+  store          Store?            @relation(fields: [storeId], references: [storeId]) // 🆕 Relasi ke Store
 
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
   deletedAt      DateTime?
 
   @@map("discounts")
