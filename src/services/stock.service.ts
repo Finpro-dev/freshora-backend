@@ -3,27 +3,72 @@ import { AppError } from "../utils/appError.util";
 import { handlePrismaError } from "../utils/prismaErrorHandler.util";
 
 export const stockService = {
-  // 1. GET ALL STOCKS
-  findAllStocks: async (storeId?: string) => {
+  findAllStocks: async (params: {
+    storeId?: string;
+    page: number;
+    limit: number;
+    search: string;
+  }) => {
+    const { storeId, page, limit, search } = params;
+
     try {
+      const whereClause: any = {};
+
+      if (storeId) {
+        whereClause.storeId = storeId;
+      }
+
+      if (search) {
+        whereClause.product = {
+          name: {
+            contains: search,
+            mode: "insensitive",
+          },
+        };
+      }
+
+      const total = await prisma.stock.count({
+        where: whereClause,
+      });
+
       const stocks = await prisma.stock.findMany({
-        where: storeId ? { storeId } : {},
+        where: whereClause,
+        skip: (page - 1) * limit,
+        take: limit,
         include: {
           product: {
-            select: { productId: true, name: true, serialNumber: true },
+            select: {
+              productId: true,
+              name: true,
+              serialNumber: true,
+              productPhotos: {
+                select: {
+                  photoUrl: true,
+                },
+              },
+            },
           },
           store: {
             select: { name: true },
           },
         },
       });
-      return stocks;
+
+      return {
+        data: stocks,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit),
+        },
+      };
     } catch (error) {
       handlePrismaError(error);
+      throw error;
     }
   },
 
-  // 2. GET SINGLE STOCK BY ID
   findStockById: async (stockId: string) => {
     try {
       const stock = await prisma.stock.findUnique({
@@ -40,7 +85,6 @@ export const stockService = {
     }
   },
 
-  // 3. GET JOURNALS / LOG HISTORY
   findAllJournals: async (storeId?: string) => {
     try {
       const journals = await prisma.stockJournal.findMany({
@@ -65,7 +109,6 @@ export const stockService = {
     }
   },
 
-  // 4. PROCESS MUTATION STOCK (INTEGRATED WITH TRANSACTION & APP_ERROR)
   processStockAdjustment: async (payload: {
     productId: string;
     storeId: string;
@@ -76,14 +119,11 @@ export const stockService = {
     const { productId, storeId, quantityChange, type, userId } = payload;
 
     try {
-      // Jalankan database transaction secara aman
       const result = await prisma.$transaction(async (tx) => {
-        // A. Cari data baris stok di toko tersebut
         let stock = await tx.stock.findFirst({
           where: { productId, storeId },
         });
 
-        // B. Fitur Auto-Create jika belum terdaftar di toko
         if (!stock) {
           if (type === "MANUAL_DEDUCT") {
             throw new AppError(
@@ -96,7 +136,6 @@ export const stockService = {
           });
         }
 
-        // C. Validasi logika agar stok tidak minus
         if (
           type === "MANUAL_DEDUCT" &&
           stock.quantity < Math.abs(quantityChange)
@@ -107,13 +146,11 @@ export const stockService = {
           );
         }
 
-        // Memastikan nilai quantityChange disimpan minus (-) jika tipenya pengurangan
         const finalQuantityChange =
           type === "MANUAL_DEDUCT"
             ? -Math.abs(quantityChange)
             : Math.abs(quantityChange);
 
-        // D. Buat history di Jurnal tanpa field 'reason'
         const journal = await tx.stockJournal.create({
           data: {
             stockId: stock.stockId,
@@ -123,7 +160,6 @@ export const stockService = {
           },
         });
 
-        // E. Update angka stok fisik berdasarkan jurnal
         const updatedStock = await tx.stock.update({
           where: { stockId: stock.stockId },
           data: {

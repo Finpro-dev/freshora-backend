@@ -22,7 +22,7 @@ export const discountServices = {
       deletedAt: null,
     };
 
-    // BYPASS STRATEGI: Isolasi data toko untuk STORE_ADMIN
+    // Isolation Data Toko untuk STORE_ADMIN
     if (admin.role === "STORE_ADMIN") {
       const adminStore = await prisma.store.findUnique({
         where: { userId: admin.userId },
@@ -49,6 +49,7 @@ export const discountServices = {
         where,
         skip,
         take: limit,
+        // Gunakan include product secara aman karena sekarang bisa bernilai null
         include: { product: true, store: true },
         orderBy: { createdAt: "desc" },
       }),
@@ -69,7 +70,7 @@ export const discountServices = {
   createDiscount: async (data: CreateDiscountInput, admin: AdminContext) => {
     try {
       const {
-        productId,
+        productId, // 🆕 Sekarang bersifat opsional (String?)
         type,
         valueType,
         discountAmount,
@@ -79,13 +80,64 @@ export const discountServices = {
         validUntil,
       } = data;
 
-      // 1. Cek eksistensi produk global
-      const productExist = await prisma.product.findUnique({
-        where: { productId, deletedAt: null },
-      });
-      if (!productExist) throw new AppError(404, "Product not found");
+      // 1. Cek eksistensi produk HANYA JIKA productId disediakan
+      if (productId) {
+        const productExist = await prisma.product.findUnique({
+          where: { productId, deletedAt: null },
+        });
+        if (!productExist) throw new AppError(404, "Product not found");
+      }
 
-      // 2. BYPASS STRATEGI: Cari targetStoreId via userId
+      // 2. 🛡️ VALIDASI ATURAN BISNIS (Sesuai Ketentuan Assignment)
+
+      // Batasan Nilai Persentase
+      if (
+        valueType === "PERCENTAGE" &&
+        (Number(discountAmount) <= 0 || Number(discountAmount) > 100)
+      ) {
+        throw new AppError(
+          400,
+          "Percentage discount must be between 1% and 100%",
+        );
+      }
+
+      // Aturan untuk Beli 1 Gratis 1 (BOGO)
+      if (type === "BUY_ONE_GET_ONE") {
+        if (!productId) {
+          throw new AppError(
+            400,
+            "Buy One Get One discount must be applied to a specific product",
+          );
+        }
+        if (valueType !== "PERCENTAGE" || Number(discountAmount) !== 100) {
+          throw new AppError(
+            400,
+            "For BUY_ONE_GET_ONE, valueType must be PERCENTAGE and discountAmount must be 100%",
+          );
+        }
+      }
+
+      // Aturan untuk Minimal Transaksi (Voucher Belanja)
+      if (type === "MIN_TRANSACTION") {
+        if (!minTransaction || Number(minTransaction) <= 0) {
+          throw new AppError(
+            400,
+            "Minimum transaction amount is required and must be greater than 0 for this discount type",
+          );
+        }
+      }
+
+      // Aturan untuk Diskon Tanpa Ketentuan (Direct Markdown Produk)
+      if (type === "NO_REQUIREMENT") {
+        if (!productId) {
+          throw new AppError(
+            400,
+            "Direct markdown discount (NO_REQUIREMENT) must be applied to a specific product",
+          );
+        }
+      }
+
+      // 3. BYPASS STRATEGI: Cari targetStoreId via userId
       let targetStoreId: string | null = null;
       if (admin.role === "STORE_ADMIN") {
         const adminStore = await prisma.store.findUnique({
@@ -96,22 +148,26 @@ export const discountServices = {
         }
         targetStoreId = adminStore.storeId;
 
-        // Validasi ketersediaan stok produk di toko bersangkutan
-        const hasStock = await prisma.stock.findUnique({
-          where: { storeId_productId: { storeId: targetStoreId, productId } },
-        });
-        if (!hasStock) {
-          throw new AppError(
-            403,
-            "You can only create discounts for products stocked in your store",
-          );
+        // Validasi ketersediaan stok HANYA JIKA diskonnya spesifik ke produk tertentu
+        if (productId) {
+          const hasStock = await prisma.stock.findUnique({
+            where: { storeId_productId: { storeId: targetStoreId, productId } },
+          });
+          if (!hasStock) {
+            throw new AppError(
+              403,
+              "You can only create discounts for products stocked in your store",
+            );
+          }
         }
       }
 
-      // 3. Deteksi tabrakan waktu (overlap) diskon aktif
+      // 4. Deteksi tabrakan waktu (overlap) diskon aktif
       const duplicateDiscount = await prisma.discount.findFirst({
         where: {
-          productId,
+          // 💡 PENTING: Gunakan 'productId || null' agar Prisma mencari nilai NULL absolut
+          // untuk diskon global, bukan mengabaikan filter (jika undefined)
+          productId: productId || null,
           storeId: targetStoreId,
           deletedAt: null,
           OR: [
@@ -125,14 +181,16 @@ export const discountServices = {
       if (duplicateDiscount) {
         throw new AppError(
           409,
-          "This product already has an active discount in this store within the specified time range",
+          productId
+            ? "This product already has an active discount in this store within the specified time range"
+            : "This store already has an active global transaction voucher within the specified time range",
         );
       }
 
-      // 4. Simpan ke database
+      // 5. Simpan ke database
       return await prisma.discount.create({
         data: {
-          productId,
+          productId: productId || null,
           storeId: targetStoreId,
           type,
           valueType,
@@ -144,10 +202,12 @@ export const discountServices = {
           validFrom: new Date(validFrom),
           validUntil: new Date(validUntil),
         },
-        include: { product: { select: { name: true, price: true } } },
+        include: {
+          product: { select: { name: true, price: true } },
+          store: { select: { name: true } },
+        },
       });
     } catch (error) {
-      // Pastikan melemparkan kembali error agar ditangkap oleh catchAsync
       handlePrismaError(error);
       throw error;
     }

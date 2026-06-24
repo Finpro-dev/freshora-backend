@@ -3,7 +3,11 @@ import { DiscountType, DiscountValueType } from "../../generated/prisma/client";
 
 export const createDiscountSchema = z.object({
   body: z.object({
-    productId: z.string().uuid("Invalid product ID format"),
+    productId: z
+      .string()
+      .uuid("Invalid product ID format")
+      .optional()
+      .nullable(),
     type: z.nativeEnum(DiscountType, {
       message: "Invalid discount type",
     }),

@@ -489,7 +489,7 @@ model Payment {
 
 model Discount {
   discountId     String            @id @default(uuid())
-  productId      String
+  productId      String?
   storeId        String?           // 🆕 TAMBAHKAN INI agar diskon tidak bocor ke toko lain!
   type           DiscountType 
   valueType      DiscountValueType @default(NOMINAL) 
@@ -502,7 +502,7 @@ model Discount {
   validUntil     DateTime
 
   transactions   Transaction[]
-  product        Product           @relation(fields: [productId], references: [productId])
+  product        Product?           @relation(fields: [productId], references: [productId])
   store          Store?            @relation(fields: [storeId], references: [storeId]) // 🆕 Relasi ke Store
 
   createdAt      DateTime          @default(now())

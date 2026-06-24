@@ -3,22 +3,46 @@ import { catchAsync } from "../utils/catchAsync.util";
 import { stockService } from "../services/stock.service";
 
 export const stockController = {
-  // 1. GET ALL STOCKS (useGetStocks)
+  // 1. GET ALL STOCKS (useGetStocks) - FIXED WITH PAGINATION, FILTER & SEARCH
   getStocks: catchAsync(async (req: Request, res: Response) => {
     const { role, storeId: adminStoreId } = req.user as any;
-    let storeId = req.query.storeId as string | undefined;
+
+    // Tangkap query parameter dari frontend
+    const storeIdQuery = req.query.storeId as string | undefined;
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 5;
+    const search = (req.query.search as string) || "";
+
+    let storeId = storeIdQuery;
 
     // Aturan Bisnis: Jika Store Admin, paksa hanya melihat toko miliknya sendiri
     if (role === "STORE_ADMIN") {
+      // Menggunakan adminStoreId dari token, jika kosong gunakan storeIdQuery sebagai fallback sementara
       storeId = adminStoreId;
+
+      if (!storeId) {
+        return res.status(403).json({
+          status: "error",
+          message: "Akses ditolak. Anda tidak memiliki ID Toko yang valid.",
+        });
+      }
+    } else if (role === "SUPER_ADMIN") {
+      // SUPER_ADMIN bisa filter via query param atau lihat semua
+      storeId = req.query.storeId as string | undefined;
     }
 
-    const stocks = await stockService.findAllStocks(storeId);
+    // Panggil service dengan membawa seluruh parameter filter
+    const result = await stockService.findAllStocks({
+      storeId,
+      page,
+      limit,
+      search,
+    });
 
     res.status(200).json({
       status: "success",
       message: "Stocks retrieved successfully",
-      data: stocks,
+      ...result, // Menyertakan object 'data' dan 'pagination' ke response JSON
     });
   }),
 

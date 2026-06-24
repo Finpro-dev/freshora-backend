@@ -17,6 +17,13 @@ productRoute.get(
 productRoute.get("/:productId", productController.getProductById);
 productRoute.get("/store/:storeId", productController.getProductByStoreId);
 
+productRoute.get(
+  "/store-products",
+  authentication,
+  authorization("SUPER_ADMIN", "STORE_ADMIN"),
+  productController.getStoreProducts,
+);
+
 productRoute.post(
   "/create-product",
   authentication,

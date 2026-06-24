@@ -29,6 +29,7 @@ export const authentication = (
       userId: decoded.userId,
       role: decoded.role,
       fullName: decoded.fullName,
+      storeId: decoded.storeId,
     };
 
     next();

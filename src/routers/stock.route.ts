@@ -6,7 +6,6 @@ import { authentication, authorization } from "../middlewares/auth.middleware";
 
 const stockRouter = Router();
 
-// 1. Sinkron dengan useGetStocks(storeId) -> GET /admin/stocks
 stockRouter.get(
   "/",
   authentication,
@@ -14,8 +13,6 @@ stockRouter.get(
   stockController.getStocks,
 );
 
-// 2. Sinkron dengan useGetStockJournals(storeId) -> GET /admin/stocks/journals
-// CATATAN: Ini harus ditaruh DI ATAS route /:stockId agar kata "journals" tidak dianggap sebagai :stockId
 stockRouter.get(
   "/journals",
   authentication,
@@ -23,7 +20,6 @@ stockRouter.get(
   stockController.getStockJournals,
 );
 
-// 3. Sinkron dengan useGetStockById(stockId) -> GET /admin/stocks/:stockId
 stockRouter.get(
   "/:stockId",
   authentication,
@@ -31,7 +27,6 @@ stockRouter.get(
   stockController.getStockById,
 );
 
-// 4. Sinkron dengan useUpdateStock() -> POST /admin/stocks/update
 stockRouter.post(
   "/update",
   authentication,

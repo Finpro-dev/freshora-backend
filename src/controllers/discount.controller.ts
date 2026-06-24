@@ -1,15 +1,14 @@
 import { catchAsync } from "../utils/catchAsync.util";
 import { Request, Response } from "express";
 import { discountServices } from "../services/discount.service";
-import {
-  CreateDiscountInput,
-  GetDiscountInput,
-} from "../schemas/discount.schema";
+import { CreateDiscountInput } from "../schemas/discount.schema";
+import { getDiscountSchema } from "../schemas/discount.schema";
 
 export const discountController = {
   getDiscount: catchAsync(async (req: Request, res: Response) => {
-    // Memanfaatkan validasi query dari Zod parser secara aman
-    const filters = req.query as unknown as GetDiscountInput;
+    const parsedData = getDiscountSchema.parse({ query: req.query });
+
+    const filters = parsedData.query;
     const adminContext = { userId: req.user!.userId, role: req.user!.role };
 
     const discount = await discountServices.getDiscount(filters, adminContext);
