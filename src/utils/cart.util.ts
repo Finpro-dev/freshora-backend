@@ -18,10 +18,20 @@ export const findNearestStore = async (
     throw new AppError(400, "No stores with valid coordinates available");
 
   let closest = stores[0];
-  let minDist = haversineDistance(latitude, longitude, closest.latitude!, closest.longitude!);
+  let minDist = haversineDistance(
+    latitude,
+    longitude,
+    closest.latitude!,
+    closest.longitude!,
+  );
 
   for (const store of stores.slice(1)) {
-    const dist = haversineDistance(latitude, longitude, store.latitude!, store.longitude!);
+    const dist = haversineDistance(
+      latitude,
+      longitude,
+      store.latitude!,
+      store.longitude!,
+    );
     if (dist < minDist) {
       minDist = dist;
       closest = store;
@@ -101,7 +111,19 @@ export const fetchPaginatedCartItems = async (
       take: limit,
       include: {
         product: {
-          include: { productPhotos: { take: 1, select: { photoUrl: true } } },
+          include: {
+            productPhotos: { take: 1, select: { photoUrl: true } },
+            discounts: {
+              where: {
+                deletedAt: null,
+              },
+              select: {
+                discountId: true,
+                discountAmount: true,
+                type: true,
+              },
+            },
+          },
         },
       },
     }),

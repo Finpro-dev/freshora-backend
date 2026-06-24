@@ -14,55 +14,44 @@ export const freeShippingService = {
           },
         });
 
-        // check if it's not 0 &  multiplier of 5
+        console.log("total trx", totalUserTransactions);
+
+        // check if it's not 0 & multiplier of 5
         if (
-          !!totalUserTransactions &&
+          totalUserTransactions > 0 &&
           totalUserTransactions % FREE_SHIPPING_VOUCHER_MULTIPLIER_BASE === 0
         ) {
-          const isVoucherExist = await tx.freeShippingVoucher.findFirst({
-            where: {
-              userId,
-              transactionId: null,
-            },
-          });
-
-          const isCurrentSlotUsed = await tx.freeShippingVoucher.findFirst({
+          // KUNCI UTAMA: Cari berdasarkan angka kelipatan transaksi saat ini
+          // Ini mencegah sistem membuat voucher baru jika kelipatan ini sudah pernah diproses
+          const isSlotAlreadyRewarded = await tx.freeShippingVoucher.findFirst({
             where: {
               userId,
               currentTotalTransactions: totalUserTransactions,
-              transactionId: { not: null },
             },
           });
 
-          if (isCurrentSlotUsed) return null;
-
-          // if exist and have not used yet -> update
-          if (isVoucherExist) {
-            return await tx.freeShippingVoucher.update({
-              where: {
-                freeShippingVoucherId: isVoucherExist.freeShippingVoucherId,
-              },
-              data: {
-                currentTotalTransactions: totalUserTransactions,
-              },
-            });
-
-            // if not --> create new
-          } else {
-            return await tx.freeShippingVoucher.create({
-              data: {
-                userId,
-                transactionId: null,
-                currentTotalTransactions: totalUserTransactions,
-              },
-            });
+          if (isSlotAlreadyRewarded) {
+            return isSlotAlreadyRewarded;
           }
+
+          // Jika belum pernah mendapatkan voucher untuk slot kelipatan ini, buat baru
+          return await tx.freeShippingVoucher.create({
+            data: {
+              userId,
+              transactionId: null,
+              currentTotalTransactions: totalUserTransactions,
+            },
+          });
         }
+
+        // Kembalikan null jika total transaksi bukan kelipatan 5 atau masih 0
+        return null;
       });
 
       return freeShippingVoucher || null;
     } catch (error) {
       handlePrismaError(error);
+      return null;
     }
   },
 };

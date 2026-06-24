@@ -401,7 +401,7 @@ const productPhotos: Prisma.ProductPhotoCreateManyInput[] = [
 //   },
 // ];
 
-const storeId = "3ff1684b-a20f-4f47-985a-1e4447c93896";
+const storeId = "4a6db395-43cd-4182-a796-cfd878e7eb01";
 
 const productStocks: Prisma.StockCreateManyInput[] = [
   {

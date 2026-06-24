@@ -8,6 +8,7 @@ export const freeShippingController = {
 
     const freeShippingVoucher =
       await freeShippingService.freeShippingVoucher(userId);
+
     res.status(200).json({
       success: true,
       message: "Free shipping voucher is retrieved successfully",

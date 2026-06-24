@@ -30,7 +30,7 @@ export const storeService = {
           latitude: Number(data.latitude),
           longitude: Number(data.longitude),
           avatar: url || null,
-          userId: null,
+          userId: String(data.userId) || null,
           storeStatus: !isPrimaryStoreInitialized ? "PRIMARY" : "SECONDARY",
         },
       });

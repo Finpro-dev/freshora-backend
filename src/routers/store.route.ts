@@ -34,7 +34,7 @@ route.get(
 route.get(
   "/:storeId",
   authentication,
-  authorization("SUPER_ADMIN"),
+  authorization("SUPER_ADMIN", "CUSTOMER", "STORE_ADMIN"),
   storeController.getStoreDetails,
 );
 

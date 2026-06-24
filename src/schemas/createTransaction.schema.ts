@@ -9,6 +9,7 @@ export const createTransactionSchema = z.object({
     freeShippingVoucherId: z
       .uuid("Invalid free shipping voucher ID format")
       .optional(),
+    courier: z.string("Invalid courier"),
   }),
 });
 

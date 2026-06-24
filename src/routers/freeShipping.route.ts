@@ -4,7 +4,7 @@ import { authentication, authorization } from "../middlewares/auth.middleware";
 
 const route = Router();
 
-route.post(
+route.get(
   "/",
   authentication,
   authorization("CUSTOMER"),
