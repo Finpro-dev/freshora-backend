@@ -531,8 +531,66 @@ const referralVoucher: Prisma.ReferralVoucherCreateManyInput[] = [
   },
 ];
 
+const storeId = "3ff1684b-a20f-4f47-985a-1e4447c93896";
+
+const transactions: Prisma.TransactionCreateManyInput[] = [
+  {
+    transactionNumber: "TRX-2025-001",
+    userId: "a8371c28-9f5d-4956-bdc9-9b5e6c435619",
+    addressId: "6e4b2ef8-5a23-4a77-8e41-b1f592c6f339",
+    storeId: storeId,
+    totalAmount: new Prisma.Decimal(150000),
+    shippingCost: new Prisma.Decimal(10000),
+    totalDiscount: new Prisma.Decimal(0),
+    grandTotal: new Prisma.Decimal(160000),
+    transactionStatus: "COMPLETED",
+    completedAt: new Date("2025-01-15T10:30:00Z"),
+  },
+  {
+    transactionNumber: "TRX-2025-002",
+    userId: "a8371c28-9f5d-4956-bdc9-9b5e6c435619",
+    addressId: "6e4b2ef8-5a23-4a77-8e41-b1f592c6f339",
+    storeId: storeId,
+    totalAmount: new Prisma.Decimal(250000),
+    shippingCost: new Prisma.Decimal(10000),
+    totalDiscount: new Prisma.Decimal(10000),
+    grandTotal: new Prisma.Decimal(240000),
+    transactionStatus: "COMPLETED",
+    completedAt: new Date("2025-02-20T11:00:00Z"),
+  },
+];
+
+const orderItems: Prisma.OrderItemCreateManyInput[] = [
+  {
+    transactionNumber: "TRX-2025-001",
+    productId: "75c8498e-50ec-4c35-8f9e-bfbad06a1c2f",
+    quantity: 2,
+    unitPrice: new Prisma.Decimal(15000),
+    discountAmount: new Prisma.Decimal(0),
+    subTotalItem: new Prisma.Decimal(30000),
+  },
+  {
+    transactionNumber: "TRX-2025-001",
+    productId: "1e058e8d-81df-4fc0-923d-61f0043bcf42",
+    quantity: 1,
+    unitPrice: new Prisma.Decimal(25000),
+    discountAmount: new Prisma.Decimal(0),
+    subTotalItem: new Prisma.Decimal(25000),
+  },
+  {
+    transactionNumber: "TRX-2025-002",
+    productId: "c0b19460-80ab-4e82-8f3a-e4d4cf84ba6f",
+    quantity: 1,
+    unitPrice: new Prisma.Decimal(32000),
+    discountAmount: new Prisma.Decimal(10000),
+    subTotalItem: new Prisma.Decimal(22000),
+  },
+];
+
 async function main() {
   await prisma.stock.createMany({ data: productStocks });
+  await prisma.transaction.createMany({ data: transactions });
+  await prisma.orderItem.createMany({ data: orderItems });
 }
 
 main()

@@ -6,6 +6,7 @@ import discountRoute from "./discount.route";
 import stockRouter from "./stock.route";
 import { validate } from "../middlewares/validation.middleware";
 import { getUsersSchema } from "../schemas/admin.schema";
+import reportRoute from "./report.route";
 
 const adminRoute = Router();
 
@@ -63,6 +64,13 @@ adminRoute.use(
   authentication,
   authorization("SUPER_ADMIN", "STORE_ADMIN"),
   stockRouter,
+);
+
+adminRoute.use(
+  "/reports",
+  authentication,
+  authorization("SUPER_ADMIN", "STORE_ADMIN"),
+  reportRoute,
 );
 
 export default adminRoute;
