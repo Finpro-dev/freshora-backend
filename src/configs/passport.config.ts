@@ -12,7 +12,7 @@ export const configureGooglePassport = () => {
       {
         clientID: GOOGLE_OAUTH.CLIENT_ID!,
         clientSecret: GOOGLE_OAUTH.CLIENT_SECRET!,
-        callbackURL: `https://freshora-backend-eta.vercel.app/auth/google/callback`,
+        callbackURL: `${CORS_CREDENTIALS.BACKEND_URL}/auth/google/callback`,
         passReqToCallback: true,
       },
       async (_req, _accessToken, _refreshToken, profile, done) => {
