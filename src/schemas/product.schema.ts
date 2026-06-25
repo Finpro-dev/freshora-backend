@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-const UnitEnum = z.enum(["KG", "G", "PCS", "PACK"]);
+const UnitEnum = z.enum(["PCS", "PACK"]);
 const GradeEnum = z.enum(["A", "B", "C"]);
 const DietTypeEnum = z.enum(["VEGAN", "VEGETARIAN", "GLUTEN_FREE", "HALAL"]);
 
