@@ -34,7 +34,6 @@ export const productServices = {
       where.productCategoryId = category;
     }
 
-    // PERBAIKAN backend: Ambil daftar seluruh kategori secara master/global
     const [products, totalCount, outOfStockCount, allCategories] =
       await prisma.$transaction([
         prisma.product.findMany({
@@ -83,7 +82,6 @@ export const productServices = {
             },
           },
         }),
-        // Query master kategori agar dropdown tidak bug lagi
         prisma.productCategory.findMany({
           select: {
             productCategoryId: true,
@@ -129,7 +127,7 @@ export const productServices = {
       stats: {
         totalOutOfStock: outOfStockCount,
       },
-      categories: allCategories, // <-- Mengirim data kategori master
+      categories: allCategories,
     };
   },
 
@@ -157,7 +155,7 @@ export const productServices = {
         },
       },
       take: limit,
-      skip: offset, // Menambahkan offset agar pagination di fungsi ini bekerja nyata
+      skip: offset,
     });
 
     const totalProduct = await prisma.stock.count({
@@ -310,7 +308,6 @@ export const productServices = {
   },
   deleteProduct: async (productId: string) => {
     try {
-      //existing product check
       const product = await prisma.product.findUnique({
         where: {
           productId,
@@ -321,11 +318,9 @@ export const productServices = {
         throw new AppError(404, "Product not found or already deleted");
       }
       const deletedProduct = await prisma.$transaction(async (tx) => {
-        // productPhoto deletion
         await tx.productPhoto.deleteMany({
           where: { productId },
         });
-        // Soft Delete
         return await tx.product.update({
           where: { productId },
           data: { deletedAt: new Date() },

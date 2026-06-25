@@ -22,7 +22,6 @@ export const discountServices = {
       deletedAt: null,
     };
 
-    // Isolation Data Toko untuk STORE_ADMIN
     if (admin.role === "STORE_ADMIN") {
       const adminStore = await prisma.store.findUnique({
         where: { userId: admin.userId },
@@ -49,7 +48,6 @@ export const discountServices = {
         where,
         skip,
         take: limit,
-        // Gunakan include product secara aman karena sekarang bisa bernilai null
         include: { product: true, store: true },
         orderBy: { createdAt: "desc" },
       }),
@@ -70,7 +68,7 @@ export const discountServices = {
   createDiscount: async (data: CreateDiscountInput, admin: AdminContext) => {
     try {
       const {
-        productId, // 🆕 Sekarang bersifat opsional (String?)
+        productId,
         type,
         valueType,
         discountAmount,
@@ -80,7 +78,6 @@ export const discountServices = {
         validUntil,
       } = data;
 
-      // 1. Cek eksistensi produk HANYA JIKA productId disediakan
       if (productId) {
         const productExist = await prisma.product.findUnique({
           where: { productId, deletedAt: null },
@@ -88,9 +85,6 @@ export const discountServices = {
         if (!productExist) throw new AppError(404, "Product not found");
       }
 
-      // 2. 🛡️ VALIDASI ATURAN BISNIS (Sesuai Ketentuan Assignment)
-
-      // Batasan Nilai Persentase
       if (
         valueType === "PERCENTAGE" &&
         (Number(discountAmount) <= 0 || Number(discountAmount) > 100)
@@ -101,7 +95,6 @@ export const discountServices = {
         );
       }
 
-      // Aturan untuk Beli 1 Gratis 1 (BOGO)
       if (type === "BUY_ONE_GET_ONE") {
         if (!productId) {
           throw new AppError(
@@ -117,7 +110,6 @@ export const discountServices = {
         }
       }
 
-      // Aturan untuk Minimal Transaksi (Voucher Belanja)
       if (type === "MIN_TRANSACTION") {
         if (!minTransaction || Number(minTransaction) <= 0) {
           throw new AppError(
@@ -127,7 +119,6 @@ export const discountServices = {
         }
       }
 
-      // Aturan untuk Diskon Tanpa Ketentuan (Direct Markdown Produk)
       if (type === "NO_REQUIREMENT") {
         if (!productId) {
           throw new AppError(
@@ -137,7 +128,6 @@ export const discountServices = {
         }
       }
 
-      // 3. BYPASS STRATEGI: Cari targetStoreId via userId
       let targetStoreId: string | null = null;
       if (admin.role === "STORE_ADMIN") {
         const adminStore = await prisma.store.findUnique({
@@ -148,7 +138,6 @@ export const discountServices = {
         }
         targetStoreId = adminStore.storeId;
 
-        // Validasi ketersediaan stok HANYA JIKA diskonnya spesifik ke produk tertentu
         if (productId) {
           const hasStock = await prisma.stock.findUnique({
             where: { storeId_productId: { storeId: targetStoreId, productId } },
@@ -162,11 +151,8 @@ export const discountServices = {
         }
       }
 
-      // 4. Deteksi tabrakan waktu (overlap) diskon aktif
       const duplicateDiscount = await prisma.discount.findFirst({
         where: {
-          // 💡 PENTING: Gunakan 'productId || null' agar Prisma mencari nilai NULL absolut
-          // untuk diskon global, bukan mengabaikan filter (jika undefined)
           productId: productId || null,
           storeId: targetStoreId,
           deletedAt: null,
@@ -187,7 +173,6 @@ export const discountServices = {
         );
       }
 
-      // 5. Simpan ke database
       return await prisma.discount.create({
         data: {
           productId: productId || null,
@@ -220,7 +205,6 @@ export const discountServices = {
       });
       if (!discount) throw new AppError(404, "Discount not found");
 
-      // Validasi hak kepemilikan toko sebelum penghapusan data
       if (admin.role === "STORE_ADMIN") {
         const adminStore = await prisma.store.findUnique({
           where: { userId: admin.userId },
