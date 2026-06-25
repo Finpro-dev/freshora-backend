@@ -31,12 +31,7 @@ route.get(
   storeController.getAllStore,
 );
 
-route.get(
-  "/:storeId",
-  authentication,
-  authorization("SUPER_ADMIN", "CUSTOMER", "STORE_ADMIN"),
-  storeController.getStoreDetails,
-);
+route.get("/:storeId", authentication, storeController.getStoreDetails);
 
 route.get(
   "/me/primary-store",
