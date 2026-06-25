@@ -65,28 +65,36 @@ export const generateInvoiceNumber = (): string => {
 export const getStoreLocationInfo = async (
   storeId: string,
   tx?: Prisma.TransactionClient,
-): Promise<{ cityId: number; city: string }> => {
+): Promise<{ cityId: number; city: string; districtId: number }> => {
   const client = tx || prisma;
   const store = await client.store.findUnique({
     where: { storeId },
-    select: { cityId: true, city: true },
+    select: { cityId: true, city: true, districtId: true },
   });
   if (!store) throw new AppError(404, "Store not found");
   if (!store.cityId) throw new AppError(400, "Store location data incomplete");
-  return { cityId: store.cityId, city: store.city };
+  return {
+    cityId: store.cityId,
+    city: store.city,
+    districtId: store.districtId,
+  };
 };
 
 export const getAddressLocationInfo = async (
   addressId: string,
   tx?: Prisma.TransactionClient,
-): Promise<{ cityId: number; city: string }> => {
+): Promise<{ cityId: number; city: string; districtId: number }> => {
   const client = tx || prisma;
   const address = await client.address.findUnique({
     where: { addressId },
-    select: { cityId: true, city: true },
+    select: { cityId: true, city: true, districtId: true },
   });
   if (!address) throw new AppError(404, "Address not found");
-  return { cityId: address.cityId, city: address.city };
+  return {
+    cityId: address.cityId,
+    city: address.city,
+    districtId: address.districtId,
+  };
 };
 
 // Stock validation helpers

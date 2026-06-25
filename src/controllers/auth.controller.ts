@@ -71,8 +71,6 @@ export const authController = {
     const userId = req.user?.userId;
     await authServices.logout(userId as string);
 
-    console.log("userId", userId);
-
     clearTokenCookies(res);
 
     res.status(201).json({

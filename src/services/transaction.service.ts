@@ -15,12 +15,13 @@ import {
   getStoreLocationInfo,
   validateFreeShippingVoucher,
   validateTotalStock,
- validateVoucher,
+  validateVoucher,
 } from "../utils/transactionHelper.util";
 import { calculateShipping } from "../utils/transactionOrder.util";
 import { executeCreateOrder } from "../utils/createTransaction.util";
 import { cancelTransaction } from "../utils/cancelTransaction.util";
 import { createMutationAlert } from "../utils/stock.util";
+import { rajaOngkirService } from "./rajaOngkir.service";
 
 export const transactionService = {
   createOrder: async (userId: string, data: CreateTransactionInput) => {
@@ -55,7 +56,12 @@ export const transactionService = {
           const available = stock?.quantity ?? 0;
 
           // Create mutation alert for Super Admin
-          await createMutationAlert(storeId, item.productId, item.quantity, available);
+          await createMutationAlert(
+            storeId,
+            item.productId,
+            item.quantity,
+            available,
+          );
 
           throw new AppError(
             400,
@@ -94,19 +100,31 @@ export const transactionService = {
       // Calculate shipping cost
       let shippingCost = 0;
       if (!data.freeShippingVoucherId) {
-        shippingCost = await calculateShipping(originInfo.cityId, destInfo.cityId, weight);
+        shippingCost = await calculateShipping(
+          originInfo.districtId,
+          destInfo.districtId,
+          weight,
+          data.courier,
+        );
       } else {
         await validateFreeShippingVoucher(data.freeShippingVoucherId, userId);
       }
 
       // Apply referral voucher
-      let grandTotal = subtotal - discount.productItemDiscountAmmount + shippingCost;
+      let grandTotal =
+        subtotal - discount.productItemDiscountAmmount + shippingCost;
       if (data.referralVoucherId) {
-        await validateVoucher(data.referralVoucherId, userId, grandTotal, discount);
+        await validateVoucher(
+          data.referralVoucherId,
+          userId,
+          grandTotal,
+          discount,
+        );
         grandTotal -= discount.referralVoucherDiscount;
       }
 
-      const totalDiscount = discount.productItemDiscountAmmount + discount.referralVoucherDiscount;
+      const totalDiscount =
+        discount.productItemDiscountAmmount + discount.referralVoucherDiscount;
 
       // Execute atomic transaction
       return await prisma.$transaction(async (tx) => {
@@ -139,7 +157,10 @@ export const transactionService = {
       if (!transaction) throw new AppError(404, "Transaction not found");
 
       if (transaction.transactionStatus !== "WAITING_FOR_PAYMENT") {
-        throw new AppError(400, "Order cannot be canceled after payment has been made");
+        throw new AppError(
+          400,
+          "Order cannot be canceled after payment has been made",
+        );
       }
 
       await prisma.$transaction(async (tx) => {
@@ -161,7 +182,10 @@ export const transactionService = {
       if (!transaction) throw new AppError(404, "Transaction not found");
 
       if (transaction.transactionStatus !== "SHIPPING") {
-        throw new AppError(400, "Order cannot be confirmed before it is shipped");
+        throw new AppError(
+          400,
+          "Order cannot be confirmed before it is shipped",
+        );
       }
 
       await prisma.transaction.update({
@@ -180,7 +204,16 @@ export const transactionService = {
 
   getOrderList: async (userId: string, params: GetOrderListInput) => {
     try {
-      const { search, status, startDate, endDate, sortBy, sortOrder, page = 1, limit = 10 } = params;
+      const {
+        search,
+        status,
+        startDate,
+        endDate,
+        sortBy,
+        sortOrder,
+        page = 1,
+        limit = 10,
+      } = params;
 
       const skip = (page - 1) * limit;
 
@@ -234,7 +267,13 @@ export const transactionService = {
 
       return {
         transactions,
-        pagination: { page, limit, total, totalPages, hasNextPage: page < Math.ceil(total / limit) },
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages,
+          hasNextPage: page < Math.ceil(total / limit),
+        },
       };
     } catch (error) {
       handlePrismaError(error);

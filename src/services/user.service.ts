@@ -150,6 +150,13 @@ export const userService = {
     }
     const storeAdmins = await prisma.user.findMany({
       where,
+      select: {
+        userId: true,
+        avatar: true,
+        firstName: true,
+        lastName: true,
+        isVerified: true,
+      },
       take: limit,
       skip: offset,
     });

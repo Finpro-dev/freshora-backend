@@ -20,17 +20,20 @@ export const calculateShipping = async (
   originCityId: number,
   destCityId: number,
   weight: number,
+  courier: string,
 ): Promise<number> => {
-  for (const courier of rajaOngkirCouriers) {
-    const cost = await rajaOngkirService.calculateShippingCost({
-      origin: originCityId,
-      destination: destCityId,
-      weight,
-      courier,
-    });
-    if (cost) return cost;
+  const cost = await rajaOngkirService.calculateShippingCost({
+    origin: originCityId,
+    destination: destCityId,
+    weight,
+    courier,
+  });
+
+  if (cost) {
+    return cost;
+  } else {
+    throw new AppError(400, "Failed to calculate shipping cost");
   }
-  throw new AppError(400, "Failed to calculate shipping cost");
 };
 
 // Marks a free-shipping voucher as used.

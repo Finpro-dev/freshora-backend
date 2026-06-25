@@ -295,6 +295,117 @@ const store: Prisma.StoreCreateManyInput[] = [
   },
 ];
 
+<<<<<<< HEAD
+=======
+const productPhotos: Prisma.ProductPhotoCreateManyInput[] = [
+  {
+    productId: "02d9917a-cfd7-4c13-9a21-ae16c8b3d9ca", // Fresh Cleaned Squid
+    photoUrl:
+      "https://i.pinimg.com/736x/f3/b2/d8/f3b2d86d71ed6ab3b729aef16fe80b37.jpg",
+  },
+  {
+    productId: "17d1594b-aa24-46e4-b873-2680c91ac3c3", // Fresh Mustard Greens
+    photoUrl:
+      "https://i.pinimg.com/1200x/79/cf/8f/79cf8f92d185ab12dac3261b10d3f770.jpg",
+  },
+  {
+    productId: "1568e035-06c0-4538-854c-b1923ce06138", // Fresh Purple Cabbage
+    photoUrl:
+      "https://i.pinimg.com/736x/a7/8c/f2/a78cf21bb164cefd42bab5f3f8a44734.jpg",
+  },
+  {
+    productId: "5a9fef5a-bf85-4d3d-a5c0-4fa5a7e386c5", // Manalagi Sweet Grapes
+    photoUrl:
+      "https://i.pinimg.com/736x/9e/24/b9/9e24b90e7da4d81737d1f4caf80457fc.jpg",
+  },
+  {
+    productId: "1fe02c9f-8da7-4d0e-b0f9-b10d204e24d0", // Classic French Baguette
+    photoUrl:
+      "https://i.pinimg.com/736x/13/e3/b1/13e3b103e835b2e9ca67330f9ce4af6a.jpg",
+  },
+  {
+    productId: "75c8498e-50ec-4c35-8f9e-bfbad06a1c2f", // Fresh Lime
+    photoUrl:
+      "https://i.pinimg.com/736x/47/eb/90/47eb909cf0996a4293a663232ce46b6b.jpg",
+  },
+  {
+    productId: "1e058e8d-81df-4fc0-923d-61f0043bcf42", // Sweet California Papaya
+    photoUrl:
+      "https://i.pinimg.com/736x/bd/85/5c/bd855cd97cc0e8e5896cce06bf8a4343.jpg",
+  },
+  {
+    productId: "c0b19460-80ab-4e82-8f3a-e4d4cf84ba6f", // Premium Chicken Eggs
+    photoUrl:
+      "https://i.pinimg.com/736x/9f/4a/9f/9f4a9f43f90b11d8746a6a5ffd98c4c1.jpg",
+  },
+  {
+    productId: "e213b154-0c29-406c-ade6-de4b53c75795", // Fresh Organic Spinach
+    photoUrl:
+      "https://i.pinimg.com/736x/db/15/53/db155376ffaab24aa480e4522b5774f7.jpg",
+  },
+  {
+    productId: "a508ffdf-2f23-4da5-b78f-9f044333c6d1", // Fresh Salmon Fillet 500g
+    photoUrl:
+      "https://i.pinimg.com/736x/99/66/fd/9966fd3a7e1e949c3804438b6b4aaa83.jpg",
+  },
+  {
+    productId: "4247b56e-0d32-4d64-a428-e626474ab70b", // Fresh Garlic
+    photoUrl:
+      "https://i.pinimg.com/736x/9d/2d/92/9d2d927328ca0707e354b98bdb300434.jpg",
+  },
+  {
+    productId: "9130fefc-3c6c-44ea-bfbd-8ec50161741a", // Premium Dried Chilli
+    photoUrl:
+      "https://i.pinimg.com/736x/21/35/90/2135901f4a05e7558700cbd7d53620c6.jpg",
+  },
+  {
+    productId: "4b3c22ce-12e3-467c-877e-e5e7079e5e37", // Large Red Chilli
+    photoUrl:
+      "https://i.pinimg.com/736x/cc/90/33/cc903353027d2684a5febaab2ddc0d69.jpg",
+  },
+  {
+    productId: "0fdd4a23-d3d0-4129-9640-2accc355edd6", // Sweet Sunkist Orange
+    photoUrl:
+      "https://i.pinimg.com/736x/1f/14/30/1f1430faf44415229395ddc7a939f3b7.jpg",
+  },
+  {
+    productId: "02bde60e-5122-4c7b-a23b-0b8d13b06bdf", // Fresh Beef Tomato
+    photoUrl:
+      "https://i.pinimg.com/736x/de/4b/95/de4b959b7a005c7d50a603be3303d06c.jpg",
+  },
+  {
+    productId: "91266910-36cb-4856-9372-15beac9f8d0c", // Fresh Blueberry Premium
+    photoUrl:
+      "https://i.pinimg.com/736x/f6/b9/89/f6b9890ed8f7d9e9b11d8875151c9b9c.jpg",
+  },
+  {
+    productId: "c7bde0a4-846a-4203-8d86-e2b3534b99ac", // Sweet Sweet Strawberry
+    photoUrl:
+      "https://i.pinimg.com/736x/1d/00/66/1d006662ba61d4eda66429dcc79624a9.jpg",
+  },
+  {
+    productId: "f0a62b5a-93eb-42c5-aa42-18ed2c32cad4", // Fresh Dill Leaves
+    photoUrl:
+      "https://i.pinimg.com/736x/e1/f4/b4/e1f4b428ba5c9065649f469f83b219e8.jpg",
+  },
+];
+
+// const stocksData: Prisma.StockCreateManyInput[] = [
+//   {
+//     storeId: "f0b8cade-383e-4c1a-ab6b-768004a25cc9",
+//     productId: "9a7aeda5-0139-470b-a797-359133c08a09",
+//     quantity: 30,
+//   },
+//   {
+//     storeId: "f0b8cade-383e-4c1a-ab6b-768004a25cc9",
+//     productId: "4dc10eb2-e3b4-4aba-bcb7-b84904519e5d",
+//     quantity: 2,
+//   },
+// ];
+
+const storeId = "4a6db395-43cd-4182-a796-cfd878e7eb01";
+
+>>>>>>> origin
 const productStocks: Prisma.StockCreateManyInput[] = [
   {
     storeId: "3ff1684b-a20f-4f47-985a-1e4447c93896",
