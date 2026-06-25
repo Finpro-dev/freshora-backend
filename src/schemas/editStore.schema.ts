@@ -11,7 +11,7 @@ export const editStoreSchma = z
         .max(30, "Store name cannot exceed 30 characters")
         .optional(),
 
-      userId: z.uuid("Invalid user Id").optional(),
+      userId: z.uuid("Invalid user Id").optional().nullable(),
 
       address: z
         .string()

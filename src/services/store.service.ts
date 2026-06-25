@@ -244,7 +244,11 @@ export const storeService = {
         where: { storeId },
         data: {
           ...(address && { address }),
-          ...(userId && { userId }),
+          ...(userId === undefined
+            ? {}
+            : userId === null
+              ? { userId: null }
+              : { userId }),
           ...(city && { city }),
           ...(cityId && { cityId: Number(cityId) }),
           ...(district && { district }),
