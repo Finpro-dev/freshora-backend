@@ -41,32 +41,37 @@ export const reportService = {
 
       const monthlyTotal = transactions.reduce((sum, t) => sum + Number(t.grandTotal), 0);
 
-      const months = month
-        ? [month]
-        : Array.from({ length: 12 }, (_, i) => i + 1);
-
-      const monthlyData = months.map((m) => {
-        const monthTransactions = transactions.filter(t => {
-          const transMonth = t.createdAt.getUTCMonth() + 1;
-          return transMonth === m;
+      let chartData;
+      if (month && month > 0) {
+        const daysInMonth = new Date(year, month, 0).getDate();
+        chartData = Array.from({ length: daysInMonth }, (_, i) => {
+          const day = i + 1;
+          const dayTransactions = transactions.filter(t => t.createdAt.getUTCDate() === day);
+          return {
+            day,
+            dayName: `${day}`,
+            totalSales: dayTransactions.reduce((sum, t) => sum + Number(t.grandTotal), 0),
+            orderCount: dayTransactions.length,
+          };
         });
-
-        const total = monthTransactions.reduce((sum, t) => sum + Number(t.grandTotal), 0);
-        const orderCount = monthTransactions.length;
-
-        return {
-          month: m,
-          monthName: new Date(Date.UTC(year, m - 1, 1)).toLocaleString("default", { month: "short" }),
-          totalSales: total,
-          orderCount,
-        };
-      });
+      } else {
+        chartData = Array.from({ length: 12 }, (_, i) => {
+          const m = i + 1;
+          const monthTransactions = transactions.filter(t => t.createdAt.getUTCMonth() + 1 === m);
+          return {
+            month: m,
+            monthName: new Date(Date.UTC(year, m - 1, 1)).toLocaleString("default", { month: "short" }),
+            totalSales: monthTransactions.reduce((sum, t) => sum + Number(t.grandTotal), 0),
+            orderCount: monthTransactions.length,
+          };
+        });
+      }
 
       return {
         year,
         month: month || null,
         totalSales: monthlyTotal,
-        months: monthlyData,
+        months: chartData,
       };
     } catch (error) {
       handlePrismaError(error);
