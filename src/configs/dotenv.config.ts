@@ -11,6 +11,7 @@ export const CLOUDINARY_CREDENTIALS = {
 
 export const CORS_CREDENTIALS = {
   FRONTEND_URL: process.env.FRONTEND_URL,
+  BACKEND_URL: process.env.BACKEND_URL,
 };
 
 export const NODEMAILER_CREDENTIALS = {
