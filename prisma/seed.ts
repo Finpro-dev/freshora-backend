@@ -405,92 +405,92 @@ const storeId = "4a6db395-43cd-4182-a796-cfd878e7eb01";
 
 const productStocks: Prisma.StockCreateManyInput[] = [
   {
-    storeId: storeId,
+    storeId: "3ff1684b-a20f-4f47-985a-1e4447c93896",
     productId: "02d9917a-cfd7-4c13-9a21-ae16c8b3d9ca", // Fresh Cleaned Squid
     quantity: 250,
   },
   {
-    storeId: storeId,
+    storeId: "3ff1684b-a20f-4f47-985a-1e4447c93896",
     productId: "17d1594b-aa24-46e4-b873-2680c91ac3c3", // Fresh Mustard Greens
     quantity: 210,
   },
   {
-    storeId: storeId,
+    storeId: "3ff1684b-a20f-4f47-985a-1e4447c93896",
     productId: "1568e035-06c0-4538-854c-b1923ce06138", // Fresh Purple Cabbage
     quantity: 220,
   },
   {
-    storeId: storeId,
+    storeId: "3ff1684b-a20f-4f47-985a-1e4447c93896",
     productId: "5a9fef5a-bf85-4d3d-a5c0-4fa5a7e386c5", // Manalagi Sweet Grapes
     quantity: 240,
   },
   {
-    storeId: storeId,
+    storeId: "3ff1684b-a20f-4f47-985a-1e4447c93896",
     productId: "1fe02c9f-8da7-4d0e-b0f9-b10d204e24d0", // Classic French Baguette
     quantity: 300,
   },
   {
-    storeId: storeId,
+    storeId: "3ff1684b-a20f-4f47-985a-1e4447c93896",
     productId: "75c8498e-50ec-4c35-8f9e-bfbad06a1c2f", // Fresh Lime
     quantity: 280,
   },
   {
-    storeId: storeId,
+    storeId: "3ff1684b-a20f-4f47-985a-1e4447c93896",
     productId: "1e058e8d-81df-4fc0-923d-61f0043bcf42", // Sweet California Papaya
     quantity: 215,
   },
   {
-    storeId: storeId,
+    storeId: "3ff1684b-a20f-4f47-985a-1e4447c93896",
     productId: "c0b19460-80ab-4e82-8f3a-e4d4cf84ba6f", // Premium Chicken Eggs
     quantity: 500,
   },
   {
-    storeId: storeId,
+    storeId: "3ff1684b-a20f-4f47-985a-1e4447c93896",
     productId: "e213b154-0c29-406c-ade6-de4b53c75795", // Fresh Organic Spinach
     quantity: 230,
   },
   {
-    storeId: storeId,
+    storeId: "3ff1684b-a20f-4f47-985a-1e4447c93896",
     productId: "a508ffdf-2f23-4da5-b78f-9f044333c6d1", // Fresh Salmon Fillet 500g
     quantity: 250,
   },
   {
-    storeId: storeId,
+    storeId: "3ff1684b-a20f-4f47-985a-1e4447c93896",
     productId: "4247b56e-0d32-4d64-a428-e626474ab70b", // Fresh Garlic
     quantity: 400,
   },
   {
-    storeId: storeId,
+    storeId: "3ff1684b-a20f-4f47-985a-1e4447c93896",
     productId: "9130fefc-3c6c-44ea-bfbd-8ec50161741a", // Premium Dried Chilli
     quantity: 350,
   },
   {
-    storeId: storeId,
+    storeId: "3ff1684b-a20f-4f47-985a-1e4447c93896",
     productId: "4b3c22ce-12e3-467c-877e-e5e7079e5e37", // Large Red Chilli
     quantity: 320,
   },
   {
-    storeId: storeId,
+    storeId: "3ff1684b-a20f-4f47-985a-1e4447c93896",
     productId: "0fdd4a23-d3d0-4129-9640-2accc355edd6", // Sweet Sunkist Orange
     quantity: 260,
   },
   {
-    storeId: storeId,
+    storeId: "3ff1684b-a20f-4f47-985a-1e4447c93896",
     productId: "02bde60e-5122-4c7b-a23b-0b8d13b06bdf", // Fresh Beef Tomato
     quantity: 245,
   },
   {
-    storeId: storeId,
+    storeId: "3ff1684b-a20f-4f47-985a-1e4447c93896",
     productId: "91266910-36cb-4856-9372-15beac9f8d0c", // Fresh Blueberry Premium
     quantity: 210,
   },
   {
-    storeId: storeId,
+    storeId: "3ff1684b-a20f-4f47-985a-1e4447c93896",
     productId: "c7bde0a4-846a-4203-8d86-e2b3534b99ac", // Sweet Sweet Strawberry
     quantity: 225,
   },
   {
-    storeId: storeId,
+    storeId: "3ff1684b-a20f-4f47-985a-1e4447c93896",
     productId: "f0a62b5a-93eb-42c5-aa42-18ed2c32cad4", // Fresh Dill Leaves
     quantity: 215,
   },

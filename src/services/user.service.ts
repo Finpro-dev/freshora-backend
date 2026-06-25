@@ -17,7 +17,7 @@ export const userService = {
 
     if (!user) throw new AppError(404, "Invalid userId, user is not found");
 
-    return formatUserResponse(user);
+    return await formatUserResponse(user);
   },
 
   updateProfile: async (

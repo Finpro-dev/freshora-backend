@@ -103,7 +103,12 @@ export const productQuerySchema = z.object({
       .max(100, "Limit cannot exceed 100")
       .default(10),
     search: z.string().trim().optional(),
-    category: z.string().uuid("Invalid category ID format").optional(),
+    category: z
+      .preprocess(
+        (val) => (val === "" || val === "all" ? undefined : val),
+        z.string().uuid("Invalid category ID format"),
+      )
+      .optional(),
   }),
 });
 

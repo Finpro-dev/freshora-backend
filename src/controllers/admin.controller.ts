@@ -40,15 +40,38 @@ export const adminController = {
       });
     },
   ),
+  verifyRequest: catchAsync(
+    async (req: Request<{}, {}, VerificationRequestInput>, res: Response) => {
+      const { email } = req.cookies.emailForVerify || req.body.email;
+      await adminServices.verifyRequest(email);
 
-  updateStoreAdmin: catchAsync(async (req: Request, res: Response) => {}),
+      res.status(201).json({
+        status: "success",
+        message: "Verification link has been sent to your email",
+      });
+    },
+  ),
 
+  updateStoreAdmin: catchAsync(async (req: Request, res: Response) => {
+    const { adminId } = req.params as { adminId: string };
+    if (!adminId || typeof adminId !== "string") {
+      throw new AppError(400, "Invalid or missing admin ID");
+    }
+    const updatedAdmin = await adminServices.updateStoreAdmin(
+      adminId,
+      req.body,
+    );
+    res.status(200).json({
+      status: "success",
+      message: "Store admin updated successfully",
+      data: updatedAdmin,
+    });
+  }),
   deleteStoreAdmin: catchAsync(async (req: Request, res: Response) => {
     const { adminId } = req.params;
     if (!adminId || typeof adminId !== "string") {
       throw new AppError(400, "Invalid or missing admin ID");
     }
-
     await adminServices.deleteStoreAdmin(adminId);
     res.status(200).json({
       status: "success",

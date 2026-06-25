@@ -2,25 +2,75 @@ import { Router } from "express";
 import { adminController } from "../controllers/admin.controller";
 import { authorization, authentication } from "../middlewares/auth.middleware";
 import categoryRoute from "./category.route";
+import discountRoute from "./discount.route";
+import stockRouter from "./stock.route";
 import { validate } from "../middlewares/validation.middleware";
 import { getUsersSchema } from "../schemas/admin.schema";
+import reportRoute from "./report.route";
 
 const adminRoute = Router();
 
-// Apply authentication middleware first
-adminRoute.use(authentication, authorization("SUPER_ADMIN"));
+adminRoute.get(
+  "/users",
+  authentication,
+  authorization("SUPER_ADMIN"),
+  adminController.getUsers,
+);
 
-// GET /api/admin/users - Get all users (SUPER_ADMIN only)
-adminRoute.get("/users", adminController.getUsers);
+adminRoute.get(
+  "/users/:userId",
+  authentication,
+  authorization("SUPER_ADMIN"),
+  adminController.getUserById,
+);
 
-adminRoute.get("/users/:userId", adminController.getUserById);
+adminRoute.patch(
+  "/store-admin/:adminId",
+  authentication,
+  authorization("SUPER_ADMIN"),
+  adminController.updateStoreAdmin,
+);
 
-adminRoute.patch("/store-admin/:adminId", adminController.updateStoreAdmin);
+adminRoute.post(
+  "/store-admin",
+  authentication,
+  authorization("SUPER_ADMIN"),
+  adminController.createStoreAdmin,
+);
 
-adminRoute.post("/store-admin", adminController.createStoreAdmin);
+adminRoute.delete(
+  "/store-admin/:adminId",
+  authentication,
+  authorization("SUPER_ADMIN"),
+  adminController.deleteStoreAdmin,
+);
 
-adminRoute.delete("/store-admin/:adminId", adminController.deleteStoreAdmin);
+adminRoute.use(
+  "/categories",
+  authentication,
+  authorization("SUPER_ADMIN"),
+  categoryRoute,
+);
 
-adminRoute.use("/categories", categoryRoute);
+adminRoute.use(
+  "/discounts",
+  authentication,
+  authorization("STORE_ADMIN", "SUPER_ADMIN"),
+  discountRoute,
+);
+
+adminRoute.use(
+  "/inventory",
+  authentication,
+  authorization("SUPER_ADMIN", "STORE_ADMIN"),
+  stockRouter,
+);
+
+adminRoute.use(
+  "/reports",
+  authentication,
+  authorization("SUPER_ADMIN", "STORE_ADMIN"),
+  reportRoute,
+);
 
 export default adminRoute;

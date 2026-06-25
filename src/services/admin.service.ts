@@ -77,13 +77,11 @@ export const adminServices = {
       const isExist = await prisma.user.findUnique({
         where: { email: trimmedEmail },
       });
-
       if (isExist && !isExist.password && !isExist.isVerified) {
         const fullname = generateFullName(
           isExist?.firstName,
           isExist?.lastName,
         );
-
         const userId = isExist.userId as string;
         await verifyTokenService.createVerifyToken(userId, fullname, email);
         throw new AppError(
@@ -91,10 +89,8 @@ export const adminServices = {
           "Store Admin with this credential already registered, please check your email to verify",
         );
       }
-
       if (isExist && isExist.password && isExist.isVerified)
         throw new AppError(409, "User already registered, please login");
-
       const isPhoneNumberUsed = await prisma.user.findUnique({
         where: {
           phone,
@@ -119,20 +115,17 @@ export const adminServices = {
           },
         });
       });
-
       await verifyTokenService.createVerifyToken(
         newStoreAdmin.userId,
         generateFullName(newStoreAdmin.firstName, newStoreAdmin.lastName),
         trimmedEmail,
         "VERIFY_PASSWORD",
       );
-
       return newStoreAdmin;
     } catch (error) {
       handlePrismaError(error);
     }
   },
-
   verifyRequest: async (email: string) => {
     // find user
     const isValidUser = await prisma.user.findUnique({
@@ -172,8 +165,32 @@ export const adminServices = {
     await verifyTokenService.createVerifyToken(userId, fullName, email);
   },
 
-  updateStoreAdmin: async (adminId: string, data: Partial<SignupInput>) => {},
-
+  updateStoreAdmin: async (adminId: string, data: Partial<SignupInput>) => {
+    try {
+      const { firstName, lastName, phone } = data;
+      const storeAdmin = await prisma.user.findUnique({
+        where: {
+          userId: adminId,
+        },
+      });
+      if (!storeAdmin) {
+        throw new AppError(404, "Store admin not found");
+      }
+      const updatedStoreAdmin = await prisma.user.update({
+        where: {
+          userId: adminId,
+        },
+        data: {
+          firstName,
+          lastName,
+          phone,
+        },
+      });
+      return updatedStoreAdmin;
+    } catch (error) {
+      throw handlePrismaError(error);
+    }
+  },
   deleteStoreAdmin: async (adminId: string) => {
     try {
       const storeAdmin = await prisma.user.findUnique({
@@ -181,7 +198,6 @@ export const adminServices = {
           userId: adminId,
         },
       });
-
       if (
         !storeAdmin ||
         storeAdmin.deletedAt !== null ||
@@ -189,7 +205,6 @@ export const adminServices = {
       ) {
         throw new AppError(404, "Store admin not found");
       }
-
       const deletedStoreAdmin = await prisma.user.update({
         where: {
           userId: adminId,
@@ -198,7 +213,6 @@ export const adminServices = {
           deletedAt: new Date(),
         },
       });
-
       return deletedStoreAdmin;
     } catch (error) {
       throw handlePrismaError(error);

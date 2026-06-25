@@ -13,65 +13,109 @@ import { uploadMany } from "../utils/cloudinaryUploader.util";
 
 export const productServices = {
   getAllProducts: async (params: ProductParamsInput) => {
-    const { page = 1, limit = 10, search, category } = params;
+    const page = Number(params.page) || 1;
+    const limit = Number(params.limit) || 10;
+    const { search, category } = params;
+
     const skip = (page - 1) * limit;
+    const currentDate = new Date();
     const where: Prisma.ProductWhereInput = {
       deletedAt: null,
     };
+
     if (search) {
       where.name = {
         contains: search,
         mode: "insensitive",
       };
     }
+
     if (category) {
       where.productCategoryId = category;
     }
-    const [products, totalCount] = await Promise.all([
-      prisma.product.findMany({
-        where: where,
-        skip,
-        take: limit,
-        include: {
-          productCategory: {
-            select: {
-              productCategoryId: true,
-              category: true,
-            },
-          },
-          productPhotos: {
-            select: {
-              photoUrl: true,
-            },
-          },
-          stocks: {
-            select: {
-              quantity: true,
-            },
-          },
 
-          discounts: {
-            select: {
-              discountAmount: true,
+    const [products, totalCount, outOfStockCount, allCategories] =
+      await prisma.$transaction([
+        prisma.product.findMany({
+          where: where,
+          skip,
+          take: limit,
+          include: {
+            productCategory: {
+              select: {
+                productCategoryId: true,
+                category: true,
+              },
+            },
+            productPhotos: {
+              select: {
+                photoUrl: true,
+              },
+            },
+            stocks: {
+              select: {
+                quantity: true,
+              },
+            },
+            discounts: {
+              where: {
+                deletedAt: null,
+                validFrom: { lte: currentDate },
+                validUntil: { gte: currentDate },
+              },
             },
           },
-        },
-        orderBy: {
-          createdAt: "desc",
-        },
-      }),
-      prisma.product.count({
-        where: where,
-      }),
-    ]);
+          orderBy: {
+            createdAt: "desc",
+          },
+        }),
+        prisma.product.count({
+          where: where,
+        }),
+        prisma.product.count({
+          where: {
+            ...where,
+            stocks: {
+              none: {
+                quantity: { gt: 0 },
+              },
+            },
+          },
+        }),
+        prisma.productCategory.findMany({
+          select: {
+            productCategoryId: true,
+            category: true,
+          },
+          orderBy: {
+            category: "asc",
+          },
+        }),
+      ]);
 
-    // Calculate pagination metadata
+    const productsWithFinalPrice = products.map((product) => {
+      let finalPrice = Number(product.price);
+      const activeDiscount = product.discounts[0];
+
+      if (activeDiscount && activeDiscount.type === "NO_REQUIREMENT") {
+        finalPrice = Math.max(
+          0,
+          finalPrice - Number(activeDiscount.discountAmount),
+        );
+      }
+
+      return {
+        ...product,
+        finalPrice,
+      };
+    });
+
     const totalPages = Math.max(1, Math.ceil(totalCount / limit));
     const hasNext = page < totalPages;
     const hasPrev = page > 1;
 
     return {
-      data: products,
+      data: productsWithFinalPrice,
       pagination: {
         page,
         limit,
@@ -80,6 +124,10 @@ export const productServices = {
         hasNext,
         hasPrev,
       },
+      stats: {
+        totalOutOfStock: outOfStockCount,
+      },
+      categories: allCategories,
     };
   },
 
@@ -107,6 +155,7 @@ export const productServices = {
         },
       },
       take: limit,
+      skip: offset,
     });
 
     const totalProduct = await prisma.stock.count({
@@ -122,16 +171,43 @@ export const productServices = {
   },
 
   getProductById: async (productId: string) => {
+    const currentDate = new Date();
     const product = await prisma.product.findUnique({
       where: {
         productId,
         deletedAt: null,
       },
+      include: {
+        productCategory: true,
+        productPhotos: true,
+        stocks: true,
+        discounts: {
+          where: {
+            deletedAt: null,
+            validFrom: { lte: currentDate },
+            validUntil: { gte: currentDate },
+          },
+        },
+      },
     });
+
     if (!product) {
       throw new AppError(404, "Product not found");
     }
-    return product;
+    let finalPrice = Number(product.price);
+    const activeDiscount = product.discounts[0];
+
+    if (activeDiscount && activeDiscount.type === "NO_REQUIREMENT") {
+      finalPrice = Math.max(
+        0,
+        finalPrice - Number(activeDiscount.discountAmount),
+      );
+    }
+
+    return {
+      ...product,
+      finalPrice,
+    };
   },
 
   createProduct: async (data: CreateProductInput) => {
@@ -232,7 +308,6 @@ export const productServices = {
   },
   deleteProduct: async (productId: string) => {
     try {
-      //existing product check
       const product = await prisma.product.findUnique({
         where: {
           productId,
@@ -243,11 +318,9 @@ export const productServices = {
         throw new AppError(404, "Product not found or already deleted");
       }
       const deletedProduct = await prisma.$transaction(async (tx) => {
-        // productPhoto deletion
         await tx.productPhoto.deleteMany({
           where: { productId },
         });
-        // Soft Delete
         return await tx.product.update({
           where: { productId },
           data: { deletedAt: new Date() },

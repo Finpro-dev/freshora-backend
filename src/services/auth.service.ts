@@ -202,10 +202,20 @@ export const authServices = {
 
       if (!isMatch) throw new AppError(400, "Invalid credentials");
 
+      let storeId: string | undefined;
+      if (user.role === "STORE_ADMIN") {
+        const store = await prisma.store.findUnique({
+          where: { userId: user.userId },
+          select: { storeId: true },
+        });
+        storeId = store?.storeId;
+      }
+
       const tokenPayload: TokenPayload = {
         userId: user.userId,
         fullName: generateFullName(user.firstName, user.lastName),
         role: user.role,
+        storeId,
       };
 
       const { accessToken, refreshToken } = await generateTokens(tokenPayload);

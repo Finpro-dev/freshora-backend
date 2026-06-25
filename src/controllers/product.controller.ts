@@ -4,6 +4,38 @@ import { productServices } from "../services/product.service";
 import { ProductParamsInput } from "../schemas/product.schema";
 
 export const productController = {
+  getStoreProducts: catchAsync(async (req: Request, res: Response) => {
+    const { role, storeId: adminStoreId } = req.user as any;
+
+    let storeId = adminStoreId;
+    if (!storeId && role !== "SUPER_ADMIN") {
+      return res.status(403).json({
+        status: "error",
+        message: "Store ID required",
+      });
+    }
+
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 10;
+
+    const products = await productServices.getProductByStoreId(
+      storeId,
+      page,
+      limit,
+    );
+
+    res.status(200).json({
+      status: "success",
+      data: products.products,
+      pagination: {
+        page,
+        limit,
+        totalItems: products.totalProduct,
+        totalPages: products.totalPage,
+      },
+    });
+  }),
+
   getAllProducts: catchAsync(async (req: Request, res: Response) => {
     const { page, limit, search, category } =
       req.query as unknown as ProductParamsInput;
@@ -50,11 +82,15 @@ export const productController = {
     if (!images || images.length === 0) {
       return res.status(400).json({ message: "Product images are required" });
     }
-    await productServices.createProduct({ ...req.body, images });
+    const newProduct = await productServices.createProduct({
+      ...req.body,
+      images,
+    });
 
-    res.status(200).json({
+    res.status(201).json({
       status: "success",
       message: "Product created successfully",
+      data: newProduct,
     });
   }),
 

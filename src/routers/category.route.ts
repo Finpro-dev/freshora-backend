@@ -8,25 +8,15 @@ const categoryRoute = Router();
 
 categoryRoute.get("/", categoryController.getProductCategories);
 
-categoryRoute.post(
-  "/",
-  authentication,
-  authorization("SUPER_ADMIN"),
-  validate(createCategorySchema),
-  categoryController.createProductCategory,
-);
+categoryRoute.post("/", categoryController.createProductCategory);
 
 categoryRoute.put(
   "/:productCategoryId",
-  authentication,
-  authorization("SUPER_ADMIN"),
   categoryController.updateProductCategories,
 );
 
 categoryRoute.delete(
   "/:productCategoryId",
-  authentication,
-  authorization("SUPER_ADMIN"),
   categoryController.deleteProductCategories,
 );
 
