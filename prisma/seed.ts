@@ -295,8 +295,6 @@ const store: Prisma.StoreCreateManyInput[] = [
   },
 ];
 
-<<<<<<< HEAD
-=======
 const productPhotos: Prisma.ProductPhotoCreateManyInput[] = [
   {
     productId: "02d9917a-cfd7-4c13-9a21-ae16c8b3d9ca", // Fresh Cleaned Squid
@@ -405,7 +403,6 @@ const productPhotos: Prisma.ProductPhotoCreateManyInput[] = [
 
 const storeId = "4a6db395-43cd-4182-a796-cfd878e7eb01";
 
->>>>>>> origin
 const productStocks: Prisma.StockCreateManyInput[] = [
   {
     storeId: "3ff1684b-a20f-4f47-985a-1e4447c93896",
