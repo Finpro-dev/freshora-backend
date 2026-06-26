@@ -9,6 +9,7 @@ export const ACCESS_COOKIE_OPTIONS: CookieOptions = {
   sameSite: isProd ? "none" : "lax",
   maxAge: 15 * 60 * 1000,
   path: "/",
+  ...(isProd && { domain: ".vercel.app" }),
 };
 
 export const REFRESH_COOKIE_OPTIONS: CookieOptions = {
@@ -17,6 +18,7 @@ export const REFRESH_COOKIE_OPTIONS: CookieOptions = {
   sameSite: isProd ? "none" : "lax",
   maxAge: 14 * 24 * 60 * 60 * 1000,
   path: "/",
+  ...(isProd && { domain: ".vercel.app" }),
 };
 
 export const USER_EMAIL_VERIFY_COOKIE_OPTIONS: CookieOptions = {
@@ -25,4 +27,5 @@ export const USER_EMAIL_VERIFY_COOKIE_OPTIONS: CookieOptions = {
   sameSite: isProd ? "none" : "lax",
   path: "/",
   maxAge: 60 * 60 * 1000 * 24,
+  ...(isProd && { domain: ".vercel.app" }),
 };
