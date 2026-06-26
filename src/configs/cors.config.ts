@@ -1,10 +1,7 @@
 import { CORS_CREDENTIALS } from "./dotenv.config";
 
 const buildAllowedOrigins = (): string[] => {
-  const rawOrigins = [
-    CORS_CREDENTIALS.FRONTEND_URL,
-    CORS_CREDENTIALS.WHITE_LIST_1,
-  ];
+  const rawOrigins = [CORS_CREDENTIALS.FRONTEND_URL];
 
   // Filter out undefined, null, empty strings
   const cleanOrigins = rawOrigins.filter(
