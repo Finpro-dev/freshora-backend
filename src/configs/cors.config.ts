@@ -6,7 +6,10 @@ const allowedOrigins = [
 ];
 
 export const CORS_CONFIG = {
-  origin: (origin: any, callback: Function) => {
+  origin: (
+    origin: string | undefined,
+    callback: (err: Error | null, allow?: boolean) => void,
+  ) => {
     if (!origin) return callback(null, true);
 
     if (allowedOrigins.includes(origin)) {
@@ -17,6 +20,5 @@ export const CORS_CONFIG = {
   },
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
-  allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
-  exposedHeaders: ["Set-Cookie"],
+  allowedHeaders: ["Content-Type", "Authorization"],
 };
