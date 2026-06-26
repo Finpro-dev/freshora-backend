@@ -27,50 +27,57 @@ export const configureGooglePassport = () => {
               new AppError(404, "Email is not found in your Google account"),
             );
 
-          // check email in db
+          // check based on authProviderId
           let user = await prisma.user.findFirst({
             where: {
               authProviderId,
             },
           });
 
-          // if exist, update / link to current google account
-          if (user) {
-            user = await prisma.user.update({
-              where: {
-                email,
-              },
-
-              data: {
-                firstName,
-                lastName: lastName || firstName,
-                authProvider: "GOOGLE", // update authProvider
-                authProviderId,
-                avatar: user.avatar || avatar,
-                isVerified: true,
-              },
+          if (!user) {
+            // check based on email in db
+            user = await prisma.user.findUnique({
+              where: { email },
             });
-          } else {
-            // create new user
-            user = await prisma.$transaction(async (tx) => {
-              const myReferralCode = await createUniqueReferralCode(tx);
-              const createdUser = await tx.user.create({
+
+            // if exist, update / link to current google account
+            if (user) {
+              user = await prisma.user.update({
+                where: {
+                  email,
+                },
+
                 data: {
                   firstName,
                   lastName: lastName || firstName,
-                  email,
-                  authProvider: "GOOGLE",
+                  authProvider: "GOOGLE", // update authProvider
                   authProviderId,
-                  avatar,
-                  myReferralCode,
-                  role: "CUSTOMER",
-                  gender: "MALE",
+                  avatar: user.avatar || avatar,
                   isVerified: true,
                 },
               });
+            } else {
+              // create new user
+              user = await prisma.$transaction(async (tx) => {
+                const myReferralCode = await createUniqueReferralCode(tx);
+                const createdUser = await tx.user.create({
+                  data: {
+                    firstName,
+                    lastName: lastName || firstName,
+                    email,
+                    authProvider: "GOOGLE",
+                    authProviderId,
+                    avatar,
+                    myReferralCode,
+                    role: "CUSTOMER",
+                    gender: "MALE",
+                    isVerified: true,
+                  },
+                });
 
-              return createdUser;
-            });
+                return createdUser;
+              });
+            }
           }
 
           // success! send user data to next layer (controller)
