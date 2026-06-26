@@ -11,6 +11,7 @@ export const CLOUDINARY_CREDENTIALS = {
 
 export const CORS_CREDENTIALS = {
   FRONTEND_URL: process.env.FRONTEND_URL,
+  WHITE_LIST_1: process.env.WHITE_LIST_URL_1,
   BACKEND_URL: process.env.BACKEND_URL,
 };
 
