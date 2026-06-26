@@ -1,9 +1,25 @@
 import { CORS_CREDENTIALS } from "./dotenv.config";
 
-const allowedOrigins = [
-  CORS_CREDENTIALS.FRONTEND_URL,
-  CORS_CREDENTIALS.WHITE_LIST_1,
-];
+const buildAllowedOrigins = (): string[] => {
+  const rawOrigins = [
+    CORS_CREDENTIALS.FRONTEND_URL,
+    CORS_CREDENTIALS.WHITE_LIST_1,
+  ];
+
+  // Filter out undefined, null, empty strings
+  const cleanOrigins = rawOrigins.filter(
+    (origin): origin is string =>
+      typeof origin === "string" && origin.trim().length > 0,
+  );
+
+  if (process.env.NODE_ENV !== "production") {
+    cleanOrigins.push("http://localhost:3000");
+  }
+
+  return cleanOrigins;
+};
+
+const allowedOrigins = buildAllowedOrigins();
 
 export const CORS_CONFIG = {
   origin: (
@@ -15,10 +31,12 @@ export const CORS_CONFIG = {
     if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error(`CORS blocked: ${origin}`));
+      console.warn(`CORS blocked: ${origin}`);
+      callback(new Error(`CORS policy: Origin "${origin}" is not allowed`));
     }
   },
   credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
+  maxAge: 86400,
 };
