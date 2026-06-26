@@ -1,10 +1,10 @@
 import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
-import { CORS_CREDENTIALS, GOOGLE_OAUTH } from "./dotenv.config";
 import { AppError } from "../utils/appError.util";
-import { prisma } from "./prisma.config";
 import { createUniqueReferralCode } from "../utils/createUniqueReferralCode";
 import { generateFullName } from "../utils/userDataTransform.util";
+import { GOOGLE_OAUTH } from "./dotenv.config";
+import { prisma } from "./prisma.config";
 
 export const configureGooglePassport = () => {
   passport.use(
@@ -12,7 +12,7 @@ export const configureGooglePassport = () => {
       {
         clientID: GOOGLE_OAUTH.CLIENT_ID!,
         clientSecret: GOOGLE_OAUTH.CLIENT_SECRET!,
-        callbackURL: `${CORS_CREDENTIALS.BACKEND_URL}/api/auth/google/callback`,
+        callbackURL: GOOGLE_OAUTH.GOOGLE_CALLBACK_URL,
         passReqToCallback: true,
       },
       async (_req, _accessToken, _refreshToken, profile, done) => {
