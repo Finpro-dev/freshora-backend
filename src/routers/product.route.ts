@@ -14,8 +14,10 @@ productRoute.get(
   productController.getAllProducts,
 );
 
-productRoute.get("/:productId", productController.getProductById);
+productRoute.get("/slug/:slug", productController.getProductBySlug);
+
 productRoute.get("/store/:storeId", productController.getProductByStoreId);
+productRoute.get("/:productId", productController.getProductById);
 
 productRoute.get(
   "/store-products",

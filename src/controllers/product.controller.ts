@@ -77,6 +77,15 @@ export const productController = {
     });
   }),
 
+  getProductBySlug: catchAsync(async (req: Request, res: Response) => {
+    const { slug } = req.params as { slug: string };
+    const product = await productServices.getProductBySlug(slug);
+    res.status(200).json({
+      status: "success",
+      data: product,
+    });
+  }),
+
   createProduct: catchAsync(async (req: Request, res: Response) => {
     const images = req.files as Express.Multer.File[];
     if (!images || images.length === 0) {

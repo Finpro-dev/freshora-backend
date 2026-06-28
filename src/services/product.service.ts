@@ -210,6 +210,47 @@ export const productServices = {
     };
   },
 
+  getProductBySlug: async (slug: string) => {
+    const currentDate = new Date();
+    const product = await prisma.product.findFirst({
+      where: {
+        slug,
+        deletedAt: null,
+      },
+      include: {
+        productCategory: true,
+        productPhotos: true,
+        stocks: true,
+        discounts: {
+          where: {
+            deletedAt: null,
+            validFrom: { lte: currentDate },
+            validUntil: { gte: currentDate },
+          },
+        },
+      },
+    });
+
+    if (!product) {
+      throw new AppError(404, "Product not found");
+    }
+
+    let finalPrice = Number(product.price);
+    const activeDiscount = product.discounts[0];
+
+    if (activeDiscount && activeDiscount.type === "NO_REQUIREMENT") {
+      finalPrice = Math.max(
+        0,
+        finalPrice - Number(activeDiscount.discountAmount),
+      );
+    }
+
+    return {
+      ...product,
+      finalPrice,
+    };
+  },
+
   createProduct: async (data: CreateProductInput) => {
     try {
       const {
