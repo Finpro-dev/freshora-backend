@@ -50,11 +50,14 @@ export const authController = {
 
   login: catchAsync(async (req: Request<{}, {}, LoginInput>, res: Response) => {
     const { email, password } = req.body;
-    const { user, accessToken, refreshToken } =
-      (await authServices.login({
-        email,
-        password,
-      })) || {};
+    const data = await authServices.login({
+      email,
+      password,
+    });
+
+    const user = await data?.user;
+    const accessToken = data?.accessToken;
+    const refreshToken = data?.refreshToken;
 
     setTokenCookies(res, accessToken!, refreshToken!);
 
